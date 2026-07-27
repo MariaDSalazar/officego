@@ -185,6 +185,8 @@ en tu propio equipo, SmartScreen no lo marca igual que a un ejecutable bajado de
 
 - **[Guía rápida](docs/GUIA-RAPIDA.md)**: instalar Office en cinco minutos, qué versión
   elegir y qué hacer si algo falla. Para quien no quiere leerse todo esto.
+- **[Pruebas en máquina virtual](docs/PRUEBAS-VM.md)**: checklist para validar las dos
+  versiones antes de darlas por buenas.
 
 ## Requisitos
 
