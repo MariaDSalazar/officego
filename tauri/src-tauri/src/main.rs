@@ -17,11 +17,12 @@ use std::os::windows::process::CommandExt;
 #[cfg(windows)]
 const SIN_VENTANA: u32 = 0x0800_0000; // CREATE_NO_WINDOW
 
-// El motor viaja dentro del ejecutable
+// El motor viaja dentro del ejecutable, y se toma directamente de src/:
+// una copia aparte se desincroniza en cuanto alguien arregla algo en una sola.
 const API: &str = include_str!("../motor-api.ps1");
-const CATALOGO: &str = include_str!("../motor/1-catalogo.ps1");
-const MOTOR: &str = include_str!("../motor/2-motor.ps1");
-const RECOM: &str = include_str!("../motor/2b-recomendacion.ps1");
+const CATALOGO: &str = include_str!("../../../src/1-catalogo.ps1");
+const MOTOR: &str = include_str!("../../../src/2-motor.ps1");
+const RECOM: &str = include_str!("../../../src/2b-recomendacion.ps1");
 
 /// Deja el motor en %TEMP%\OfficeGo-motor y devuelve la ruta del api.
 fn preparar_motor() -> Result<PathBuf, String> {

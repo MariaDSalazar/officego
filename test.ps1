@@ -94,6 +94,34 @@ Write-Host "`nDESINSTALAR" -ForegroundColor Cyan
 $xml3 = [xml](Get-Content (New-XmlDesinstalar) -Raw)
 Comprobar 'el XML quita todo' ($xml3.Configuration.Remove.All -eq 'TRUE')
 
+Write-Host "`nMODO SILENCIOSO" -ForegroundColor Cyan
+$conVentana = [xml](Get-Content (New-ConfiguracionXml $p2021 'ProPlus' 'es-es' '64' @('Word') @() $false) -Raw)
+$sinVentana = [xml](Get-Content (New-ConfiguracionXml $p2021 'ProPlus' 'es-es' '64' @('Word') @() $true)  -Raw)
+Comprobar 'normal enseña la ventana de Microsoft' ($conVentana.Configuration.Display.Level -eq 'Full')
+Comprobar 'silencioso la esconde'                 ($sinVentana.Configuration.Display.Level -eq 'None')
+Comprobar 'desinstalar silencioso también' (
+  ([xml](Get-Content (New-XmlDesinstalar $true) -Raw)).Configuration.Display.Level -eq 'None')
+
+Write-Host "`nLÍNEA DE ÓRDENES" -ForegroundColor Cyan
+. "$PSScriptRoot/src/7-arranque.ps1"
+# Lo que se le repite a la copia elevada tiene que ser lo que pidió el usuario
+$script:INVOCADO = [ordered]@{ Instalar = '2021'; Apps = @('Word','Excel'); Silencioso = $true }
+$linea = Get-LineaArgumentos
+Comprobar 'repite el producto'         ($linea -match '-Instalar "2021"')
+Comprobar 'la lista de apps va con comas' ($linea -match '-Apps Word,Excel')
+Comprobar 'los interruptores van sueltos' ($linea -match '-Silencioso(\s|$)')
+$script:INVOCADO = [ordered]@{ Activar = $false }
+Comprobar 'un interruptor apagado no se repite' ((Get-LineaArgumentos) -eq '')
+
+if (Test-Path "$PSScriptRoot/OfficeGo.ps1") {
+  $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+    "$PSScriptRoot/OfficeGo.ps1", [ref]$null, [ref]$null)
+  Comprobar 'el script montado admite parámetros' (
+    $ast.ParamBlock -and $ast.ParamBlock.Parameters.Count -ge 8)
+  Comprobar 'admite -Instalar' (
+    $ast.ParamBlock.Parameters.Name.VariablePath.UserPath -contains 'Instalar')
+}
+
 Write-Host ""
 if ($fallos) { Write-Host "$fallos prueba(s) fallando" -ForegroundColor Red; exit 1 }
 Write-Host "Todas las pruebas pasan" -ForegroundColor Green

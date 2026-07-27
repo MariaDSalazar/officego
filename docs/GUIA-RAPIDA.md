@@ -1,6 +1,8 @@
 # Guía rápida de OfficeGo
 
-Para quien solo quiere instalar Office y seguir con su vida.
+Para quien solo quiere instalar Office y seguir con su vida. Si busca el paso a paso
+completo, con las dos versiones y todos los errores, está en el
+**[tutorial](TUTORIAL.md)**.
 
 ---
 
@@ -114,6 +116,15 @@ Para descargar Office, sí. Después Office funciona sin conexión con normalida
 **¿Puedo instalarlo en varios equipos sin bajarlo cada vez?**
 Sí. En **Herramientas → Crear instalador sin conexión** se descarga todo a una carpeta
 que puede copiar a un USB.
+
+**¿Y sin tener que ir eligiendo en cada equipo?**
+Sí, dándole las opciones por escrito. Deja todos los equipos igual sin tocar nada:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1))) -Instalar 2021 -Apps Word,Excel -Silencioso -Activar
+```
+
+La lista completa de opciones está en el [tutorial](TUTORIAL.md#con-opciones-sin-tocar-la-ventana).
 
 **¿Deja rastro en mi equipo?**
 El programa es portable: no se instala, no toca el registro. Los archivos temporales

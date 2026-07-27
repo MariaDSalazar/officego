@@ -325,7 +325,7 @@ function Pantalla-Ayuda {
   $cont.Controls.Add((Titulo 'OFFICEGO' 18 14))
   $h = New-Caja 18 36 802 76 $C.Azul $C.Azul
   $h.Controls.Add((New-Icono 'O' '#3B7DD8' 18 16 44 15))
-  $l1 = New-Lbl 'OfficeGo 1.2' 78 18 14 '#FFFFFF' $true
+  $l1 = New-Lbl "OfficeGo $script:VERSION" 78 18 14 '#FFFFFF' $true
   $h.Controls.Add($l1)
   $h.Controls.Add((New-Lbl 'Instalador y activador de Microsoft Office para Windows 10 y 11' 78 44 8.5 '#D6E4F7'))
   Set-Redondeado $h 9

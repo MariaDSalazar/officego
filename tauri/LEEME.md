@@ -15,7 +15,6 @@ tauri/
 └── src-tauri/
     ├── src/main.rs         capa fina: llama a PowerShell y reenvía lo que dice
     ├── motor-api.ps1       traduce acciones a JSON
-    ├── motor/              copia de src/*.ps1 de la raíz (el mismo motor)
     └── tauri.conf.json
 ```
 
@@ -23,12 +22,15 @@ tauri/
 invoca; las tareas largas escriben una línea JSON por evento y Rust las reenvía a la
 interfaz, así la barra de progreso se mueve de verdad en lugar de fingir.
 
-Un arreglo en `src/2-motor.ps1` de la raíz sirve para las dos versiones. Antes de
-compilar hay que copiarlo:
+Tampoco se duplica en disco: los `include_str!` de `main.rs` apuntan a `src/*.ps1` de
+la raíz del repositorio, los mismos archivos que usa la versión 1.x.
 
-```bash
-cp src/1-catalogo.ps1 src/2-motor.ps1 src/2b-recomendacion.ps1 tauri/src-tauri/motor/
+```rust
+const MOTOR: &str = include_str!("../../../src/2-motor.ps1");
 ```
+
+Un arreglo ahí vale para las dos versiones sin copiar nada. Hubo una copia en
+`src-tauri/motor/` y duró lo que tardó en desincronizarse.
 
 ## Compilar
 

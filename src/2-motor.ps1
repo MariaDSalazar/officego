@@ -7,6 +7,7 @@
 $script:ODT_URL  = 'https://officecdn.microsoft.com/pr/wsus/setup.exe'
 $script:C2R_URL  = 'https://c2rsetup.officeapps.live.com/c2r/download.aspx'
 $script:MAS_URL  = 'https://get.activated.win'
+if (-not $env:TEMP) { $env:TEMP = [IO.Path]::GetTempPath() }   # falta al correr como SYSTEM
 $script:TRABAJO  = Join-Path $env:TEMP 'OfficeGo'
 
 # Windows 10 sin actualizar negocia TLS 1.0 y los CDN de Microsoft lo
@@ -14,9 +15,11 @@ $script:TRABAJO  = Join-Path $env:TEMP 'OfficeGo'
 try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch {}
 
 function Test-Administrador {
-  $id = [Security.Principal.WindowsIdentity]::GetCurrent()
-  (New-Object Security.Principal.WindowsPrincipal $id).IsInRole(
-    [Security.Principal.WindowsBuiltInRole]::Administrator)
+  try {
+    $id = [Security.Principal.WindowsIdentity]::GetCurrent()
+    (New-Object Security.Principal.WindowsPrincipal $id).IsInRole(
+      [Security.Principal.WindowsBuiltInRole]::Administrator)
+  } catch { $false }   # fuera de Windows esta API no existe
 }
 
 function Test-Internet {
@@ -129,7 +132,7 @@ function Invoke-Descarga {
 # ────────────────────────────────────────────────────── configuration.xml
 function New-ConfiguracionXml {
   param($Producto, [string]$Edicion, [string]$Idioma, [string]$Bits,
-        [string[]]$AppsQueSi, [string[]]$Complementos)
+        [string[]]$AppsQueSi, [string[]]$Complementos, [bool]$SinVentanas = $false)
 
   $id = $Producto.Ediciones[$Edicion]
   # Se excluye lo que la edición trae pero el usuario no marcó
@@ -159,7 +162,9 @@ function New-ConfiguracionXml {
   [void]$sb.AppendLine('  </Add>')
   [void]$sb.AppendLine('  <Property Name="AUTOACTIVATE" Value="0" />')
   [void]$sb.AppendLine('  <Property Name="FORCEAPPSHUTDOWN" Value="TRUE" />')
-  [void]$sb.AppendLine('  <Display Level="Full" AcceptEULA="TRUE" />')
+  # Level="None" esconde la ventana azul de Microsoft: para desatendido
+  $nivel = if ($SinVentanas) { 'None' } else { 'Full' }
+  [void]$sb.AppendLine("  <Display Level=`"$nivel`" AcceptEULA=`"TRUE`" />")
   [void]$sb.AppendLine('</Configuration>')
 
   New-Item -ItemType Directory -Force -Path $script:TRABAJO | Out-Null
@@ -169,11 +174,13 @@ function New-ConfiguracionXml {
 }
 
 function New-XmlDesinstalar {
+  param([bool]$SinVentanas = $false)
+  $nivel = if ($SinVentanas) { 'None' } else { 'Full' }
   $xml = @"
 <Configuration>
   <Remove All="TRUE" />
   <Property Name="FORCEAPPSHUTDOWN" Value="TRUE" />
-  <Display Level="Full" AcceptEULA="TRUE" />
+  <Display Level="$nivel" AcceptEULA="TRUE" />
 </Configuration>
 "@
   New-Item -ItemType Directory -Force -Path $script:TRABAJO | Out-Null

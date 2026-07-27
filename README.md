@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/badge/Portable-un_solo_archivo-0B57D0" alt="portable">
     <img src="https://img.shields.io/badge/Sin_dependencias-0_instalaciones-16A34A" alt="sin dependencias">
     <img src="https://img.shields.io/badge/Licencia-MIT-6366F1" alt="MIT">
-    <img src="https://img.shields.io/badge/versión-1.2_·_2.0-0B57D0" alt="versiones">
+    <img src="https://img.shields.io/badge/versión-1.3_·_2.0-0B57D0" alt="versiones">
     <img src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" alt="Tauri">
   </p>
   <p>
@@ -52,7 +52,8 @@ nervioso como con un `.exe` descargado.
 | 🖥️ | **Conoce tu equipo** | Procesador con uso en vivo, memoria, cada disco con su ocupación y la tarjeta gráfica con su marca: NVIDIA, AMD o Intel. |
 | 🧰 | **Herramientas** | Reparar la instalación, crear un instalador sin conexión para otros equipos, y desinstalar (pidiendo escribir `BORRAR`). |
 | 🚑 | **Ayuda de verdad** | Los errores frecuentes con el **mensaje literal** que sale en pantalla y el comando exacto que los arregla. |
-| 🪶 | **Portable** | Un `.ps1` de 68 KB. Cabe en un USB, no deja rastro en el registro, no necesita instalarse. |
+| 🪶 | **Portable** | Un `.ps1` de 76 KB. Cabe en un USB, no deja rastro en el registro, no necesita instalarse. |
+| ⚡ | **Desatendido** | `-Instalar 2021 -Apps Word,Excel -Silencioso -Activar` deja un aula entera igual, sin que nadie toque nada. Y si faltan permisos, se los pide y se relanza con las mismas opciones. |
 | 🔒 | **Sin telemetría** | No manda nada a ninguna parte. El código está aquí para leerlo. |
 
 <details>
@@ -85,6 +86,7 @@ officego/
 ├── OfficeGo.cmd        → lanzador de doble clic, pide permisos solo
 ├── compilar-exe.bat    → genera OfficeGo.exe con el csc.exe que Windows ya trae
 ├── src/
+│   ├── 0-parametros.ps1    Las opciones de la línea de órdenes
 │   ├── 1-catalogo.ps1      Versiones, ediciones, qué apps trae cada una
 │   ├── 2-motor.ps1         Descarga con progreso, configuration.xml, WMI, MAS
 │   ├── 2b-recomendacion.ps1 Qué versión le conviene a este equipo
@@ -92,9 +94,9 @@ officego/
 │   ├── 4-pantallas.ps1     Instalar · Activar · Equipo · Herramientas · Ayuda
 │   ├── 5-inicio.ps1        Pantalla de bienvenida con la recomendación
 │   ├── 6-acciones.ps1      Qué pasa al pulsar cada botón
-│   ├── 7-arranque.ps1      Comprobaciones y puesta en marcha
+│   ├── 7-arranque.ps1      Elevación, modo consola y puesta en marcha
 │   └── Lanzador.cs         Envoltorio del .exe (C#, compilación opcional)
-├── test.ps1            → 36 pruebas · corren en cualquier sitio con PowerShell
+├── test.ps1            → 44 pruebas · corren en cualquier sitio con PowerShell
 ├── build.sh            → ensambla src/*.ps1 y valida la sintaxis
 ├── tauri/              → versión 2.0 (Tauri): ui/ en HTML + src-tauri/ en Rust
 ├── .github/workflows/  → compila el .exe en un runner de Windows
@@ -140,7 +142,7 @@ avisos que correspondan.
 | | **1.x · PowerShell** | **2.0 · Tauri** |
 |---|---|---|
 | Interfaz | Windows Forms | El HTML de los diseños, tal cual |
-| Peso | 68 KB | ~8 MB |
+| Peso | 76 KB | ~8 MB |
 | Windows 10 antiguo | Funciona siempre | Necesita WebView2 |
 | Antivirus | Tranquilo | SmartScreen avisa la primera vez |
 | `irm \| iex` | Sí | No, hay que descargar |
@@ -155,7 +157,7 @@ viejo. La 2.0 es el ejecutable con la interfaz exacta, para equipos normales. Ve
 
 ## 🚀 Puesta en marcha
 
-Tres formas, todas locales. La primera no descarga nada.
+Cuatro formas, todas locales. La primera no descarga nada.
 
 ### 1 · Un solo comando
 
@@ -166,12 +168,48 @@ Abre **PowerShell como administrador**: tecla <kbd>Windows</kbd> → escribe
 irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1 | iex
 ```
 
-### 2 · Portable
+Si lo abriste sin permisos, OfficeGo se da cuenta, los pide y se relanza solo.
+
+### 2 · Un solo comando, con opciones
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1))) -Instalar 2021 -Apps Word,Excel
+```
+
+Ese `[scriptblock]::Create` no es adorno: con `irm | iex` **no se pueden pasar
+parámetros**, porque `iex` recibe el texto ya montado y no queda dónde engancharlos.
+
+<details>
+<summary>Todas las opciones</summary>
+
+<br>
+
+| Opción | Qué hace |
+|---|---|
+| `-Instalar` | `365` `2024` `2021` `2019` `2016` `2013` |
+| `-Edicion` | `ProPlus` (por defecto), `Standard`, `Professional`, `HomeStudent`… |
+| `-Apps` | `Word,Excel,PowerPoint`. Lo que no se nombre, no se instala |
+| `-Complementos` | `VisioPro`, `VisioStd`, `ProjectPro`, `ProjectStd` |
+| `-Idioma` | `es-es` (por defecto), `es-mx`, `en-us`… |
+| `-Bits` | `64` o `32`. Por defecto, lo que sea el Windows |
+| `-Activar` | Activa al terminar. Suelto, activa sin instalar nada |
+| `-Desinstalar` | Quita Office del equipo |
+| `-Silencioso` | Sin ventanas de Microsoft ni preguntas |
+| `-Ayuda` | Enseña todo esto en pantalla |
+
+```powershell
+# un aula entera, sin que nadie toque nada
+... -Instalar 2021 -Apps Word,Excel,PowerPoint -Silencioso -Activar
+```
+
+</details>
+
+### 3 · Portable
 
 Copia `OfficeGo.ps1` y `OfficeGo.cmd` a una carpeta o a un USB y haz **doble clic en
 `OfficeGo.cmd`**. Pide los permisos de administrador solo.
 
-### 3 · Con icono propio
+### 4 · Con icono propio
 
 ```bat
 compilar-exe.bat
@@ -183,6 +221,8 @@ en tu propio equipo, SmartScreen no lo marca igual que a un ejecutable bajado de
 
 ## Documentación
 
+- **[Tutorial completo](docs/TUTORIAL.md)**: instalar y ejecutar las dos versiones paso
+  a paso, con todos los errores que salen y cómo se arreglan.
 - **[Guía rápida](docs/GUIA-RAPIDA.md)**: instalar Office en cinco minutos, qué versión
   elegir y qué hacer si algo falla. Para quien no quiere leerse todo esto.
 - **[Pruebas en máquina virtual](docs/PRUEBAS-VM.md)**: checklist para validar las dos
@@ -223,7 +263,7 @@ la protección un momento y **volver a encenderla al terminar**.
 
 ## Estado del proyecto
 
-La lógica está cubierta por **36 pruebas automáticas** que se ejecutan en cualquier
+La lógica está cubierta por **44 pruebas automáticas** que se ejecutan en cualquier
 sistema: catálogo, generación del `configuration.xml` y reglas de recomendación.
 
 La interfaz se valida sintácticamente en cada compilación, pero Windows Forms solo
@@ -234,7 +274,7 @@ o un texto cortado, [abre un issue](../../issues/new) con una captura y se corri
 
 ```bash
 ./build.sh          # junta src/*.ps1 en OfficeGo.ps1 y valida la sintaxis
-pwsh test.ps1       # 36 pruebas
+pwsh test.ps1       # 44 pruebas
 ```
 
 Las pruebas **no necesitan Windows**: comprueban que cada edición declare las

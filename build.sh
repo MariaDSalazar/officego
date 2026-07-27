@@ -24,6 +24,11 @@ PWSH=${PWSH:-/tmp/pwsh/pwsh}
 #
 #  Licencia MIT · sin telemetría · sin publicidad
 #
+#  USO
+#    irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1 | iex
+#    & ([scriptblock]::Create((irm ...OfficeGo.ps1))) -Instalar 2021 -Apps Word,Excel
+#    .\OfficeGo.ps1 -Ayuda
+#
 #  Descarga Office de los servidores oficiales de Microsoft:
 #    officecdn.microsoft.com   ·  c2rsetup.officeapps.live.com
 #
@@ -32,12 +37,26 @@ PWSH=${PWSH:-/tmp/pwsh/pwsh}
 # =====================================================================
 
 CAB
-  for f in src/1-catalogo.ps1 src/2-motor.ps1 src/2b-recomendacion.ps1 \
+  # 0-parametros va primero de todo: param() tiene que ser lo primero
+  # ejecutable del archivo, solo puede llevar comentarios por delante.
+  for f in src/0-parametros.ps1 src/1-catalogo.ps1 src/2-motor.ps1 src/2b-recomendacion.ps1 \
            src/3-interfaz.ps1 src/4-pantallas.ps1 src/5-inicio.ps1 \
            src/6-acciones.ps1 src/7-arranque.ps1; do
     echo ""
     echo "# ─────────────────────────────────────────────── $(basename "$f")"
+
+    # La interfaz solo se monta si se va a enseñar. En PowerShell un if no
+    # abre un ámbito nuevo, así que $frm y compañía siguen siendo del script
+    # igual que si no estuviera.
+    case "$f" in
+      src/3-interfaz.ps1) echo 'if (-not $script:SIN_INTERFAZ) {' ;;
+    esac
+
     cat "$f"
+
+    case "$f" in
+      src/6-acciones.ps1) echo '}   # fin de la interfaz' ;;
+    esac
   done
   echo ""
   echo "Start-OfficeGo"
