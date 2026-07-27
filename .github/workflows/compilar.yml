@@ -89,10 +89,12 @@ jobs:
         run: |
           cd descargas
           mkdir -p salida
+          # los nombres son los que ve quien descarga: sin numero de version,
+          # asi los enlaces de /releases/latest/download/ valen siempre
           cp officego-powershell/OfficeGo.ps1 officego-powershell/OfficeGo.cmd salida/ || true
-          cp officego-powershell/OfficeGo.exe salida/OfficeGo-portable.exe || true
+          cp officego-powershell/OfficeGo.exe salida/OfficeGo.exe || true
           cp officego-tauri/bundle/nsis/*.exe salida/ 2>/dev/null || true
-          cp officego-tauri/OfficeGo.exe salida/OfficeGo-tauri-portable.exe 2>/dev/null || true
+          cp officego-tauri/OfficeGo.exe salida/OfficeGo-2.0-portable.exe 2>/dev/null || true
           ls -la salida
 
       - uses: softprops/action-gh-release@v2

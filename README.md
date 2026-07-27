@@ -18,8 +18,14 @@
     <img src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" alt="Tauri">
   </p>
   <p>
-    <a href="#-puesta-en-marcha"><img src="https://img.shields.io/badge/Ejecutar_con_un_comando-PowerShell-5391FE?style=for-the-badge&logo=powershell&logoColor=white" alt="Ejecutar"></a>
+    <a href="https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.exe">
+      <img src="https://img.shields.io/badge/Descargar-OfficeGo.exe-16A34A?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar OfficeGo.exe"></a>
+    <a href="https://github.com/MariaDSalazar/officego/releases/latest">
+      <img src="https://img.shields.io/badge/Instalador-versión_2.0-0B57D0?style=for-the-badge&logo=tauri&logoColor=white" alt="Instalador de la versión 2.0"></a>
+    <a href="#-puesta-en-marcha">
+      <img src="https://img.shields.io/badge/o_con_un_comando-PowerShell-5391FE?style=for-the-badge&logo=powershell&logoColor=white" alt="Ejecutar con un comando"></a>
   </p>
+  <p><sub><strong>Descargar</strong> es un solo archivo, no se instala, se abre y ya · <strong>Instalador</strong> es la versión 2.0 con la interfaz nueva</sub></p>
   <p><em>Lo primero que ves no es un menú: es qué versión le conviene a tu equipo.</em></p>
 </div>
 
@@ -33,6 +39,10 @@ activarlo con tu clave o con [MAS](https://github.com/massgravel/Microsoft-Activ
 Está escrito en **PowerShell con Windows Forms**: eso significa que es un archivo de
 texto legible, que no hay que instalar ningún runtime, y que el antivirus no se pone
 nervioso como con un `.exe` descargado.
+
+**¿Primera vez?** El **[tutorial](docs/TUTORIAL.md)** lleva de la mano desde abrir
+PowerShell hasta tener Office puesto, diciendo en cada paso qué debería verse en
+pantalla.
 
 > **Nada se instala hasta que lo confirmas.** El programa arranca revisando tu equipo
 > (Windows, memoria, disco, gráfica) y recomienda la versión que de verdad te cabe.
@@ -155,6 +165,24 @@ La 1.x es la vía universal, la del comando de una línea, la que funciona en el
 viejo. La 2.0 es el ejecutable con la interfaz exacta, para equipos normales. Ver
 [`tauri/LEEME.md`](tauri/LEEME.md).
 
+## ⬇️ Descargas
+
+Todo sale del [**último release**](https://github.com/MariaDSalazar/officego/releases/latest).
+Si no sabes cuál, el primero.
+
+| Archivo | Qué es | Cuándo te sirve |
+|---|---|---|
+| [**OfficeGo.exe**](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.exe) | El programa entero en un archivo. Doble clic y ya | **Lo normal.** No se instala, no toca el registro, cabe en un USB |
+| [**Instalador 2.0**](https://github.com/MariaDSalazar/officego/releases/latest) | La versión con la interfaz nueva, con su acceso en el menú Inicio | Si lo vas a usar a menudo en el mismo equipo |
+| [OfficeGo-2.0-portable.exe](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-2.0-portable.exe) | La 2.0 sin instalar nada | La interfaz nueva, pero desde un USB |
+| [OfficeGo.ps1](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.ps1) + [OfficeGo.cmd](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.cmd) | El script suelto, en texto legible | Para leer qué hace antes de ejecutarlo, o para un aula |
+
+> **Windows dirá «Windows protegió su PC» la primera vez.** Sale con cualquier `.exe`
+> descargado que no esté firmado, y firmarlo cuesta unos cientos de euros al año.
+> Para seguir: **Más información** → **Ejecutar de todas formas**. Si prefieres no
+> descargar nada, usa [el comando de una línea](#-puesta-en-marcha) o
+> [compílate el `.exe` tú mismo](#4--con-icono-propio) con lo que Windows ya trae.
+
 ## 🚀 Puesta en marcha
 
 Cuatro formas, todas locales. La primera no descarga nada.
@@ -206,8 +234,18 @@ parámetros**, porque `iex` recibe el texto ya montado y no queda dónde enganch
 
 ### 3 · Portable
 
-Copia `OfficeGo.ps1` y `OfficeGo.cmd` a una carpeta o a un USB y haz **doble clic en
-`OfficeGo.cmd`**. Pide los permisos de administrador solo.
+Baja [`OfficeGo.exe`](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.exe)
+y haz doble clic: lleva el script dentro y pide los permisos solo. También admite
+opciones, igual que el comando:
+
+```powershell
+.\OfficeGo.exe -Instalar 2021 -Apps Word,Excel
+```
+
+Si prefieres el script suelto, en texto legible, copia
+[`OfficeGo.ps1`](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.ps1)
+y [`OfficeGo.cmd`](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.cmd)
+a la misma carpeta y haz **doble clic en `OfficeGo.cmd`**.
 
 ### 4 · Con icono propio
 
