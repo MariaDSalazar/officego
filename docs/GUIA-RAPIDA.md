@@ -124,7 +124,7 @@ Sí, dándole las opciones por escrito. Deja todos los equipos igual sin tocar n
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1))) -Instalar 2021 -Apps Word,Excel -Silencioso -Activar
 ```
 
-La lista completa de opciones está en el [tutorial](TUTORIAL.md#con-opciones-sin-tocar-la-ventana).
+La lista completa de opciones está en el [tutorial](TUTORIAL.md#8--sin-tocar-la-ventana-opciones-por-escrito).
 
 **¿Deja rastro en mi equipo?**
 El programa es portable: no se instala, no toca el registro. Los archivos temporales

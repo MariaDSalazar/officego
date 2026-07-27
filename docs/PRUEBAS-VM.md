@@ -80,6 +80,48 @@ Elige **Office LTSC 2021 · Professional Plus** con solo Word y Excel.
 
 ---
 
+### 1.8 Con opciones, sin ventana
+
+Lo nuevo de la 1.3, y lo que más conviene probar porque nunca ha corrido en Windows.
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1))) -Ayuda
+```
+
+- [ ] Sale la ayuda **sin abrir ninguna ventana**
+- [ ] Los acentos se ven bien también aquí
+
+Con PowerShell **sin elevar**, y una orden de verdad:
+
+```powershell
+& ([scriptblock]::Create((irm https://.../OfficeGo.ps1))) -Instalar 2021 -Apps Word,Excel
+```
+
+- [ ] Windows pide permisos
+- [ ] Al aceptar, **la ventana nueva sigue con las mismas opciones**, no vuelve al principio
+- [ ] Instala Word y Excel, y **no** PowerPoint
+
+> Esta es la prueba clave del relanzado: el script llegó por internet, así que no
+> había ningún archivo en disco al que apuntar. Tuvo que guardarse solo en `%TEMP%`.
+
+Desatendido entero, con PowerShell **ya elevado**:
+
+```powershell
+& ([scriptblock]::Create((irm https://.../OfficeGo.ps1))) -Instalar 2021 -Silencioso
+```
+
+- [ ] **No** aparece la ventana azul de Microsoft en ningún momento
+- [ ] La barra de progreso de PowerShell avanza
+- [ ] Al terminar, Office está puesto
+
+Y las equivocaciones:
+
+- [ ] `-Instalar 9999` lo rechaza al momento diciendo qué versiones hay
+- [ ] `-Instalar 2021 -Edicion Business` avisa de que esa edición no existe ahí
+- [ ] `-Silencioso` a secas dice qué falta **sin pedir permisos antes**
+
+---
+
 ## 2 · La versión Tauri (2.0)
 
 Baja `OfficeGo_2.0.0_x64-setup.exe` del release.
