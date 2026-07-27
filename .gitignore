@@ -5,3 +5,7 @@ OfficeGo.exe
 # Restos de pruebas
 /tmp/
 *.log
+
+# Tauri
+tauri/src-tauri/target/
+tauri/src-tauri/gen/

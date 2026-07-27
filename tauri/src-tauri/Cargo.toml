@@ -1,0 +1,21 @@
+[package]
+name        = "officego"
+version     = "2.0.0"
+description = "Instalador y activador de Microsoft Office"
+authors     = ["Diego Fernando Loján Tenesaca", "María del Carmen Salazar Torres"]
+license     = "MIT"
+edition     = "2021"
+rust-version = "1.77"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+
+[profile.release]
+opt-level = "s"     # el peso importa mas que el microrrendimiento
+lto        = true
+strip      = true
+codegen-units = 1
+panic     = "abort"

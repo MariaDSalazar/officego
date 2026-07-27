@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>OfficeGo</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div class="win">
+  <div class="body">
+
+    <nav class="side">
+      <div class="marca">
+        <svg width="26" height="26" viewBox="0 0 64 64">
+          <rect width="64" height="64" rx="14" fill="#0B57D0"/>
+          <circle cx="32" cy="32" r="17" fill="none" stroke="#fff" stroke-width="5.5"/>
+          <path d="M32 23v14m0 0l-6.5-6.5M32 37l6.5-6.5" stroke="#fff" stroke-width="4.6"
+                fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <b>OfficeGo</b>
+      </div>
+      <div id="menu"></div>
+    </nav>
+
+    <main class="main" id="pantalla">
+      <div class="cargando"><div class="spin"></div>Revisando el equipo…</div>
+    </main>
+
+  </div>
+
+  <div class="foot">
+    <div id="botones" style="display:flex;gap:9px"></div>
+    <div class="prog">
+      <div class="bar"><i id="barra" style="width:0"></i></div>
+      <s id="estadoProg">Nada se instala hasta que usted lo confirme</s>
+    </div>
+  </div>
+
+  <div class="estado" id="barraEstado"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

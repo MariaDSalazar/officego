@@ -1,0 +1,101 @@
+name: Compilar OfficeGo
+
+# Compila en un Windows de verdad, que es lo que evita el lio de
+# la compilacion cruzada desde Linux.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:      # tambien se puede lanzar a mano
+
+permissions:
+  contents: write
+
+jobs:
+
+  # ── la version 1.x no se compila, pero si se comprueba
+  powershell:
+    name: Comprobar la versión de PowerShell
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sintaxis de OfficeGo.ps1
+        shell: pwsh
+        run: |
+          $err = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            "$PWD/OfficeGo.ps1", [ref]$null, [ref]$err)
+          if ($err) {
+            $err | Select-Object -First 5 | ForEach-Object {
+              Write-Host "línea $($_.Extent.StartLineNumber): $($_.Message)" }
+            exit 1
+          }
+          Write-Host "Sintaxis correcta"
+
+      - name: Pruebas del motor
+        shell: pwsh
+        run: ./test.ps1
+
+      - name: Compilar OfficeGo.exe con el csc.exe de Windows
+        shell: cmd
+        run: call compilar-exe.bat < nul
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: officego-powershell
+          path: |
+            OfficeGo.ps1
+            OfficeGo.cmd
+            OfficeGo.exe
+
+  # ── la version 2.0 en Tauri
+  tauri:
+    name: Compilar la versión Tauri
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: tauri/src-tauri
+
+      - name: Instalar la CLI de Tauri
+        run: cargo install tauri-cli --version "^2" --locked
+
+      - name: Compilar
+        working-directory: tauri
+        run: cargo tauri build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: officego-tauri
+          path: |
+            tauri/src-tauri/target/release/OfficeGo.exe
+            tauri/src-tauri/target/release/bundle/nsis/*.exe
+
+  # ── al etiquetar una version, se publica todo junto
+  publicar:
+    name: Publicar release
+    needs: [powershell, tauri]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: descargas }
+
+      - name: Empaquetar
+        run: |
+          cd descargas
+          mkdir -p salida
+          cp officego-powershell/OfficeGo.ps1 officego-powershell/OfficeGo.cmd salida/ || true
+          cp officego-powershell/OfficeGo.exe salida/OfficeGo-portable.exe || true
+          cp officego-tauri/bundle/nsis/*.exe salida/ 2>/dev/null || true
+          cp officego-tauri/OfficeGo.exe salida/OfficeGo-tauri-portable.exe 2>/dev/null || true
+          ls -la salida
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: descargas/salida/*
+          generate_release_notes: true

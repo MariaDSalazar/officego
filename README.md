@@ -14,7 +14,8 @@
     <img src="https://img.shields.io/badge/Portable-un_solo_archivo-0B57D0" alt="portable">
     <img src="https://img.shields.io/badge/Sin_dependencias-0_instalaciones-16A34A" alt="sin dependencias">
     <img src="https://img.shields.io/badge/Licencia-MIT-6366F1" alt="MIT">
-    <img src="https://img.shields.io/badge/versión-1.2-0B57D0" alt="v1.2">
+    <img src="https://img.shields.io/badge/versión-1.2_·_2.0-0B57D0" alt="versiones">
+    <img src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" alt="Tauri">
   </p>
   <p>
     <a href="#-puesta-en-marcha"><img src="https://img.shields.io/badge/Ejecutar_con_un_comando-PowerShell-5391FE?style=for-the-badge&logo=powershell&logoColor=white" alt="Ejecutar"></a>
@@ -95,6 +96,8 @@ officego/
 │   └── Lanzador.cs         Envoltorio del .exe (C#, compilación opcional)
 ├── test.ps1            → 36 pruebas · corren en cualquier sitio con PowerShell
 ├── build.sh            → ensambla src/*.ps1 y valida la sintaxis
+├── tauri/              → versión 2.0 (Tauri): ui/ en HTML + src-tauri/ en Rust
+├── .github/workflows/  → compila el .exe en un runner de Windows
 ├── assets/             → icono en .ico (7 tamaños) y .png
 └── capturas/           → las pantallas
 ```
@@ -131,6 +134,24 @@ avisos que correspondan.
 ![Ayuda](capturas/ayuda.png)
 
 </details>
+
+## Dos versiones, un mismo motor
+
+| | **1.x · PowerShell** | **2.0 · Tauri** |
+|---|---|---|
+| Interfaz | Windows Forms | El HTML de los diseños, tal cual |
+| Peso | 68 KB | ~8 MB |
+| Windows 10 antiguo | Funciona siempre | Necesita WebView2 |
+| Antivirus | Tranquilo | SmartScreen avisa la primera vez |
+| `irm \| iex` | Sí | No, hay que descargar |
+
+**Las dos comparten el motor.** La versión Tauri no reimplementa nada en Rust: deja el
+mismo PowerShell en `%TEMP%` y lo invoca, reenviando a la interfaz cada línea de
+progreso. Un arreglo en `src/2-motor.ps1` vale para ambas.
+
+La 1.x es la vía universal, la del comando de una línea, la que funciona en el portátil
+viejo. La 2.0 es el ejecutable con la interfaz exacta, para equipos normales. Ver
+[`tauri/LEEME.md`](tauri/LEEME.md).
 
 ## 🚀 Puesta en marcha
 
