@@ -2,7 +2,7 @@
   <img src="assets/officego.png" alt="OfficeGo" width="120">
   <h1>OfficeGo</h1>
   <p>
-    <strong>Instalador y activador de Microsoft Office — directo desde Microsoft.</strong><br>
+    <strong>Instalador y activador de Microsoft Office, directo desde Microsoft.</strong><br>
     Sin páginas de terceros, sin archivos de dudosa procedencia, sin instalar nada previo.
     Un solo archivo que se abre y funciona.
   </p>
@@ -14,6 +14,7 @@
     <img src="https://img.shields.io/badge/Portable-un_solo_archivo-0B57D0" alt="portable">
     <img src="https://img.shields.io/badge/Sin_dependencias-0_instalaciones-16A34A" alt="sin dependencias">
     <img src="https://img.shields.io/badge/Licencia-MIT-6366F1" alt="MIT">
+    <img src="https://img.shields.io/badge/versión-1.2-0B57D0" alt="v1.2">
   </p>
   <p>
     <a href="#-puesta-en-marcha"><img src="https://img.shields.io/badge/Ejecutar_con_un_comando-PowerShell-5391FE?style=for-the-badge&logo=powershell&logoColor=white" alt="Ejecutar"></a>
@@ -33,7 +34,7 @@ texto legible, que no hay que instalar ningún runtime, y que el antivirus no se
 nervioso como con un `.exe` descargado.
 
 > **Nada se instala hasta que lo confirmas.** El programa arranca revisando tu equipo
-> — Windows, memoria, disco, gráfica — y recomienda la versión que de verdad te cabe.
+> (Windows, memoria, disco, gráfica) y recomienda la versión que de verdad te cabe.
 > Con 3 GB de RAM te propone Office 2016, no la última.
 
 ![Pantalla de inicio](capturas/inicio.png)
@@ -47,7 +48,7 @@ nervioso como con un `.exe` descargado.
 | ✅ | **Eliges qué instalar** | Solo Word y Excel, o la suite entera. Al cambiar de edición las aplicaciones se ajustan solas: con *Standard* se apaga Access, porque esa edición no lo trae. |
 | 📐 | **Visio y Project** | Como complementos, en el mismo `configuration.xml` que Office. |
 | 🔑 | **Activación integrada** | Con tu clave de 25 caracteres, o con MAS ejecutado con `/Ohook` **sin abrir su menú**: todo ocurre dentro de la ventana. |
-| 🖥️ | **Conoce tu equipo** | Procesador con uso en vivo, memoria, cada disco con su ocupación y la tarjeta gráfica con su marca — NVIDIA, AMD o Intel. |
+| 🖥️ | **Conoce tu equipo** | Procesador con uso en vivo, memoria, cada disco con su ocupación y la tarjeta gráfica con su marca: NVIDIA, AMD o Intel. |
 | 🧰 | **Herramientas** | Reparar la instalación, crear un instalador sin conexión para otros equipos, y desinstalar (pidiendo escribir `BORRAR`). |
 | 🚑 | **Ayuda de verdad** | Los errores frecuentes con el **mensaje literal** que sale en pantalla y el comando exacto que los arregla. |
 | 🪶 | **Portable** | Un `.ps1` de 68 KB. Cabe en un USB, no deja rastro en el registro, no necesita instalarse. |
@@ -105,12 +106,12 @@ officego/
 
 <br>
 
-**Instalar** — versión, edición, idioma y aplicaciones. El resumen de la derecha se
+**Instalar.** Versión, edición, idioma y aplicaciones. El resumen de la derecha se
 recalcula con cada cambio.
 
 ![Instalar](capturas/instalar.png)
 
-**Equipo** — procesador, memoria, discos y gráfica, con la recomendación arriba.
+**Equipo.** Procesador, memoria, discos y gráfica, con la recomendación arriba.
 
 ![Equipo](capturas/equipo.png)
 
@@ -120,7 +121,7 @@ avisos que correspondan.
 
 ![Equipo antiguo](capturas/equipo-antiguo.png)
 
-**Activar** — con tu clave o con MAS, que se ejecuta en segundo plano.
+**Activar.** Con tu clave o con MAS, que se ejecuta en segundo plano.
 
 ![Activar](capturas/activar.png)
 
@@ -137,8 +138,8 @@ Tres formas, todas locales. La primera no descarga nada.
 
 ### 1 · Un solo comando
 
-Abre **PowerShell como administrador** — tecla <kbd>Windows</kbd> → escribe
-`PowerShell` → *Ejecutar como administrador* — y pega:
+Abre **PowerShell como administrador**: tecla <kbd>Windows</kbd> → escribe
+`PowerShell` → *Ejecutar como administrador*, y pega:
 
 ```powershell
 irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1 | iex
@@ -161,7 +162,7 @@ en tu propio equipo, SmartScreen no lo marca igual que a un ejecutable bajado de
 
 ## Documentación
 
-- **[Guía rápida](docs/GUIA-RAPIDA.md)** — instalar Office en cinco minutos, qué versión
+- **[Guía rápida](docs/GUIA-RAPIDA.md)**: instalar Office en cinco minutos, qué versión
   elegir y qué hacer si algo falla. Para quien no quiere leerse todo esto.
 
 ## Requisitos
@@ -193,9 +194,18 @@ Con menos de 4 GB de RAM se recomienda siempre la versión ligera, sin importar 
 El instalador no debería dar problemas: descarga de dominios de Microsoft y no hace
 nada ofuscado.
 
-**MAS sí lo detecta Windows Defender**, siempre y por diseño — está advertido en la
+**MAS sí lo detecta Windows Defender**, siempre y por diseño. Está advertido en la
 propia web de massgrave.dev. OfficeGo lo avisa antes de lanzarlo y explica cómo pausar
 la protección un momento y **volver a encenderla al terminar**.
+
+## Estado del proyecto
+
+La lógica está cubierta por **36 pruebas automáticas** que se ejecutan en cualquier
+sistema: catálogo, generación del `configuration.xml` y reglas de recomendación.
+
+La interfaz se valida sintácticamente en cada compilación, pero Windows Forms solo
+se puede ejecutar de verdad en Windows. Si al abrirlo ves algún control descolocado
+o un texto cortado, [abre un issue](../../issues/new) con una captura y se corrige.
 
 ## Para desarrollar
 
@@ -212,7 +222,7 @@ recomendación responda bien ante siete equipos distintos.
 ## Créditos
 
 - Instalación: [Office Deployment Tool](https://learn.microsoft.com/microsoft-365-apps/deploy/overview-office-deployment-tool) de Microsoft
-- Activación: [MAS · Microsoft Activation Scripts](https://github.com/massgravel/Microsoft-Activation-Scripts) — proyecto independiente
+- Activación: [MAS · Microsoft Activation Scripts](https://github.com/massgravel/Microsoft-Activation-Scripts), proyecto independiente
 - Idea original del catálogo de versiones: la comunidad de [massgrave.dev](https://massgrave.dev)
 
 <div align="center">
@@ -241,7 +251,7 @@ proyecto se publica con fines educativos y de administración de equipos propios
 
 ## Licencia
 
-MIT — ver [LICENSE](LICENSE).
+MIT. Ver [LICENSE](LICENSE).
 
 ---
 

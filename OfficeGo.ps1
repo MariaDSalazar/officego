@@ -970,7 +970,7 @@ function Pantalla-Ayuda {
   $cont.Controls.Add((Titulo 'OFFICEGO' 18 14))
   $h = New-Caja 18 36 802 76 $C.Azul $C.Azul
   $h.Controls.Add((New-Icono 'O' '#3B7DD8' 18 16 44 15))
-  $l1 = New-Lbl 'OfficeGo 1.0' 78 18 14 '#FFFFFF' $true
+  $l1 = New-Lbl 'OfficeGo 1.2' 78 18 14 '#FFFFFF' $true
   $h.Controls.Add($l1)
   $h.Controls.Add((New-Lbl 'Instalador y activador de Microsoft Office para Windows 10 y 11' 78 44 8.5 '#D6E4F7'))
   Set-Redondeado $h 9
@@ -1191,7 +1191,7 @@ Tarda entre 10 y 30 minutos. Cierre Word, Excel y PowerPoint antes de seguir.
     if ($prod.Via -eq 'ODT') {
       Set-Progreso 0 'Descargando el instalador de Microsoft…'
       $setup = Get-SetupODT { param($pc, $hecho, $total)
-        Set-Progreso $pc "Descargando el instalador — $pc % · $hecho / $total MB" }
+        Set-Progreso $pc "Descargando el instalador: $pc % · $hecho / $total MB" }
 
       Set-Progreso 100 'Preparando la configuración…'
       $xml = New-ConfiguracionXml $prod $script:sel.Edicion $script:sel.Idioma `
@@ -1203,7 +1203,7 @@ Tarda entre 10 y 30 minutos. Cierre Word, Excel y PowerPoint antes de seguir.
       Set-Progreso 0 'Descargando el instalador de Microsoft…'
       $p = Start-InstalacionC2R $prod $script:sel.Edicion $script:sel.Idioma $script:sel.Bits `
              { param($pc, $hecho, $total)
-               Set-Progreso $pc "Descargando — $pc % · $hecho / $total MB" }
+               Set-Progreso $pc "Descargando: $pc % · $hecho / $total MB" }
       $rc = Seguir-Proceso $p 'Instalando Office'
     }
   } catch {
@@ -1237,7 +1237,7 @@ function Accion-Descargar {
   }
   try {
     Set-Progreso 0 'Descargando el instalador…'
-    $setup = Get-SetupODT { param($pc, $h, $t) Set-Progreso $pc "Instalador — $pc %" }
+    $setup = Get-SetupODT { param($pc, $h, $t) Set-Progreso $pc "Instalador: $pc %" }
     $xml = New-ConfiguracionXml $prod $script:sel.Edicion $script:sel.Idioma `
                                 $script:sel.Bits $script:sel.Apps $script:sel.Complementos
     # SourcePath manda los archivos a la carpeta elegida
@@ -1322,7 +1322,7 @@ function Accion-Reparar {
   if (-not (Confirmar 'Reparar Office' "Se va a reparar la instalación.`n`nLos documentos y la licencia no se tocan. ¿Continuar?")) { return }
   try {
     Set-Progreso -1 'Descargando la herramienta…'
-    $setup = Get-SetupODT { param($pc, $h, $t) Set-Progreso $pc "Descargando — $pc %" }
+    $setup = Get-SetupODT { param($pc, $h, $t) Set-Progreso $pc "Descargando: $pc %" }
     $p = Start-Process $setup -ArgumentList '/configure repair.xml' -PassThru -ErrorAction Stop
     Seguir-Proceso $p 'Reparando Office' | Out-Null
     Set-Progreso 100 'Reparación terminada'
@@ -1340,7 +1340,7 @@ function Accion-Desinstalar {
   if ($r -cne 'BORRAR') { return }
   try {
     Set-Progreso -1 'Descargando la herramienta…'
-    $setup = Get-SetupODT { param($pc, $h, $t) Set-Progreso $pc "Descargando — $pc %" }
+    $setup = Get-SetupODT { param($pc, $h, $t) Set-Progreso $pc "Descargando: $pc %" }
     $xml = New-XmlDesinstalar
     $p = Start-InstalacionODT $setup $xml
     Seguir-Proceso $p 'Desinstalando Office' | Out-Null
@@ -1369,7 +1369,7 @@ Administrador  $($eq.Admin)
 Defender       $($eq.Defender)
 
 Office         $(if ($of) { "$($of.Productos) $($of.Version) $($of.Idioma) $($of.Arquitectura)" } else { 'no instalado' })
-Recomendado    $($rec.Nombre) — $($rec.Motivo)
+Recomendado    $($rec.Nombre): $($rec.Motivo)
 ──────────────────────────────────────────────────────────────
 "@
   Set-Clipboard -Value $txt
@@ -1404,7 +1404,7 @@ function Actualizar-BarraEstado {
     $barra.Controls.Add($l)
     $x += 16 + [int]($it[0].Length * 6.1) + 18
   }
-  $v = New-Lbl 'OfficeGo 1.0' 920 7 8 $C.GrisClaro
+  $v = New-Lbl 'OfficeGo 1.2' 920 7 8 $C.GrisClaro
   $barra.Controls.Add($v)
 }
 

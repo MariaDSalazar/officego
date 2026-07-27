@@ -54,8 +54,8 @@ Y sobre la edición:
 
 En la pantalla **Activar** hay dos caminos:
 
-- **Clave de producto** — si tiene una clave de 25 caracteres, es lo correcto y lo legal.
-- **MAS** — herramienta externa que OfficeGo ejecuta sin abrir su menú.
+- **Clave de producto.** Si tiene una clave de 25 caracteres, es lo correcto y lo legal.
+- **MAS.** Herramienta externa que OfficeGo ejecuta sin abrir su menú.
 
 Sobre MAS conviene saber dos cosas. La primera: **Windows Defender lo detecta siempre**,
 por diseño, aunque no sea dañino; lo advierte la propia web de massgrave.dev. Habrá que

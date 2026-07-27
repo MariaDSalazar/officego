@@ -25,7 +25,7 @@ function Actualizar-BarraEstado {
     $barra.Controls.Add($l)
     $x += 16 + [int]($it[0].Length * 6.1) + 18
   }
-  $v = New-Lbl 'OfficeGo 1.0' 920 7 8 $C.GrisClaro
+  $v = New-Lbl 'OfficeGo 1.2' 920 7 8 $C.GrisClaro
   $barra.Controls.Add($v)
 }
 
