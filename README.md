@@ -159,6 +159,11 @@ Genera `OfficeGo.exe`. No hace falta instalar nada: **Windows ya trae el compila
 C#** en `C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe`. Y como lo compilas
 en tu propio equipo, SmartScreen no lo marca igual que a un ejecutable bajado de internet.
 
+## Documentación
+
+- **[Guía rápida](docs/GUIA-RAPIDA.md)** — instalar Office en cinco minutos, qué versión
+  elegir y qué hacer si algo falla. Para quien no quiere leerse todo esto.
+
 ## Requisitos
 
 | | |
