@@ -1,0 +1,7 @@
+# El .exe lo genera cada quien en su equipo con compilar-exe.bat
+OfficeGo.exe
+*.pdb
+
+# Restos de pruebas
+/tmp/
+*.log

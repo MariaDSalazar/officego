@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# Junta src/*.ps1 en un único OfficeGo.ps1 portable y valida la sintaxis.
+set -e
+cd "$(dirname "$0")"
+
+SALIDA=OfficeGo.ps1
+PWSH=${PWSH:-/tmp/pwsh/pwsh}
+
+{
+  cat <<'CAB'
+# =====================================================================
+#
+#   ██████  ███████ ███████ ██  ██████ ███████  ██████   ██████
+#  ██    ██ ██      ██      ██ ██      ██      ██       ██    ██
+#  ██    ██ █████   █████   ██ ██      █████   ██   ███ ██    ██
+#  ██    ██ ██      ██      ██ ██      ██      ██    ██ ██    ██
+#   ██████  ██      ██      ██  ██████ ███████  ██████   ██████
+#
+#  Instalador y activador de Microsoft Office para Windows 10 y 11
+#  https://github.com/MariaDSalazar/officego
+#
+#  Diego Fernando Loján Tenesaca  · desarrollo e interfaz
+#  María del Carmen Salazar Torres · script base y documentación
+#
+#  Licencia MIT · sin telemetría · sin publicidad
+#
+#  Descarga Office de los servidores oficiales de Microsoft:
+#    officecdn.microsoft.com   ·  c2rsetup.officeapps.live.com
+#
+#  ESTE ARCHIVO SE GENERA: no lo edite a mano.
+#  Toque src/*.ps1 y ejecute build.sh
+# =====================================================================
+
+CAB
+  for f in src/1-catalogo.ps1 src/2-motor.ps1 src/2b-recomendacion.ps1 \
+           src/3-interfaz.ps1 src/4-pantallas.ps1 src/5-inicio.ps1 \
+           src/6-acciones.ps1 src/7-arranque.ps1; do
+    echo ""
+    echo "# ─────────────────────────────────────────────── $(basename "$f")"
+    cat "$f"
+  done
+  echo ""
+  echo "Start-OfficeGo"
+} > "$SALIDA"
+
+# BOM UTF-8: sin él PowerShell 5.1 lee el archivo como ANSI y rompe los acentos
+python3 - "$SALIDA" <<'PY'
+import sys, pathlib
+p = pathlib.Path(sys.argv[1]); d = p.read_bytes()
+if not d.startswith(b'\xef\xbb\xbf'):
+    p.write_bytes(b'\xef\xbb\xbf' + d)
+PY
+
+echo "→ $SALIDA · $(wc -l < "$SALIDA") líneas · $(du -h "$SALIDA" | cut -f1)"
+
+if [ -x "$PWSH" ]; then
+  "$PWSH" -NoProfile -c "
+    \$err = \$null
+    [void][System.Management.Automation.Language.Parser]::ParseFile('$PWD/$SALIDA', [ref]\$null, [ref]\$err)
+    if (\$err) {
+      Write-Host 'SINTAXIS: ERROR' -ForegroundColor Red
+      \$err | Select-Object -First 6 | ForEach-Object { \"  línea \$(\$_.Extent.StartLineNumber): \$(\$_.Message)\" }
+      exit 1
+    }
+    Write-Host 'SINTAXIS: correcta' -ForegroundColor Green
+  "
+else
+  echo "aviso: sin pwsh, no se validó la sintaxis"
+fi
