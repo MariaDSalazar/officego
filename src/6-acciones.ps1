@@ -115,8 +115,10 @@ function Accion-Descargar {
     $xml = New-ConfiguracionXml $prod $script:sel.Edicion $script:sel.Idioma `
                                 $script:sel.Bits $script:sel.Apps $script:sel.Complementos
     # SourcePath manda los archivos a la carpeta elegida
-    (Get-Content $xml -Raw) -replace '<Add ', "<Add SourcePath=`"$($dlg.SelectedPath)`" " |
-      Set-Content $xml -Encoding UTF8
+    # sin BOM: Set-Content -Encoding UTF8 sí lo añade en PowerShell 5.1,
+    # y el XML que lee setup.exe conviene dejarlo como lo generó el motor
+    $conRuta = (Get-Content $xml -Raw) -replace '<Add ', "<Add SourcePath=`"$($dlg.SelectedPath)`" "
+    [IO.File]::WriteAllText($xml, $conRuta, [Text.UTF8Encoding]::new($false))
     $p = Start-Process $setup -ArgumentList "/download `"$xml`"" -PassThru
     Seguir-Proceso $p 'Descargando Office' | Out-Null
     Set-Progreso 100 'Descarga terminada'
@@ -135,9 +137,7 @@ function Accion-Clave {
   $clave = ($clave -replace '[^A-Za-z0-9]', '').ToUpper()
   if ($clave.Length -ne 25) { Avisar 'Clave no válida' 'La clave debe tener 25 caracteres.' 'Warning'; return }
 
-  $ospp = "$env:ProgramFiles\Microsoft Office\Office16\ospp.vbs",
-          "${env:ProgramFiles(x86)}\Microsoft Office\Office16\ospp.vbs" |
-          Where-Object { Test-Path $_ } | Select-Object -First 1
+  $ospp = Get-RutaOspp
   if (-not $ospp) { Avisar 'No hay Office' 'No se encontró una instalación de Office.' 'Warning'; return }
 
   Set-Progreso -1 'Aplicando la clave…'
@@ -193,16 +193,25 @@ Activar productos sin licencia va contra los términos de Microsoft.
 # ─────────────────────────────────────────────────────── herramientas
 function Accion-Reparar {
   if (-not (Get-OfficeInstalado)) { Avisar 'No hay Office' 'No se encontró Office en este equipo.' 'Warning'; return }
-  if (-not (Confirmar 'Reparar Office' "Se va a reparar la instalación.`n`nLos documentos y la licencia no se tocan. ¿Continuar?")) { return }
+  if (-not (Test-Administrador)) {
+    Avisar 'Faltan permisos' 'Reparar Office necesita permisos de administrador.' 'Warning'; return }
+  if (-not (Confirmar 'Reparar Office' @"
+Se va a reparar la instalación de Office.
+
+Es la reparación rápida: no descarga nada y suele bastar. Los documentos
+y la licencia no se tocan, pero se cerrarán Word, Excel y PowerPoint.
+
+¿Continuar?
+"@)) { return }
   try {
-    Set-Progreso -1 'Descargando la herramienta…'
-    $setup = Get-SetupODT { param($pc, $h, $t) Set-Progreso $pc "Descargando: $pc %" }
-    $p = Start-Process $setup -ArgumentList '/configure repair.xml' -PassThru -ErrorAction Stop
+    Set-Progreso -1 'Iniciando la reparación…'
+    $p = Start-Reparacion 'Rapida'
     Seguir-Proceso $p 'Reparando Office' | Out-Null
     Set-Progreso 100 'Reparación terminada'
+    Avisar 'Listo' "La reparación terminó.`n`nSi el problema sigue, pruebe la reparación en línea desde Configuración > Aplicaciones > Microsoft Office > Modificar."
   } catch {
     Set-Progreso 0 ''
-    Avisar 'No se pudo reparar' "Use Configuración > Aplicaciones > Microsoft Office > Modificar > Reparación en línea." 'Information'
+    Avisar 'No se pudo reparar' "$($_.Exception.Message)`n`nPuede repararlo a mano desde Configuración > Aplicaciones > Microsoft Office > Modificar > Reparación en línea." 'Information'
   }
 }
 

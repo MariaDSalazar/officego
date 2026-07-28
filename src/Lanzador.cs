@@ -21,7 +21,19 @@ static class Lanzador
     {
         try
         {
-            string destino = Path.Combine(Path.GetTempPath(), "OfficeGo.ps1");
+            // Un nombre por proceso: si se abren dos OfficeGo a la vez, el
+            // segundo pillaría el archivo del primero a medio escribir.
+            string destino = Path.Combine(Path.GetTempPath(),
+                "OfficeGo-" + Process.GetCurrentProcess().Id + ".ps1");
+
+            // y de paso se barren los de veces anteriores; el que esté en
+            // uso se niega a borrarse y no pasa nada
+            try
+            {
+                foreach (string viejo in Directory.GetFiles(Path.GetTempPath(), "OfficeGo-*.ps1"))
+                    try { File.Delete(viejo); } catch { }
+            }
+            catch { }
 
             // el .ps1 viaja dentro del .exe como recurso incrustado
             using (Stream dentro = Assembly.GetExecutingAssembly()
@@ -33,21 +45,31 @@ static class Lanzador
                     return 1;
                 }
                 using (FileStream fuera = File.Create(destino))
+                {
+                    // BOM UTF-8 por delante. El OfficeGo.ps1 del repositorio
+                    // NO lo lleva, porque llega por irm y ahí el BOM rompe el
+                    // param(). Aquí es al revés: este archivo solo se ejecuta
+                    // con -File, y con BOM PowerShell 5.1 lee bien los acentos
+                    // a la primera, sin tener que releerse a sí mismo.
+                    fuera.Write(new byte[] { 0xEF, 0xBB, 0xBF }, 0, 3);
                     dentro.CopyTo(fuera);
+                }
             }
 
             string extra = "";
             foreach (string a in args)
                 extra += " " + (a.IndexOf(' ') >= 0 ? "\"" + a + "\"" : a);
 
-            // sin opciones sale la ventana y la consola sobra; con opciones
-            // la salida se escribe ahí, así que hay que dejarla a la vista
-            string oculta = args.Length == 0 ? "-WindowStyle Hidden " : "";
+            // Sin opciones sale la ventana y la consola sobra. Con opciones
+            // el resultado se escribe en la consola, así que además de dejarla
+            // a la vista hay que impedir que se cierre al terminar: si no, el
+            // mensaje pasa en un parpadeo y no da tiempo a leerlo.
+            string modo = args.Length == 0 ? "-WindowStyle Hidden " : "-NoExit ";
 
             var psi = new ProcessStartInfo
             {
                 FileName = "powershell.exe",
-                Arguments = "-NoProfile -ExecutionPolicy Bypass " + oculta + "-File \""
+                Arguments = "-NoProfile -ExecutionPolicy Bypass " + modo + "-File \""
                             + destino + "\"" + extra,
                 UseShellExecute = true
             };

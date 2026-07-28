@@ -291,10 +291,21 @@ function Get-OfficeInstalado {
   }
 }
 
+# Office 2016 en adelante instala en Office16 y 2013 en Office15. Buscando
+# solo en Office16, con Office 2013 puesto se decia que no habia ninguno.
+function Get-RutaOspp {
+  $bases = @($env:ProgramFiles, ${env:ProgramFiles(x86)}) | Where-Object { $_ }
+  foreach ($b in $bases) {
+    foreach ($v in 'Office16', 'Office15') {
+      $r = Join-Path $b "Microsoft Office\$v\ospp.vbs"
+      if (Test-Path $r) { return $r }
+    }
+  }
+  $null
+}
+
 function Get-EstadoLicencia {
-  $ospp = "$env:ProgramFiles\Microsoft Office\Office16\ospp.vbs",
-          "${env:ProgramFiles(x86)}\Microsoft Office\Office16\ospp.vbs" |
-          Where-Object { Test-Path $_ } | Select-Object -First 1
+  $ospp = Get-RutaOspp
   if (-not $ospp) { return $null }
   $salida = & cscript //nologo $ospp /dstatus 2>$null
   [pscustomobject]@{
@@ -411,6 +422,35 @@ function Start-InstalacionC2R {
   $url = "$($script:C2R_URL)?ProductreleaseID=$id&platform=x$Bits&language=$Idioma&version=$($Producto.Version)"
   Invoke-Descarga $url $exe $AlAvanzar | Out-Null
   Start-Process $exe -PassThru
+}
+
+# ────────────────────────────────────────────────────────────── reparación
+#
+# Office no se repara con el Office Deployment Tool: /configure no tiene
+# modo reparar, y aquí se le pasaba un repair.xml que no existía, así que
+# la reparación fallaba siempre. Lo hace su propio motor Click-to-Run, el
+# mismo al que llama Windows desde Configuración > Aplicaciones > Modificar.
+function Get-MotorClickToRun {
+  @("$env:ProgramFiles\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe",
+    "${env:ProgramFiles(x86)}\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe") |
+    Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+}
+
+function Start-Reparacion {
+  param([ValidateSet('Rapida','Completa')][string]$Tipo = 'Rapida')
+  $exe = Get-MotorClickToRun
+  if (-not $exe) { throw 'No se encontro el motor de Office (OfficeClickToRun.exe).' }
+
+  # La rápida no necesita internet y arregla casi todo; la completa
+  # vuelve a descargar Office entero.
+  $of = Get-OfficeInstalado
+  $plataforma = if ($of -and $of.Arquitectura) { $of.Arquitectura } else { 'x64' }
+  $cultura    = if ($of -and $of.Idioma)       { $of.Idioma }       else { 'es-es' }
+  $modo       = if ($Tipo -eq 'Rapida') { 'QuickRepair' } else { 'FullRepair' }
+
+  Start-Process $exe -PassThru -ArgumentList @(
+    'scenario=Repair', "platform=$plataforma", "culture=$cultura",
+    'forceappshutdown=True', "RepairType=$modo", 'DisplayLevel=True')
 }
 
 # ───────────────────────────────────────────────────────── activación (MAS)
@@ -1372,8 +1412,10 @@ function Accion-Descargar {
     $xml = New-ConfiguracionXml $prod $script:sel.Edicion $script:sel.Idioma `
                                 $script:sel.Bits $script:sel.Apps $script:sel.Complementos
     # SourcePath manda los archivos a la carpeta elegida
-    (Get-Content $xml -Raw) -replace '<Add ', "<Add SourcePath=`"$($dlg.SelectedPath)`" " |
-      Set-Content $xml -Encoding UTF8
+    # sin BOM: Set-Content -Encoding UTF8 sí lo añade en PowerShell 5.1,
+    # y el XML que lee setup.exe conviene dejarlo como lo generó el motor
+    $conRuta = (Get-Content $xml -Raw) -replace '<Add ', "<Add SourcePath=`"$($dlg.SelectedPath)`" "
+    [IO.File]::WriteAllText($xml, $conRuta, [Text.UTF8Encoding]::new($false))
     $p = Start-Process $setup -ArgumentList "/download `"$xml`"" -PassThru
     Seguir-Proceso $p 'Descargando Office' | Out-Null
     Set-Progreso 100 'Descarga terminada'
@@ -1392,9 +1434,7 @@ function Accion-Clave {
   $clave = ($clave -replace '[^A-Za-z0-9]', '').ToUpper()
   if ($clave.Length -ne 25) { Avisar 'Clave no válida' 'La clave debe tener 25 caracteres.' 'Warning'; return }
 
-  $ospp = "$env:ProgramFiles\Microsoft Office\Office16\ospp.vbs",
-          "${env:ProgramFiles(x86)}\Microsoft Office\Office16\ospp.vbs" |
-          Where-Object { Test-Path $_ } | Select-Object -First 1
+  $ospp = Get-RutaOspp
   if (-not $ospp) { Avisar 'No hay Office' 'No se encontró una instalación de Office.' 'Warning'; return }
 
   Set-Progreso -1 'Aplicando la clave…'
@@ -1450,16 +1490,25 @@ Activar productos sin licencia va contra los términos de Microsoft.
 # ─────────────────────────────────────────────────────── herramientas
 function Accion-Reparar {
   if (-not (Get-OfficeInstalado)) { Avisar 'No hay Office' 'No se encontró Office en este equipo.' 'Warning'; return }
-  if (-not (Confirmar 'Reparar Office' "Se va a reparar la instalación.`n`nLos documentos y la licencia no se tocan. ¿Continuar?")) { return }
+  if (-not (Test-Administrador)) {
+    Avisar 'Faltan permisos' 'Reparar Office necesita permisos de administrador.' 'Warning'; return }
+  if (-not (Confirmar 'Reparar Office' @"
+Se va a reparar la instalación de Office.
+
+Es la reparación rápida: no descarga nada y suele bastar. Los documentos
+y la licencia no se tocan, pero se cerrarán Word, Excel y PowerPoint.
+
+¿Continuar?
+"@)) { return }
   try {
-    Set-Progreso -1 'Descargando la herramienta…'
-    $setup = Get-SetupODT { param($pc, $h, $t) Set-Progreso $pc "Descargando: $pc %" }
-    $p = Start-Process $setup -ArgumentList '/configure repair.xml' -PassThru -ErrorAction Stop
+    Set-Progreso -1 'Iniciando la reparación…'
+    $p = Start-Reparacion 'Rapida'
     Seguir-Proceso $p 'Reparando Office' | Out-Null
     Set-Progreso 100 'Reparación terminada'
+    Avisar 'Listo' "La reparación terminó.`n`nSi el problema sigue, pruebe la reparación en línea desde Configuración > Aplicaciones > Microsoft Office > Modificar."
   } catch {
     Set-Progreso 0 ''
-    Avisar 'No se pudo reparar' "Use Configuración > Aplicaciones > Microsoft Office > Modificar > Reparación en línea." 'Information'
+    Avisar 'No se pudo reparar' "$($_.Exception.Message)`n`nPuede repararlo a mano desde Configuración > Aplicaciones > Microsoft Office > Modificar > Reparación en línea." 'Information'
   }
 }
 

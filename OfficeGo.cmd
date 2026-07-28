@@ -38,4 +38,7 @@ rem hace que PowerShell se niegue a abrirlo.
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "Unblock-File -LiteralPath '%~dp0OfficeGo.ps1'; & '%~dp0OfficeGo.ps1' %*"
 
+rem Con opciones el resultado se escribe aqui mismo, asi que la ventana
+rem tiene que quedarse abierta o el mensaje pasa en un parpadeo.
+if defined OPCIONES pause
 if errorlevel 1 pause

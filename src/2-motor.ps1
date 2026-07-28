@@ -90,10 +90,21 @@ function Get-OfficeInstalado {
   }
 }
 
+# Office 2016 en adelante instala en Office16 y 2013 en Office15. Buscando
+# solo en Office16, con Office 2013 puesto se decia que no habia ninguno.
+function Get-RutaOspp {
+  $bases = @($env:ProgramFiles, ${env:ProgramFiles(x86)}) | Where-Object { $_ }
+  foreach ($b in $bases) {
+    foreach ($v in 'Office16', 'Office15') {
+      $r = Join-Path $b "Microsoft Office\$v\ospp.vbs"
+      if (Test-Path $r) { return $r }
+    }
+  }
+  $null
+}
+
 function Get-EstadoLicencia {
-  $ospp = "$env:ProgramFiles\Microsoft Office\Office16\ospp.vbs",
-          "${env:ProgramFiles(x86)}\Microsoft Office\Office16\ospp.vbs" |
-          Where-Object { Test-Path $_ } | Select-Object -First 1
+  $ospp = Get-RutaOspp
   if (-not $ospp) { return $null }
   $salida = & cscript //nologo $ospp /dstatus 2>$null
   [pscustomobject]@{
@@ -210,6 +221,35 @@ function Start-InstalacionC2R {
   $url = "$($script:C2R_URL)?ProductreleaseID=$id&platform=x$Bits&language=$Idioma&version=$($Producto.Version)"
   Invoke-Descarga $url $exe $AlAvanzar | Out-Null
   Start-Process $exe -PassThru
+}
+
+# ────────────────────────────────────────────────────────────── reparación
+#
+# Office no se repara con el Office Deployment Tool: /configure no tiene
+# modo reparar, y aquí se le pasaba un repair.xml que no existía, así que
+# la reparación fallaba siempre. Lo hace su propio motor Click-to-Run, el
+# mismo al que llama Windows desde Configuración > Aplicaciones > Modificar.
+function Get-MotorClickToRun {
+  @("$env:ProgramFiles\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe",
+    "${env:ProgramFiles(x86)}\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe") |
+    Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+}
+
+function Start-Reparacion {
+  param([ValidateSet('Rapida','Completa')][string]$Tipo = 'Rapida')
+  $exe = Get-MotorClickToRun
+  if (-not $exe) { throw 'No se encontro el motor de Office (OfficeClickToRun.exe).' }
+
+  # La rápida no necesita internet y arregla casi todo; la completa
+  # vuelve a descargar Office entero.
+  $of = Get-OfficeInstalado
+  $plataforma = if ($of -and $of.Arquitectura) { $of.Arquitectura } else { 'x64' }
+  $cultura    = if ($of -and $of.Idioma)       { $of.Idioma }       else { 'es-es' }
+  $modo       = if ($Tipo -eq 'Rapida') { 'QuickRepair' } else { 'FullRepair' }
+
+  Start-Process $exe -PassThru -ArgumentList @(
+    'scenario=Repair', "platform=$plataforma", "culture=$cultura",
+    'forceappshutdown=True', "RepairType=$modo", 'DisplayLevel=True')
 }
 
 # ───────────────────────────────────────────────────────── activación (MAS)

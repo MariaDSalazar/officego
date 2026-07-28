@@ -97,6 +97,38 @@ try {
       Write-Host (Salida @{ evento='fin'; ok=$ok; codigo=$p.ExitCode })
     }
 
+    # El boton «Solo descargar» de la interfaz llamaba aqui y no habia
+    # nada: respondia «Accion desconocida: descargar».
+    'descargar' {
+      $prod = Get-Producto $d.producto
+      if ($prod.Via -eq 'C2R') {
+        Write-Host (Salida @{ evento='fin'; ok=$false
+          texto="Office $($prod.Clave) solo se puede instalar en linea: esa via de Microsoft no permite descargar los archivos aparte." })
+        break
+      }
+      $destino = Join-Path ([Environment]::GetFolderPath('Desktop')) "OfficeGo-$($prod.Clave)"
+      New-Item -ItemType Directory -Force -Path $destino | Out-Null
+
+      Write-Host (Salida @{ evento='paso'; texto='Descargando el instalador'; pc=0 })
+      $setup = Get-SetupODT { param($pc,$h,$t)
+        Write-Host (Salida @{ evento='progreso'; pc=$pc; hecho=$h; total=$t }) }
+
+      $xml = New-ConfiguracionXml $prod $d.edicion $d.idioma $d.bits @($d.apps) @($d.complementos)
+      # SourcePath manda los archivos a la carpeta elegida
+      $conRuta = (Get-Content $xml -Raw) -replace '<Add ', "<Add SourcePath=`"$destino`" "
+      [IO.File]::WriteAllText($xml, $conRuta, [Text.UTF8Encoding]::new($false))
+
+      Write-Host (Salida @{ evento='paso'; texto='Descargando Office'; pc=100 })
+      $p = Start-Process $setup -ArgumentList "/download `"$xml`"" -PassThru
+      $t0 = Get-Date
+      while (-not $p.HasExited) {
+        Start-Sleep -Milliseconds 900
+        Write-Host (Salida @{ evento='espera'; segundos=[int]((Get-Date)-$t0).TotalSeconds })
+      }
+      Write-Host (Salida @{ evento='fin'; ok=($p.ExitCode -eq 0); carpeta=$destino
+        texto="Los archivos quedaron en $destino" })
+    }
+
     'activar' {
       Write-Host (Salida @{ evento='paso'; texto='Descargando MAS' })
       $p = Invoke-MAS 'Ohook'

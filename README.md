@@ -110,6 +110,8 @@ officego/
 ├── test.ps1            → 44 pruebas del motor
 ├── prueba-arranque.ps1 → que arranque por irm|iex y como archivo
 ├── prueba-interfaz.ps1 → monta las pantallas y busca solapes, sin Windows
+├── prueba-tauri.ps1    → que las tres capas de la 2.0 se entiendan
+├── prueba-exe.ps1      → que el .exe lleve dentro lo que dice (solo Windows)
 ├── build.sh            → ensambla src/*.ps1 y valida la sintaxis
 ├── tauri/              → versión 2.0 (Tauri): ui/ en HTML + src-tauri/ en Rust
 ├── .github/workflows/  → compila el .exe en un runner de Windows
@@ -341,6 +343,7 @@ pwsh test.ps1                          # 44 pruebas del motor
 pwsh prueba-arranque.ps1               # que arranque por las dos vías
 pwsh prueba-interfaz.ps1               # que la ventana no se solape
 pwsh prueba-interfaz.ps1 -Factor 1.15  # ídem con la letra más ancha
+pwsh prueba-tauri.ps1                  # que las capas de la 2.0 encajen
 ```
 
 **Ninguna necesita Windows.** Las del motor comprueban que cada edición declare las
@@ -352,6 +355,11 @@ simulados que solo guardan dónde y cuánto ocupan, y busca controles encima de 
 salidos de su caja. Recorre además las 17 combinaciones de versión y edición, porque
 el reparto de la pantalla Instalar cambia con cada una. Con `-Factor` se simula una
 letra más ancha, que es lo que pasa cuando la fuente del equipo no es la esperada.
+
+`prueba-tauri.ps1` cruza las tres capas de la versión 2.0, que se hablan por nombres
+sueltos dentro de cadenas de texto y por tanto nadie comprueba: cada acción que pide
+la interfaz existe en el puente, cada `invoke` existe en Rust, y cada archivo que Rust
+incrusta está donde el puente lo busca.
 
 ## Créditos
 

@@ -48,6 +48,12 @@ jobs:
           ./prueba-interfaz.ps1
           ./prueba-interfaz.ps1 -Factor 1.15   # con la letra mas ancha
 
+      # Las tres capas de la 2.0 se hablan por nombres sueltos en cadenas
+      # de texto: si uno no coincide, el boton responde "accion desconocida".
+      - name: Las capas de la version 2.0 encajan
+        shell: pwsh
+        run: ./prueba-tauri.ps1
+
       # Lo de arriba corre en PowerShell 7. El que trae Windows es el 5.1
       # y no lee igual: sin BOM toma el archivo como ANSI y parte los
       # acentos, que es lo que arregla la relectura de 0-parametros.ps1.
@@ -61,6 +67,12 @@ jobs:
       - name: Compilar OfficeGo.exe con el csc.exe de Windows
         shell: cmd
         run: call compilar-exe.bat < nul
+
+      # Que csc.exe no proteste no quiere decir que el .exe sirva: aqui se
+      # abre y se comprueba que el script que lleva dentro es el bueno.
+      - name: El .exe lleva dentro lo que tiene que llevar
+        shell: powershell
+        run: .\prueba-exe.ps1
 
       - uses: actions/upload-artifact@v4
         with:
