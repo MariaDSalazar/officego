@@ -1,4 +1,4 @@
-# =====================================================================
+﻿# =====================================================================
 #  Comprueba que OfficeGo.ps1 arranca por las vías reales.
 #
 #  Existe porque la 1.3 se subió rota: param() no sobrevive al BOM
@@ -37,6 +37,14 @@ Comprobar 'es UTF-8 válido' ($texto -notmatch [char]0xFFFD)
 $ast = [System.Management.Automation.Language.Parser]::ParseInput($texto, [ref]$null, [ref]$null)
 Comprobar 'declara un bloque param' ($null -ne $ast.ParamBlock)
 Comprobar 'trae la relectura por los acentos' ($texto -match "PSCommandPath -and 'á'\.Length")
+
+# Al revés que OfficeGo.ps1, las pruebas SÍ llevan BOM: no llegan nunca
+# por internet, y sin él PowerShell 5.1 las lee en ANSI y los textos con
+# acentos que buscan aquí abajo dejan de coincidir.
+foreach ($f in @('test.ps1', 'prueba-arranque.ps1', 'prueba-interfaz.ps1')) {
+  $b = [IO.File]::ReadAllBytes((Join-Path $PSScriptRoot $f))
+  Comprobar "$f lleva BOM" ($b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -eq 0xBF)
+}
 
 # ── vía 1 · como texto: es la de irm | iex y la de scriptblock::Create
 Write-Host "`nVÍA 1 · COMO TEXTO   (irm | iex · scriptblock::Create)" -ForegroundColor Cyan
@@ -85,9 +93,15 @@ $s = Ejecutar "& ([scriptblock]::Create($leer)) -Instalar 2021 -Idioma xx-xx"
 Comprobar 'rechaza un idioma que no está' ($s -match 'no está en la lista')
 
 Write-Host ""
-Write-Host "  Queda por comprobar en Windows con PowerShell 5.1: que al leer el" -ForegroundColor DarkGray
-Write-Host "  archivo en ANSI se relea solo. Aquí no se puede: pwsh lee UTF-8" -ForegroundColor DarkGray
-Write-Host "  siempre, así que nunca llega a hacer falta. Está en PRUEBAS-VM.md" -ForegroundColor DarkGray
+if ($PSVersionTable.PSVersion.Major -le 5) {
+  Write-Host "  Corriendo en PowerShell $($PSVersionTable.PSVersion): la vía 2 de arriba ha" -ForegroundColor DarkGray
+  Write-Host "  probado de verdad la relectura, porque este PowerShell lee en ANSI" -ForegroundColor DarkGray
+  Write-Host "  todo archivo sin BOM y OfficeGo.ps1 no lo lleva." -ForegroundColor DarkGray
+} else {
+  Write-Host "  Queda por comprobar en el PowerShell 5.1 que trae Windows: que al" -ForegroundColor DarkGray
+  Write-Host "  leer el archivo en ANSI se relea solo. Aquí no llega a hacer falta," -ForegroundColor DarkGray
+  Write-Host "  porque PowerShell $($PSVersionTable.PSVersion.Major) lee UTF-8 siempre." -ForegroundColor DarkGray
+}
 
 Write-Host ""
 if ($script:fallos) { Write-Host "$script:fallos prueba(s) fallando" -ForegroundColor Red; exit 1 }

@@ -1,4 +1,4 @@
-# =====================================================================
+﻿# =====================================================================
 #  Revisa el reparto de la ventana sin necesitar Windows.
 #
 #  Monta las seis pantallas con controles de mentira que solo guardan
