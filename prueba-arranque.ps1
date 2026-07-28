@@ -92,3 +92,7 @@ Write-Host "  siempre, así que nunca llega a hacer falta. Está en PRUEBAS-VM.m
 Write-Host ""
 if ($script:fallos) { Write-Host "$script:fallos prueba(s) fallando" -ForegroundColor Red; exit 1 }
 Write-Host "El arranque funciona por las dos vías" -ForegroundColor Green
+# exit 0 explícito: varios casos lanzan un PowerShell hijo que termina en
+# error a propósito, y ese código se queda en $LASTEXITCODE. Sin esto, la
+# prueba pasa pero el paso sale como fallido.
+exit 0

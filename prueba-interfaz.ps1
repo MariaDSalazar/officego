@@ -378,3 +378,4 @@ foreach ($prod in $script:PRODUCTOS) {
 Write-Host ""
 if ($script:problemas) { Write-Host "$script:problemas problema(s) de reparto" -ForegroundColor Red; exit 1 }
 Write-Host "El reparto de las seis pantallas está limpio" -ForegroundColor Green
+exit 0
