@@ -55,6 +55,35 @@ $ast = [System.Management.Automation.Language.Parser]::ParseInput($texto, [ref]$
 Comprobar 'declara un bloque param' ($null -ne $ast.ParamBlock)
 Comprobar 'trae la relectura por los acentos' ($texto -match "PSCommandPath -and 'á'\.Length")
 
+# La prueba que faltaba: leer el archivo como lo lee PowerShell 5.1 y
+# comprobar que TODAVÍA parsea.
+#
+# Sin BOM, 5.1 lee en ANSI y cada carácter UTF-8 se parte en dos. El
+# problema es que PowerShell acepta las comillas tipográficas ' ' " "
+# como delimitadores de cadena, y en Windows-1252 esas son justo los
+# bytes 0x91-0x94. Así que una flecha → (E2 86 92) mete un ' en mitad
+# de una cadena, la cierra antes de tiempo y el archivo deja de parsear
+# entero. Cuando pasa, la relectura de los acentos ni siquiera llega a
+# ejecutarse: el script no arranca.
+$comoAnsi = [Text.Encoding]::GetEncoding(1252).GetString($bytes)
+$errores = $null
+[void][System.Management.Automation.Language.Parser]::ParseInput($comoAnsi, [ref]$null, [ref]$errores)
+Comprobar 'sigue parseando aunque se lea en ANSI' (-not $errores) `
+  $(if ($errores) { "línea $($errores[0].Extent.StartLineNumber): $($errores[0].Message)" })
+
+# y de dónde vendría el problema, para poder arreglarlo sin adivinar
+$culpables = @{}
+foreach ($linea in ($texto -split "`n")) {
+  if ($linea.TrimStart().StartsWith('#')) { continue }   # en un comentario da igual
+  foreach ($c in $linea.ToCharArray()) {
+    if ([int]$c -lt 128) { continue }
+    $b = [Text.Encoding]::UTF8.GetBytes([string]$c)
+    if ($b | Where-Object { $_ -in 0x82, 0x84, 0x91, 0x92, 0x93, 0x94 }) { $culpables[$c] = $true }
+  }
+}
+Comprobar 'ningún carácter se convierte en comilla al leerse en ANSI' ($culpables.Count -eq 0) `
+  $(if ($culpables.Count) { "son: $(($culpables.Keys | ForEach-Object { "$_ (U+{0:X4})" -f [int]$_ }) -join ', ')" })
+
 # Al revés que OfficeGo.ps1, las pruebas SÍ llevan BOM: no llegan nunca
 # por internet, y sin él PowerShell 5.1 las lee en ANSI y los textos con
 # acentos que buscan aquí abajo dejan de coincidir.

@@ -18,7 +18,7 @@ function Pantalla-Inicio {
   $cont.Controls.Add($hero)
 
   # ── la recomendación
-  $cont.Controls.Add((Titulo 'LO QUE LE CONVIENE A ESTE EQUIPO' 18 122))
+  $cont.Controls.Add((Titulo 'Lo que le conviene a este equipo' 18 122))
   $prod = Get-Producto $rec.Clave
   $borde = if ($rec.Clave -in @('2016','2013')) { '#E8A33D' } else { $C.Azul }
 
@@ -45,7 +45,7 @@ function Pantalla-Inicio {
   $cont.Controls.Add($r)
 
   # ── los tres pasos
-  $cont.Controls.Add((Titulo 'CÓMO FUNCIONA' 18 246))
+  $cont.Controls.Add((Titulo 'Cómo funciona' 18 246))
   $pasos = @(
     @('1', 'Elija su versión',      'Seis versiones desde 2013 hasta Microsoft 365, con sus ediciones'),
     @('2', 'Marque lo que quiere',  'Solo Word y Excel, o la suite entera. Se descarga únicamente eso'),

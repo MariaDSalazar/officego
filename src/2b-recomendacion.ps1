@@ -66,7 +66,7 @@ function Get-Recomendacion($eq) {
   }
 
   if (Test-GraficaAntigua $eq) {
-    $avisos += @{ Tipo='warn'; Texto='La tarjeta gráfica es antigua o no tiene controlador propio. Si Word o Excel parpadean, desactive la aceleración por hardware en Archivo → Opciones → Avanzadas.' }
+    $avisos += @{ Tipo='warn'; Texto='La tarjeta gráfica es antigua o no tiene controlador propio. Si Word o Excel parpadean, desactive la aceleración por hardware en Archivo > Opciones > Avanzadas.' }
   }
 
   if ($eq.Defender -eq $true) {

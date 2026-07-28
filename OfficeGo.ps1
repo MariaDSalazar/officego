@@ -500,7 +500,7 @@ function Get-Recomendacion($eq) {
   }
 
   if (Test-GraficaAntigua $eq) {
-    $avisos += @{ Tipo='warn'; Texto='La tarjeta gráfica es antigua o no tiene controlador propio. Si Word o Excel parpadean, desactive la aceleración por hardware en Archivo → Opciones → Avanzadas.' }
+    $avisos += @{ Tipo='warn'; Texto='La tarjeta gráfica es antigua o no tiene controlador propio. Si Word o Excel parpadean, desactive la aceleración por hardware en Archivo > Opciones > Avanzadas.' }
   }
 
   if ($eq.Defender -eq $true) {
@@ -763,11 +763,15 @@ function Mostrar-Pantalla($nombre) {
 #  OfficeGo · las cinco pantallas
 # =====================================================================
 
-function Titulo($txt, $x, $y) { New-Lbl $txt $x $y 8.5 $C.Gris $true }
+# Los títulos se escriben en minúsculas y se suben aquí. No es capricho:
+# leídos en ANSI, Ó (C3 93) y Ñ (C3 91) se convierten en comillas
+# tipográficas, que PowerShell acepta como delimitador de cadena y parten
+# el archivo. En minúscula, ó (C3 B3) y ñ (C3 B1) no dan problema.
+function Titulo($txt, $x, $y) { New-Lbl $txt.ToUpper() $x $y 8.5 $C.Gris $true }
 
 # ─────────────────────────────────────────────────────────── 1 · INSTALAR
 function Pantalla-Instalar {
-  $cont.Controls.Add((Titulo 'ELIGE TU VERSIÓN' 18 14))
+  $cont.Controls.Add((Titulo 'Elige tu versión' 18 14))
 
   # tarjetas de producto, 3 por fila
   $i = 0
@@ -804,7 +808,7 @@ function Pantalla-Instalar {
   $yb = 36 + 92 * [Math]::Ceiling($script:PRODUCTOS.Count / 3) + 6
 
   # edición · idioma · arquitectura
-  $cont.Controls.Add((Titulo 'EDICIÓN, IDIOMA Y ARQUITECTURA' 18 $yb))
+  $cont.Controls.Add((Titulo 'Edición, idioma y arquitectura' 18 $yb))
   $cbEd = New-Object Windows.Forms.ComboBox
   $cbEd.Location = New-Object Drawing.Point(18, ($yb + 22))
   $cbEd.Size = New-Object Drawing.Size(180, 24); $cbEd.DropDownStyle = 'DropDownList'
@@ -833,7 +837,7 @@ function Pantalla-Instalar {
 
   # aplicaciones
   $ya = $yb + 56
-  $cont.Controls.Add((Titulo 'APLICACIONES' 18 $ya))
+  $cont.Controls.Add((Titulo 'Aplicaciones' 18 $ya))
   $permitidas = Get-AppsDeEdicion $prod $script:sel.Edicion
   if ($prod.Via -eq 'C2R') {
     $cont.Controls.Add((New-Aviso "Office $($prod.Clave) se descarga entero: Microsoft no permite elegir aplicaciones por esta vía." 18 ($ya + 20) 480 'warn'))
@@ -866,7 +870,7 @@ function Pantalla-Instalar {
   }
 
   # complementos
-  $cont.Controls.Add((Titulo 'COMPLEMENTOS' 18 $yf))
+  $cont.Controls.Add((Titulo 'Complementos' 18 $yf))
   $x = 18
   foreach ($c in $script:COMPLEMENTOS) {
     $disponible = [bool]$c.Ids[$prod.Clave]
@@ -945,19 +949,23 @@ function Ajustar-Seleccion {
 
 # ──────────────────────────────────────────────────────────── 2 · ACTIVAR
 function Pantalla-Activar {
-  $cont.Controls.Add((Titulo 'ESTADO DE LA LICENCIA' 18 14))
+  $cont.Controls.Add((Titulo 'Estado de la licencia' 18 14))
   $lic = Get-EstadoLicencia
   $activado = $lic -and $lic.Activado
 
   $t = New-Caja 18 36 802 74
-  $t.Controls.Add((New-Icono $(if ($activado) { '✓' } else { '!' }) `
+  # La marca de verificación se compone con su número en vez de escribirla:
+  # el carácter ✓ ocupa los bytes E2 9C 93, y leído en ANSI ese 93 final es
+  # una comilla tipográfica que parte el archivo en PowerShell 5.1.
+  $marca = if ($activado) { [string][char]0x2713 } else { '!' }
+  $t.Controls.Add((New-Icono $marca `
                    $(if ($activado) { $C.Verde } else { $C.Rojo }) 16 15 44 14))
   $t.Controls.Add((New-Lbl $(if ($activado) { 'Office está activado' } elseif ($lic) { 'Office no está activado' } else { 'No hay Office instalado' }) 74 18 12 $C.Texto $true))
   $t.Controls.Add((New-Lbl $(if ($lic) { $lic.Nombre } else { 'Instale Office desde la pantalla Instalar' }) 74 42 8.5 $C.Gris))
   Set-Redondeado $t 9
   $cont.Controls.Add($t)
 
-  $cont.Controls.Add((Titulo 'CÓMO ACTIVAR' 18 126))
+  $cont.Controls.Add((Titulo 'Cómo activar' 18 126))
   $opciones = @(
     @('K', $C.Azul,  'Clave de producto', 'Si tiene una clave de 25 caracteres, introdúzcala aquí', { Accion-Clave }),
     @('M', '#7719AA', 'MAS · massgrave.dev', 'Herramienta externa. OfficeGo la ejecuta sin abrir su menú', { Accion-MAS })
@@ -991,7 +999,7 @@ function Pantalla-Activar {
 function Pantalla-Equipo {
   if (-not $script:equipo) { $script:equipo = Get-EquipoInfo }
   $eq = $script:equipo
-  $cont.Controls.Add((Titulo 'CARACTERÍSTICAS DEL EQUIPO' 18 14))
+  $cont.Controls.Add((Titulo 'Características del equipo' 18 14))
 
   function Tarjeta-HW($titulo, $sub, $sigla, $color, $x, $y, $datos, $barra = $null) {
     $p = New-Caja $x $y 392 132
@@ -1049,7 +1057,7 @@ function Pantalla-Equipo {
 
 # ─────────────────────────────────────────────────────── 4 · HERRAMIENTAS
 function Pantalla-Herramientas {
-  $cont.Controls.Add((Titulo 'MANTENIMIENTO' 18 14))
+  $cont.Controls.Add((Titulo 'Mantenimiento' 18 14))
   $items = @(
     @('R', $C.Azul,  'Reparar instalación', 'Repara Office sin perder documentos ni licencia', { Accion-Reparar }),
     @('D', $C.Verde, 'Crear instalador sin conexión', 'Descarga los archivos a una carpeta para otros equipos', { Accion-Descargar }),
@@ -1067,7 +1075,7 @@ function Pantalla-Herramientas {
     $cont.Controls.Add($p); $y += 78
   }
 
-  $cont.Controls.Add((Titulo 'DESINSTALAR' 18 ($y + 6)))
+  $cont.Controls.Add((Titulo 'Desinstalar' 18 ($y + 6)))
   $p = New-Caja 18 ($y + 28) 802 70 $C.Panel '#F5C9C6'
   $p.Controls.Add((New-Icono '✕' $C.Rojo 16 13 44 14))
   $p.Controls.Add((New-Lbl 'Quitar Office del equipo' 74 16 10.5 $C.Texto $true))
@@ -1085,7 +1093,7 @@ function Pantalla-Herramientas {
 
 # ────────────────────────────────────────────────────────────── 5 · AYUDA
 function Pantalla-Ayuda {
-  $cont.Controls.Add((Titulo 'OFFICEGO' 18 14))
+  $cont.Controls.Add((Titulo 'OfficeGo' 18 14))
   $h = New-Caja 18 36 802 76 $C.Azul $C.Azul
   $h.Controls.Add((New-Icono 'O' '#3B7DD8' 18 16 44 15))
   $l1 = New-Lbl "OfficeGo $script:VERSION" 78 18 14 '#FFFFFF' $true
@@ -1095,7 +1103,7 @@ function Pantalla-Ayuda {
   Set-Redondeado $h 9
   $cont.Controls.Add($h)
 
-  $cont.Controls.Add((Titulo 'QUIÉN LO HACE' 18 126))
+  $cont.Controls.Add((Titulo 'Quién lo hace' 18 126))
   $autores = @(
     @('Diego Fernando Loján Tenesaca', 'Desarrollo e interfaz', 'https://github.com/DiegoFernandoLojanTenesaca'),
     @('María del Carmen Salazar Torres', 'Script base y documentación', 'https://github.com/MariaDSalazar')
@@ -1117,7 +1125,7 @@ function Pantalla-Ayuda {
     $x = 428
   }
 
-  $cont.Controls.Add((Titulo 'PROBLEMAS FRECUENTES' 18 256))
+  $cont.Controls.Add((Titulo 'Problemas frecuentes' 18 256))
   $faq = @(
     @('La ejecución de scripts está deshabilitada', 'Set-ExecutionPolicy Bypass -Scope Process -Force'),
     @('«irm» no se reconoce', 'Se pegó en CMD. Hay que usar PowerShell.'),
@@ -1173,7 +1181,7 @@ function Pantalla-Inicio {
   $cont.Controls.Add($hero)
 
   # ── la recomendación
-  $cont.Controls.Add((Titulo 'LO QUE LE CONVIENE A ESTE EQUIPO' 18 122))
+  $cont.Controls.Add((Titulo 'Lo que le conviene a este equipo' 18 122))
   $prod = Get-Producto $rec.Clave
   $borde = if ($rec.Clave -in @('2016','2013')) { '#E8A33D' } else { $C.Azul }
 
@@ -1200,7 +1208,7 @@ function Pantalla-Inicio {
   $cont.Controls.Add($r)
 
   # ── los tres pasos
-  $cont.Controls.Add((Titulo 'CÓMO FUNCIONA' 18 246))
+  $cont.Controls.Add((Titulo 'Cómo funciona' 18 246))
   $pasos = @(
     @('1', 'Elija su versión',      'Seis versiones desde 2013 hasta Microsoft 365, con sus ediciones'),
     @('2', 'Marque lo que quiere',  'Solo Word y Excel, o la suite entera. Se descarga únicamente eso'),
@@ -1261,7 +1269,7 @@ function Avisar($titulo, $texto, $icono = 'Information') {
 
 function Test-ListoParaInstalar {
   if (-not (Test-Administrador)) {
-    Avisar 'Faltan permisos' "OfficeGo necesita permisos de administrador.`n`nCierre y vuelva a abrirlo con clic derecho → Ejecutar como administrador." 'Warning'
+    Avisar 'Faltan permisos' "OfficeGo necesita permisos de administrador.`n`nCierre y vuelva a abrirlo con clic derecho > Ejecutar como administrador." 'Warning'
     return $false
   }
   $sis = $script:equipo.Discos | Where-Object { $_.Sistema } | Select-Object -First 1
@@ -1451,7 +1459,7 @@ function Accion-Reparar {
     Set-Progreso 100 'Reparación terminada'
   } catch {
     Set-Progreso 0 ''
-    Avisar 'No se pudo reparar' "Use Configuración → Aplicaciones → Microsoft Office → Modificar → Reparación en línea." 'Information'
+    Avisar 'No se pudo reparar' "Use Configuración > Aplicaciones > Microsoft Office > Modificar > Reparación en línea." 'Information'
   }
 }
 
@@ -1481,7 +1489,7 @@ function Accion-CopiarInforme {
   $of = Get-OfficeInstalado
   $rec = Get-Recomendacion $eq
   $txt = @"
-── OfficeGo · informe del equipo ─────────────────────────────
+== OfficeGo · informe del equipo =============================
 Sistema        $($eq.SO) (build $($eq.Build)) · $($eq.Arquitectura)
 PowerShell     $($eq.PowerShell)
 Procesador     $($eq.CPU) · $($eq.Nucleos) núcleos / $($eq.Hilos) hilos · $($eq.CPUGhz) GHz
@@ -1493,7 +1501,7 @@ Defender       $($eq.Defender)
 
 Office         $(if ($of) { "$($of.Productos) $($of.Version) $($of.Idioma) $($of.Arquitectura)" } else { 'no instalado' })
 Recomendado    $($rec.Nombre): $($rec.Motivo)
-──────────────────────────────────────────────────────────────
+==============================================================
 "@
   Set-Clipboard -Value $txt
   Avisar 'Copiado' 'El informe está en el portapapeles. Puede pegarlo donde lo necesite.'

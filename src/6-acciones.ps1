@@ -12,7 +12,7 @@ function Avisar($titulo, $texto, $icono = 'Information') {
 
 function Test-ListoParaInstalar {
   if (-not (Test-Administrador)) {
-    Avisar 'Faltan permisos' "OfficeGo necesita permisos de administrador.`n`nCierre y vuelva a abrirlo con clic derecho → Ejecutar como administrador." 'Warning'
+    Avisar 'Faltan permisos' "OfficeGo necesita permisos de administrador.`n`nCierre y vuelva a abrirlo con clic derecho > Ejecutar como administrador." 'Warning'
     return $false
   }
   $sis = $script:equipo.Discos | Where-Object { $_.Sistema } | Select-Object -First 1
@@ -202,7 +202,7 @@ function Accion-Reparar {
     Set-Progreso 100 'Reparación terminada'
   } catch {
     Set-Progreso 0 ''
-    Avisar 'No se pudo reparar' "Use Configuración → Aplicaciones → Microsoft Office → Modificar → Reparación en línea." 'Information'
+    Avisar 'No se pudo reparar' "Use Configuración > Aplicaciones > Microsoft Office > Modificar > Reparación en línea." 'Information'
   }
 }
 
@@ -232,7 +232,7 @@ function Accion-CopiarInforme {
   $of = Get-OfficeInstalado
   $rec = Get-Recomendacion $eq
   $txt = @"
-── OfficeGo · informe del equipo ─────────────────────────────
+== OfficeGo · informe del equipo =============================
 Sistema        $($eq.SO) (build $($eq.Build)) · $($eq.Arquitectura)
 PowerShell     $($eq.PowerShell)
 Procesador     $($eq.CPU) · $($eq.Nucleos) núcleos / $($eq.Hilos) hilos · $($eq.CPUGhz) GHz
@@ -244,7 +244,7 @@ Defender       $($eq.Defender)
 
 Office         $(if ($of) { "$($of.Productos) $($of.Version) $($of.Idioma) $($of.Arquitectura)" } else { 'no instalado' })
 Recomendado    $($rec.Nombre): $($rec.Motivo)
-──────────────────────────────────────────────────────────────
+==============================================================
 "@
   Set-Clipboard -Value $txt
   Avisar 'Copiado' 'El informe está en el portapapeles. Puede pegarlo donde lo necesite.'
