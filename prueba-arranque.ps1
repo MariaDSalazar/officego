@@ -16,17 +16,34 @@ $script:fallos = 0
 $archivo = Join-Path $PSScriptRoot 'OfficeGo.ps1'
 $ps = (Get-Process -Id $PID).Path
 
+# La tubería entre procesos usa la página de códigos de la consola, que
+# en PowerShell 5.1 no es UTF-8: sin esto, los acentos llegan rotos aquí
+# aunque el script los haya escrito bien, y la prueba culpa a quien no es.
+try { [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false) } catch {}
+
+$script:ultimaSalida = ''
 function Comprobar($nombre, $condicion, $detalle = '') {
-  if ($condicion) { Write-Host "  ok   $nombre" -ForegroundColor Green }
-  else { Write-Host "  FALLA $nombre  $detalle" -ForegroundColor Red; $script:fallos++ }
+  if ($condicion) { Write-Host "  ok   $nombre" -ForegroundColor Green; return }
+  Write-Host "  FALLA $nombre  $detalle" -ForegroundColor Red
+  $script:fallos++
+  if ($script:ultimaSalida) {
+    Write-Host "         ── lo que respondió ──" -ForegroundColor DarkGray
+    foreach ($l in ($script:ultimaSalida -split "`n" | Select-Object -First 40)) {
+      Write-Host "         $l" -ForegroundColor DarkGray
+    }
+    Write-Host "         ──────────────────────" -ForegroundColor DarkGray
+  }
 }
 
 # Lanza un PowerShell hijo y devuelve todo lo que escriba
 function Ejecutar([string]$orden) {
-  (& $ps -NoProfile -NonInteractive -Command $orden 2>&1) -join "`n"
+  $completa = "[Console]::OutputEncoding = [Text.UTF8Encoding]::new(`$false); $orden"
+  $script:ultimaSalida = (& $ps -NoProfile -NonInteractive -Command $completa 2>&1) -join "`n"
+  $script:ultimaSalida
 }
 
 Write-Host "`nEL ARCHIVO" -ForegroundColor Cyan
+$script:ultimaSalida = ''
 $bytes = [IO.File]::ReadAllBytes($archivo)
 Comprobar 'no lleva BOM' (-not ($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF)) `
   'con BOM, param() se rompe al llegar como texto'
