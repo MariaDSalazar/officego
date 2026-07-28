@@ -300,6 +300,52 @@ if (-not $sospechosos) { Write-Host "  ninguno" -ForegroundColor Green }
 Write-Host "`nLetra al $([int]($Factor*100)) % · holgura exigida $Holgura px" -ForegroundColor DarkGray
 foreach ($p in $script:PANTALLAS) { Analizar $p }
 
+# ── Inicio cambia según cómo esté el equipo: sin permisos, con poco
+#    disco o con poca RAM salen avisos que empujan todo hacia abajo
+Write-Host "`nINICIO, SEGÚN EL EQUIPO" -ForegroundColor Cyan
+$equipos = @(
+  @{ Nombre = 'todo en orden';        Cambios = @{} }
+  @{ Nombre = 'sin permisos';         Cambios = @{ Admin = $false } }
+  @{ Nombre = 'poca RAM';             Cambios = @{ RamGB = 3.0 } }
+  @{ Nombre = 'sin espacio';          Cambios = @{ Discos = @([pscustomobject]@{ Letra='C:'; TotalGB=120; LibreGB=2.1; UsadoPc=98; Sistema=$true }) } }
+  @{ Nombre = 'Windows 7';            Cambios = @{ SO = 'Windows 7 Professional'; Build = '7601.0'; Compatible = $false } }
+  @{ Nombre = 'sin permisos y sin espacio'; Cambios = @{ Admin = $false; Discos = @([pscustomobject]@{ Letra='C:'; TotalGB=120; LibreGB=1.4; UsadoPc=99; Sistema=$true }) } }
+)
+foreach ($caso in $equipos) {
+  $eq = Get-EquipoInfo
+  foreach ($k in $caso.Cambios.Keys) { $eq.$k = $caso.Cambios[$k] }
+  $script:equipo = $eq
+  $antes = $script:problemas
+  $cont.Controls.Clear()
+  $null = Mostrar-Pantalla 'Inicio'
+  $todos = @(Recorrer $cont 0 0)
+
+  foreach ($g in ($todos | Group-Object { $_.Padre.GetHashCode() })) {
+    $l = @($g.Group)
+    for ($i = 0; $i -lt $l.Count; $i++) {
+      for ($j = $i + 1; $j -lt $l.Count; $j++) {
+        $a = $l[$i]; $b = $l[$j]
+        if (($a.X1 - $Holgura) -lt $b.X2 -and ($b.X1 - $Holgura) -lt $a.X2 -and
+            ($a.Y1 - $Holgura) -lt $b.Y2 -and ($b.Y1 - $Holgura) -lt $a.Y2) {
+          Write-Host ("  ENCIMA  [{0}]  {1} en ({2},{3}) × {4} en ({5},{6})" -f `
+            $caso.Nombre, $a.Ctl.Etiqueta(), $a.X1, $a.Y1, $b.Ctl.Etiqueta(), $b.X1, $b.Y1) -ForegroundColor Red
+          $script:problemas++
+        }
+      }
+    }
+  }
+  $hasta = ($todos | Measure-Object Y2 -Maximum).Maximum
+  if ($hasta -gt $cont.Height) {
+    Write-Host ("  SE PASA [{0}]  baja hasta y={1} y la ventana llega a {2}" -f `
+      $caso.Nombre, $hasta, $cont.Height) -ForegroundColor Yellow
+    $script:problemas++
+  }
+  if ($script:problemas -eq $antes) {
+    Write-Host ("  ok   {0,-28} baja hasta y={1}" -f $caso.Nombre, $hasta) -ForegroundColor Green
+  }
+}
+$script:equipo = $null
+
 # ── la barra de estado se pinta aparte, con textos que dependen del
 #    equipo: un nombre de Windows largo empujaba lo demás fuera
 Write-Host "`nBARRA DE ESTADO" -ForegroundColor Cyan

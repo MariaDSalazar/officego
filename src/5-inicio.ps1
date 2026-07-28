@@ -24,7 +24,10 @@ function Pantalla-Inicio {
 
   $r = New-Caja 18 144 802 88 $C.Panel $borde
   $r.Controls.Add((New-Icono $prod.Sigla $prod.Color 18 20 48 15))
-  $r.Controls.Add((New-Lbl "$($prod.Nombre) · $($script:EDICIONES['ProPlus'].Nombre)" 82 20 12.5 $C.Texto $true))
+  # la primera edición del producto, que es justo la que deja marcada el
+  # botón de abajo. Estaba fija a ProPlus y podía no ser la misma.
+  $edRec = @($prod.Ediciones.Keys)[0]
+  $r.Controls.Add((New-Lbl "$($prod.Nombre) · $($script:EDICIONES[$edRec].Nombre)" 82 20 12.5 $C.Texto $true))
   $lm = New-Lbl $rec.Motivo 82 46 8.5 $C.Gris
   $lm.AutoSize = $false; $lm.Size = New-Object Drawing.Size(540, 32)
   $r.Controls.Add($lm)
@@ -80,7 +83,14 @@ function Pantalla-Inicio {
     $cont.Controls.Add($av)
     $y += 58
   }
-  if (-not $rec.Avisos -and $rec.Apto) {
+  # Sin permisos no se puede instalar, así que eso va antes que nada. El
+  # resumen verde daba los permisos por hechos y decía «listo» a alguien
+  # que no iba a poder instalar nada.
+  if (-not $eq.Admin) {
+    $cont.Controls.Add((New-Aviso 'Faltan permisos de administrador: se pueden mirar las pantallas, pero no instalar ni activar. Cierre y vuelva a abrir con clic derecho > Ejecutar como administrador.' 18 $y 802 'error'))
+    $y += 58
+  }
+  elseif (-not $rec.Avisos -and $rec.Apto) {
     $sis = $eq.Discos | Where-Object { $_.Sistema } | Select-Object -First 1
     $cont.Controls.Add((New-Aviso "Equipo listo. $($eq.SO) · $($eq.RamGB) GB de RAM · $($sis.LibreGB) GB libres · permisos de administrador." 18 $y 802 'ok'))
   }
