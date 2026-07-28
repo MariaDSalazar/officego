@@ -20,7 +20,9 @@ function Get-RutaRelanzable {
   if ($PSCommandPath -and (Test-Path $PSCommandPath)) { return $PSCommandPath }
 
   $tmp = Join-Path $env:TEMP 'OfficeGo.ps1'
-  # BOM UTF-8, o PowerShell 5.1 lo leerá como ANSI y romperá los acentos
+  # Esta copia solo se ejecuta con -File, nunca como texto, así que aquí
+  # el BOM sí conviene: ahorra la relectura por los acentos y no puede
+  # romper el param(), que es lo que pasa por la otra vía.
   $utf8 = [Text.UTF8Encoding]::new($true)
 
   if ($script:FUENTE -and $script:FUENTE.Length -gt 2000) {
@@ -95,6 +97,47 @@ function Write-Paso($texto) { Write-Host "  $texto" -ForegroundColor Gray }
 function Write-Bien($texto) { Write-Host "  $texto" -ForegroundColor Green }
 function Write-Mal($texto)  { Write-Host "  $texto" -ForegroundColor Red }
 
+# Todo lo que se puede decir que está mal sin tocar el equipo. Se mira
+# ANTES de pedir permisos: sacar el aviso de Windows para luego decir que
+# la edición no existe es hacer trabajar al usuario para nada.
+function Test-Peticion {
+  if (-not ($Instalar -or $Activar -or $Desinstalar)) {
+    return @('-Silencioso necesita saber qué hacer.',
+             'Añada -Instalar, -Activar o -Desinstalar. Con -Ayuda se ven los ejemplos.')
+  }
+  if ($Instalar) {
+    $prod = Get-Producto $Instalar
+    if (-not $prod.Ediciones.Contains($Edicion)) {
+      return @("$($prod.Nombre) no tiene la edición $Edicion.",
+               "Tiene: $($prod.Ediciones.Keys -join ', ')")
+    }
+    if ($prod.Via -eq 'ODT') {
+      $malas = @($Apps | Where-Object { -not $script:APLICACIONES[$_] })
+      if ($malas) {
+        return @("No existe$(if ($malas.Count -gt 1) { 'n' }) $($malas -join ', ').",
+                 "Hay: $($script:APLICACIONES.Keys -join ', ')")
+      }
+    }
+    foreach ($c in $Complementos) {
+      $comp = $script:COMPLEMENTOS | Where-Object { $_.Clave -eq $c } | Select-Object -First 1
+      if (-not $comp) {
+        return @("No existe el complemento $c.",
+                 "Hay: $(($script:COMPLEMENTOS.Clave) -join ', ')")
+      }
+      # existe, pero puede que no para esta versión de Office
+      if (-not $comp.Ids[$prod.Clave]) {
+        return @("$($comp.Nombre) no sale para $($prod.Nombre).",
+                 "Sale para: $(($comp.Ids.Keys | Sort-Object) -join ', ')")
+      }
+    }
+    if (-not $script:IDIOMAS[$Idioma]) {
+      return @("El idioma $Idioma no está en la lista.",
+               "Hay: $($script:IDIOMAS.Keys -join ', ')")
+    }
+  }
+  $null
+}
+
 function Invoke-Consola {
   Write-Host ""
   Write-Host "  OfficeGo $script:VERSION" -ForegroundColor Cyan
@@ -115,11 +158,6 @@ function Invoke-Consola {
   # ── instalar
   if ($Instalar) {
     $prod = Get-Producto $Instalar
-    if (-not $prod.Ediciones.Contains($Edicion)) {
-      Write-Mal "$($prod.Nombre) no tiene la edición $Edicion."
-      Write-Paso "Tiene: $($prod.Ediciones.Keys -join ', ')"
-      return 1
-    }
     $bits = if ($Bits) { $Bits } elseif ([Environment]::Is64BitOperatingSystem) { '64' } else { '32' }
 
     Write-Paso "$($prod.Nombre) · $Edicion · $Idioma · $bits bits"
@@ -192,14 +230,20 @@ function Actualizar-BarraEstado {
     @($(if (Test-Internet) { 'Conectado' } else { 'Sin internet' }), $(if (Test-Internet) { $C.Verde } else { $C.Rojo })),
     @($(if ($eq.Defender) { 'Defender activo' } else { 'Defender apagado' }), '#E8A33D')
   )
+  # El ancho lo dice el propio control: al ser AutoSize, en cuanto está
+  # creado su Width es lo que de verdad mide el texto. Antes se calculaba
+  # a ojo con 6,1 px por letra, y en cuanto el nombre del Windows era
+  # largo los estados se montaban unos encima de otros.
   $x = 18
   foreach ($it in $items) {
     $barra.Controls.Add((Punto $x $it[1]))
     $l = New-Lbl $it[0] ($x + 14) 7 8 $C.Gris
     $barra.Controls.Add($l)
-    $x += 16 + [int]($it[0].Length * 6.1) + 18
+    $x += 14 + $l.Width + 20
   }
-  $v = New-Lbl "OfficeGo $script:VERSION" 920 7 8 $C.GrisClaro
+  # la versión, pegada a la derecha y nunca encima de lo anterior
+  $v = New-Lbl "OfficeGo $script:VERSION" 0 7 8 $C.GrisClaro
+  $v.Left = [Math]::Max($x, $barra.Width - $v.Width - 18)
   $barra.Controls.Add($v)
 }
 
@@ -233,12 +277,12 @@ function Start-OfficeGo {
   $porConsola = $Silencioso -or $Instalar -or $Desinstalar -or $Activar
   if (-not $porConsola) { Start-Ventana; return }
 
-  # Antes de pedir permisos, mirar que haya algo que hacer: molestar con el
-  # aviso de Windows para luego decir «no me ha dicho qué» es de mal gusto.
-  if (-not ($Instalar -or $Activar -or $Desinstalar)) {
+  $mal = Test-Peticion
+  if ($mal) {
     Write-Host ""
-    Write-Mal '-Silencioso necesita saber qué hacer.'
-    Write-Paso 'Añada -Instalar, -Activar o -Desinstalar. Con -Ayuda se ven los ejemplos.'
+    Write-Mal  $mal[0]
+    Write-Paso $mal[1]
+    Write-Host ""
     exit 1
   }
 

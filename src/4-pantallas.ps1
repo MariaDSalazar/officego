@@ -11,7 +11,10 @@ function Pantalla-Instalar {
   # tarjetas de producto, 3 por fila
   $i = 0
   foreach ($p in $script:PRODUCTOS) {
-    $col = $i % 3; $fila = [int]($i / 3)
+    # Floor, no [int]: en PowerShell [int] REDONDEA, así que [int](5/3)
+    # da 2 y la sexta tarjeta se iba una fila de más, encima de los
+    # desplegables de edición. Con Floor cada tres tarjetas bajan una fila.
+    $col = $i % 3; $fila = [Math]::Floor($i / 3)
     $x = 18 + $col * 158; $y = 36 + $fila * 92
     $elegida = ($p.Clave -eq $script:sel.Producto)
     $t = New-Caja $x $y 148 84 $(if ($elegida) { $C.AzulClaro } else { $C.Panel }) `
@@ -29,9 +32,8 @@ function Pantalla-Instalar {
 
     $clic = { $script:sel.Producto = $this.Tag.Clave
               $script:sel.Edicion = @((Get-Producto $this.Tag.Clave).Ediciones.Keys)[0]
-              Ajustar-Seleccion; Mostrar-Pantalla 'Instalar' }.GetNewClosure()
-    $t.Add_Click($clic)
-    foreach ($h in $t.Controls) { $h.Cursor = 'Hand'; $h.Add_Click($clic) }
+              Ajustar-Seleccion; Mostrar-Pantalla 'Instalar' }
+    Set-ClicEnTodo $t $clic
     Set-Redondeado $t 9
     $cont.Controls.Add($t)
     $i++
@@ -92,9 +94,8 @@ function Pantalla-Instalar {
         $clic = { $a = $this.Tag.App
                   if ($a -in $script:sel.Apps) { $script:sel.Apps = @($script:sel.Apps | Where-Object { $_ -ne $a }) }
                   else { $script:sel.Apps += $a }
-                  Mostrar-Pantalla 'Instalar' }.GetNewClosure()
-        $ch.Add_Click($clic)
-        foreach ($h in $ch.Controls) { $h.Cursor = 'Hand'; $h.Add_Click($clic) }
+                  Mostrar-Pantalla 'Instalar' }
+        Set-ClicEnTodo $ch $clic
       }
       Set-Redondeado $ch 16
       $cont.Controls.Add($ch)
@@ -109,7 +110,9 @@ function Pantalla-Instalar {
   foreach ($c in $script:COMPLEMENTOS) {
     $disponible = [bool]$c.Ids[$prod.Clave]
     $on = ($c.Clave -in $script:sel.Complementos) -and $disponible
-    $ch = New-Caja $x ($yf + 20) 152 32 $(if ($on) { $C.AzulClaro } else { $C.Panel }) `
+    # 168 y no 152: «Project Professional» es el nombre más largo y con
+    # una letra un poco más ancha se salía de la caja por la derecha
+    $ch = New-Caja $x ($yf + 20) 168 32 $(if ($on) { $C.AzulClaro } else { $C.Panel }) `
                    $(if ($on) { $C.Azul } else { $C.Borde })
     $ch.Tag = @{ Borde = $(if ($on) { $C.Azul } else { $C.Borde }); Comp = $c.Clave }
     $ch.Controls.Add((New-Icono $c.Sigla $(if ($disponible) { $c.Color } else { '#C7CCD1' }) 5 5 22 8))
@@ -119,13 +122,12 @@ function Pantalla-Instalar {
       $clic = { $a = $this.Tag.Comp
                 if ($a -in $script:sel.Complementos) { $script:sel.Complementos = @($script:sel.Complementos | Where-Object { $_ -ne $a }) }
                 else { $script:sel.Complementos += $a }
-                Mostrar-Pantalla 'Instalar' }.GetNewClosure()
-      $ch.Add_Click($clic)
-      foreach ($h in $ch.Controls) { $h.Cursor = 'Hand'; $h.Add_Click($clic) }
+                Mostrar-Pantalla 'Instalar' }
+      Set-ClicEnTodo $ch $clic
     }
     Set-Redondeado $ch 16
     $cont.Controls.Add($ch)
-    $x += 160
+    $x += 176
   }
 
   # resumen a la derecha
@@ -327,7 +329,8 @@ function Pantalla-Ayuda {
   $h.Controls.Add((New-Icono 'O' '#3B7DD8' 18 16 44 15))
   $l1 = New-Lbl "OfficeGo $script:VERSION" 78 18 14 '#FFFFFF' $true
   $h.Controls.Add($l1)
-  $h.Controls.Add((New-Lbl 'Instalador y activador de Microsoft Office para Windows 10 y 11' 78 44 8.5 '#D6E4F7'))
+  # a 44 rozaba el título de 14 pt en cuanto la letra era un poco mayor
+  $h.Controls.Add((New-Lbl 'Instalador y activador de Microsoft Office para Windows 10 y 11' 78 48 8.5 '#D6E4F7'))
   Set-Redondeado $h 9
   $cont.Controls.Add($h)
 
@@ -346,7 +349,7 @@ function Pantalla-Ayuda {
     $lk.AutoSize = $true; $lk.Font = Fuente 8.5
     $lk.LinkColor = Hex $C.Gris
     $lk.Tag = $a[2]
-    $lk.Add_LinkClicked({ Start-Process $this.Tag }.GetNewClosure())
+    $lk.Add_LinkClicked({ Start-Process $this.Tag })
     $p.Controls.Add($lk)
     Set-Redondeado $p 9
     $cont.Controls.Add($p)

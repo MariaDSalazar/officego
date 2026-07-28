@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/badge/Portable-un_solo_archivo-0B57D0" alt="portable">
     <img src="https://img.shields.io/badge/Sin_dependencias-0_instalaciones-16A34A" alt="sin dependencias">
     <img src="https://img.shields.io/badge/Licencia-MIT-6366F1" alt="MIT">
-    <img src="https://img.shields.io/badge/versión-1.3_·_2.0-0B57D0" alt="versiones">
+    <img src="https://img.shields.io/badge/versión-1.4_·_2.0-0B57D0" alt="versiones">
     <img src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" alt="Tauri">
   </p>
   <p>
@@ -63,6 +63,7 @@ pantalla.
 | 🧰 | **Herramientas** | Reparar la instalación, crear un instalador sin conexión para otros equipos, y desinstalar (pidiendo escribir `BORRAR`). |
 | 🚑 | **Ayuda de verdad** | Los errores frecuentes con el **mensaje literal** que sale en pantalla y el comando exacto que los arregla. |
 | 🪶 | **Portable** | Un `.ps1` de 76 KB. Cabe en un USB, no deja rastro en el registro, no necesita instalarse. |
+| 🧪 | **Se prueba sola** | 44 pruebas del motor, el arranque por las dos vías, y un analizador que monta las seis pantallas con controles simulados y busca controles solapados. Todo corre en cada compilación, y también en el PowerShell 5.1 que trae Windows. |
 | ⚡ | **Desatendido** | `-Instalar 2021 -Apps Word,Excel -Silencioso -Activar` deja un aula entera igual, sin que nadie toque nada. Y si faltan permisos, se los pide y se relanza con las mismas opciones. |
 | 🔒 | **Sin telemetría** | No manda nada a ninguna parte. El código está aquí para leerlo. |
 
@@ -106,7 +107,9 @@ officego/
 │   ├── 6-acciones.ps1      Qué pasa al pulsar cada botón
 │   ├── 7-arranque.ps1      Elevación, modo consola y puesta en marcha
 │   └── Lanzador.cs         Envoltorio del .exe (C#, compilación opcional)
-├── test.ps1            → 44 pruebas · corren en cualquier sitio con PowerShell
+├── test.ps1            → 44 pruebas del motor
+├── prueba-arranque.ps1 → que arranque por irm|iex y como archivo
+├── prueba-interfaz.ps1 → monta las pantallas y busca solapes, sin Windows
 ├── build.sh            → ensambla src/*.ps1 y valida la sintaxis
 ├── tauri/              → versión 2.0 (Tauri): ui/ en HTML + src-tauri/ en Rust
 ├── .github/workflows/  → compila el .exe en un runner de Windows
@@ -301,24 +304,54 @@ la protección un momento y **volver a encenderla al terminar**.
 
 ## Estado del proyecto
 
-La lógica está cubierta por **44 pruebas automáticas** que se ejecutan en cualquier
-sistema: catálogo, generación del `configuration.xml` y reglas de recomendación.
+Cada compilación pasa las 44 pruebas del motor, comprueba que el script arranque por
+las dos vías y monta las seis pantallas buscando controles solapados. Todo eso se
+repite además en el **PowerShell 5.1 que trae Windows**, que no lee los archivos igual
+que el 7 y es donde se escondía uno de los fallos de la 1.3.
 
-La interfaz se valida sintácticamente en cada compilación, pero Windows Forms solo
-se puede ejecutar de verdad en Windows. Si al abrirlo ves algún control descolocado
-o un texto cortado, [abre un issue](../../issues/new) con una captura y se corrige.
+Lo que **no** se puede comprobar sin un Windows delante es cómo se ve de verdad: las
+medidas de la letra son una estimación y los clics no se pueden pulsar solos. Si al
+abrirlo ves algo descolocado o un botón que no responde,
+[abre un issue](../../issues/new) con una captura y se corrige.
+
+<details>
+<summary>Lo que se rompió en la 1.3 y cómo se evita ahora</summary>
+
+<br>
+
+Tres fallos, los tres invisibles hasta que alguien lo abrió en un Windows de verdad:
+
+| Qué pasaba | Por qué | Qué lo detecta ahora |
+|---|---|---|
+| `irm \| iex` no arrancaba | El archivo llevaba BOM. Ese carácter invisible viaja en el texto que devuelve `irm`, así que `param()` deja de ser lo primero del bloque y PowerShell lo parsea como una llamada a un comando | `prueba-arranque.ps1` |
+| Media ventana no respondía | Los clics usaban `.GetNewClosure()`, y dentro de un closure `$script:` apunta a su propio módulo: las asignaciones a `$script:sel` se perdían y el botón se quedaba mudo | `prueba-interfaz.ps1`, sección de closures |
+| Las tarjetas se montaban unas encima de otras | `[int]($i / 3)` para la fila. En PowerShell `[int]` **redondea**, no trunca, así que `[int](5/3)` da 2 y la sexta tarjeta caía una fila de más, justo encima de los desplegables | `prueba-interfaz.ps1`, análisis de solapes |
+
+A eso se suma que la ventana se declaraba *DPI-aware*, lo que hacía crecer la letra con
+el escalado de la pantalla mientras las coordenadas seguían en píxeles fijos: al 125 %
+se solapaban 21 controles. Ya no se declara, así que Windows escala la ventana entera.
+
+</details>
 
 ## Para desarrollar
 
 ```bash
-./build.sh          # junta src/*.ps1 en OfficeGo.ps1 y valida la sintaxis
-pwsh test.ps1       # 44 pruebas
+./build.sh                             # junta src/*.ps1 y valida la sintaxis
+pwsh test.ps1                          # 44 pruebas del motor
+pwsh prueba-arranque.ps1               # que arranque por las dos vías
+pwsh prueba-interfaz.ps1               # que la ventana no se solape
+pwsh prueba-interfaz.ps1 -Factor 1.15  # ídem con la letra más ancha
 ```
 
-Las pruebas **no necesitan Windows**: comprueban que cada edición declare las
+**Ninguna necesita Windows.** Las del motor comprueban que cada edición declare las
 aplicaciones que de verdad incluye, que el `configuration.xml` salga bien formado con
-sus `ExcludeApp`, que Visio y Project entren como productos aparte, y que la
-recomendación responda bien ante siete equipos distintos.
+sus `ExcludeApp`, y que la recomendación acierte con siete equipos distintos.
+
+`prueba-interfaz.ps1` es lo menos obvio: monta las seis pantallas con controles
+simulados que solo guardan dónde y cuánto ocupan, y busca controles encima de otros o
+salidos de su caja. Recorre además las 17 combinaciones de versión y edición, porque
+el reparto de la pantalla Instalar cambia con cada una. Con `-Factor` se simula una
+letra más ancha, que es lo que pasa cuando la fuente del equipo no es la esperada.
 
 ## Créditos
 

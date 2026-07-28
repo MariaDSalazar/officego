@@ -8,6 +8,13 @@
 #
 #  que crea un bloque de script de verdad y sí los acepta. Sin ningún
 #  parámetro se abre la ventana, que es lo habitual.
+#
+#  ESTE ARCHIVO NO LLEVA BOM, y es a propósito. Con BOM, el carácter
+#  invisible del principio se cuela en el texto que devuelve irm, param
+#  deja de ser lo primero del bloque y PowerShell lo toma por una llamada
+#  a un comando: "The assignment expression is not valid". Como sin BOM
+#  PowerShell 5.1 lee el archivo en ANSI y parte los acentos, más abajo
+#  hay una relectura que lo arregla.
 # =====================================================================
 param(
   # Qué instalar, sin tocar la ventana
@@ -40,7 +47,20 @@ param(
   [switch]$Ayuda
 )
 
-$script:VERSION = '1.3'
+# ── acentos
+#
+# PowerShell 5.1 lee en ANSI todo archivo que no lleve BOM, y entonces
+# cada acento llega partido en dos caracteres: 'á' mide 2 en vez de 1.
+# Cuando pasa, el archivo se relee diciéndole que es UTF-8 y se ejecuta
+# esa versión. No hay vuelta atrás posible: el texto releído ya trae los
+# acentos enteros, así que la condición no se cumple una segunda vez.
+if ($PSCommandPath -and 'á'.Length -ne 1 -and (Test-Path $PSCommandPath)) {
+  $bien = [IO.File]::ReadAllText($PSCommandPath, [Text.UTF8Encoding]::new($false))
+  & ([scriptblock]::Create($bien)) @PSBoundParameters
+  return
+}
+
+$script:VERSION = '1.4'
 $script:URL_SCRIPT = 'https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1'
 
 # Se guardan aquí porque hacen falta para volver a lanzarse como

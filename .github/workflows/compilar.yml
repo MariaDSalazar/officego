@@ -36,6 +36,28 @@ jobs:
         shell: pwsh
         run: ./test.ps1
 
+      # Estas dos existen porque la 1.3 se subio rota: el arranque por
+      # irm|iex no funcionaba y media interfaz no respondia a los clics.
+      - name: El arranque funciona por las dos vias
+        shell: pwsh
+        run: ./prueba-arranque.ps1
+
+      - name: La ventana no se solapa
+        shell: pwsh
+        run: |
+          ./prueba-interfaz.ps1
+          ./prueba-interfaz.ps1 -Factor 1.15   # con la letra mas ancha
+
+      # Lo de arriba corre en PowerShell 7. El que trae Windows es el 5.1
+      # y no lee igual: sin BOM toma el archivo como ANSI y parte los
+      # acentos, que es lo que arregla la relectura de 0-parametros.ps1.
+      # Aqui es el unico sitio donde eso se puede comprobar de verdad.
+      - name: Lo mismo en el PowerShell que trae Windows
+        shell: powershell
+        run: |
+          .\prueba-arranque.ps1
+          .\prueba-interfaz.ps1
+
       - name: Compilar OfficeGo.exe con el csc.exe de Windows
         shell: cmd
         run: call compilar-exe.bat < nul

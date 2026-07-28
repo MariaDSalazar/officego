@@ -1,4 +1,4 @@
-﻿# =====================================================================
+# =====================================================================
 #
 #   ██████  ███████ ███████ ██  ██████ ███████  ██████   ██████
 #  ██    ██ ██      ██      ██ ██      ██      ██       ██    ██
@@ -38,6 +38,13 @@
 #
 #  que crea un bloque de script de verdad y sí los acepta. Sin ningún
 #  parámetro se abre la ventana, que es lo habitual.
+#
+#  ESTE ARCHIVO NO LLEVA BOM, y es a propósito. Con BOM, el carácter
+#  invisible del principio se cuela en el texto que devuelve irm, param
+#  deja de ser lo primero del bloque y PowerShell lo toma por una llamada
+#  a un comando: "The assignment expression is not valid". Como sin BOM
+#  PowerShell 5.1 lee el archivo en ANSI y parte los acentos, más abajo
+#  hay una relectura que lo arregla.
 # =====================================================================
 param(
   # Qué instalar, sin tocar la ventana
@@ -70,7 +77,20 @@ param(
   [switch]$Ayuda
 )
 
-$script:VERSION = '1.3'
+# ── acentos
+#
+# PowerShell 5.1 lee en ANSI todo archivo que no lleve BOM, y entonces
+# cada acento llega partido en dos caracteres: 'á' mide 2 en vez de 1.
+# Cuando pasa, el archivo se relee diciéndole que es UTF-8 y se ejecuta
+# esa versión. No hay vuelta atrás posible: el texto releído ya trae los
+# acentos enteros, así que la condición no se cumple una segunda vez.
+if ($PSCommandPath -and 'á'.Length -ne 1 -and (Test-Path $PSCommandPath)) {
+  $bien = [IO.File]::ReadAllText($PSCommandPath, [Text.UTF8Encoding]::new($false))
+  & ([scriptblock]::Create($bien)) @PSBoundParameters
+  return
+}
+
+$script:VERSION = '1.4'
 $script:URL_SCRIPT = 'https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1'
 
 # Se guardan aquí porque hacen falta para volver a lanzarse como
@@ -506,8 +526,16 @@ if (-not $script:SIN_INTERFAZ) {
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 try { [Windows.Forms.Application]::EnableVisualStyles() } catch {}
-try { Add-Type -MemberDefinition '[DllImport("user32.dll")] public static extern bool SetProcessDPIAware();' `
-        -Name D -Namespace W -PassThru | ForEach-Object { [void]$_::SetProcessDPIAware() } } catch {}
+
+# Aquí había un SetProcessDPIAware() y era justo lo que descolocaba la
+# ventana. Al declararse DPI-aware, Windows deja de escalar y entonces
+# las letras, que van en puntos, crecen con la pantalla mientras las
+# coordenadas, que van en píxeles, se quedan igual: a 125 % se solapaban
+# 21 controles y a 150 % ciento y pico. Sin esa llamada Windows estira
+# la ventana entera: se ve un pelín menos nítida en pantallas densas,
+# pero proporcionada y sin nada encima de nada.
+#
+# Lo comprueba prueba-interfaz.ps1 -Factor 1.5
 
 $C = @{
   Fondo='#F6F7F9'; Panel='#FFFFFF'; Borde='#E0E3E7'; Azul='#0B57D0'; AzulSuave='#E8F0FE'
@@ -518,6 +546,23 @@ $C = @{
 function Hex($h) { [Drawing.ColorTranslator]::FromHtml($h) }
 function Fuente($t = 9, $b = $false) {
   New-Object Drawing.Font('Segoe UI', $t, $(if ($b) { [Drawing.FontStyle]::Bold } else { [Drawing.FontStyle]::Regular }))
+}
+
+# Pone el mismo clic en un control y en todo lo que lleva dentro, con el
+# mismo Tag. Hacen falta las dos cosas: si se pulsa justo encima del icono
+# o del texto, el evento lo recibe ese hijo y no la tarjeta, y entonces
+# $this.Tag tiene que valer lo mismo o el manejador no sabe qué se pulsó.
+#
+# Ojo con GetNewClosure() aquí: dentro de un closure $script: apunta a su
+# propio módulo, así que $script:sel se pierde y el clic no hace nada. Por
+# eso lo que necesita saber el manejador viaja en el Tag y no capturado.
+function Set-ClicEnTodo($ctl, $accion) {
+  $ctl.Add_Click($accion)
+  foreach ($h in $ctl.Controls) {
+    $h.Cursor = $ctl.Cursor
+    $h.Tag    = $ctl.Tag
+    Set-ClicEnTodo $h $accion
+  }
 }
 
 function Set-Redondeado($ctl, $r = 8) {
@@ -635,7 +680,7 @@ foreach ($p in $script:PANTALLAS) {
   $b.TextAlign = 'MiddleLeft'; $b.Font = Fuente 9.5
   $b.BackColor = Hex $C.Panel; $b.ForeColor = Hex $C.Gris; $b.Cursor = 'Hand'
   $b.Tag = $p
-  $b.Add_Click({ Mostrar-Pantalla $this.Tag }.GetNewClosure())
+  $b.Add_Click({ Mostrar-Pantalla $this.Tag })
   Set-Redondeado $b 7
   $side.Controls.Add($b)
   $script:botonesNav[$p] = $b
@@ -727,7 +772,10 @@ function Pantalla-Instalar {
   # tarjetas de producto, 3 por fila
   $i = 0
   foreach ($p in $script:PRODUCTOS) {
-    $col = $i % 3; $fila = [int]($i / 3)
+    # Floor, no [int]: en PowerShell [int] REDONDEA, así que [int](5/3)
+    # da 2 y la sexta tarjeta se iba una fila de más, encima de los
+    # desplegables de edición. Con Floor cada tres tarjetas bajan una fila.
+    $col = $i % 3; $fila = [Math]::Floor($i / 3)
     $x = 18 + $col * 158; $y = 36 + $fila * 92
     $elegida = ($p.Clave -eq $script:sel.Producto)
     $t = New-Caja $x $y 148 84 $(if ($elegida) { $C.AzulClaro } else { $C.Panel }) `
@@ -745,9 +793,8 @@ function Pantalla-Instalar {
 
     $clic = { $script:sel.Producto = $this.Tag.Clave
               $script:sel.Edicion = @((Get-Producto $this.Tag.Clave).Ediciones.Keys)[0]
-              Ajustar-Seleccion; Mostrar-Pantalla 'Instalar' }.GetNewClosure()
-    $t.Add_Click($clic)
-    foreach ($h in $t.Controls) { $h.Cursor = 'Hand'; $h.Add_Click($clic) }
+              Ajustar-Seleccion; Mostrar-Pantalla 'Instalar' }
+    Set-ClicEnTodo $t $clic
     Set-Redondeado $t 9
     $cont.Controls.Add($t)
     $i++
@@ -808,9 +855,8 @@ function Pantalla-Instalar {
         $clic = { $a = $this.Tag.App
                   if ($a -in $script:sel.Apps) { $script:sel.Apps = @($script:sel.Apps | Where-Object { $_ -ne $a }) }
                   else { $script:sel.Apps += $a }
-                  Mostrar-Pantalla 'Instalar' }.GetNewClosure()
-        $ch.Add_Click($clic)
-        foreach ($h in $ch.Controls) { $h.Cursor = 'Hand'; $h.Add_Click($clic) }
+                  Mostrar-Pantalla 'Instalar' }
+        Set-ClicEnTodo $ch $clic
       }
       Set-Redondeado $ch 16
       $cont.Controls.Add($ch)
@@ -825,7 +871,9 @@ function Pantalla-Instalar {
   foreach ($c in $script:COMPLEMENTOS) {
     $disponible = [bool]$c.Ids[$prod.Clave]
     $on = ($c.Clave -in $script:sel.Complementos) -and $disponible
-    $ch = New-Caja $x ($yf + 20) 152 32 $(if ($on) { $C.AzulClaro } else { $C.Panel }) `
+    # 168 y no 152: «Project Professional» es el nombre más largo y con
+    # una letra un poco más ancha se salía de la caja por la derecha
+    $ch = New-Caja $x ($yf + 20) 168 32 $(if ($on) { $C.AzulClaro } else { $C.Panel }) `
                    $(if ($on) { $C.Azul } else { $C.Borde })
     $ch.Tag = @{ Borde = $(if ($on) { $C.Azul } else { $C.Borde }); Comp = $c.Clave }
     $ch.Controls.Add((New-Icono $c.Sigla $(if ($disponible) { $c.Color } else { '#C7CCD1' }) 5 5 22 8))
@@ -835,13 +883,12 @@ function Pantalla-Instalar {
       $clic = { $a = $this.Tag.Comp
                 if ($a -in $script:sel.Complementos) { $script:sel.Complementos = @($script:sel.Complementos | Where-Object { $_ -ne $a }) }
                 else { $script:sel.Complementos += $a }
-                Mostrar-Pantalla 'Instalar' }.GetNewClosure()
-      $ch.Add_Click($clic)
-      foreach ($h in $ch.Controls) { $h.Cursor = 'Hand'; $h.Add_Click($clic) }
+                Mostrar-Pantalla 'Instalar' }
+      Set-ClicEnTodo $ch $clic
     }
     Set-Redondeado $ch 16
     $cont.Controls.Add($ch)
-    $x += 160
+    $x += 176
   }
 
   # resumen a la derecha
@@ -1043,7 +1090,8 @@ function Pantalla-Ayuda {
   $h.Controls.Add((New-Icono 'O' '#3B7DD8' 18 16 44 15))
   $l1 = New-Lbl "OfficeGo $script:VERSION" 78 18 14 '#FFFFFF' $true
   $h.Controls.Add($l1)
-  $h.Controls.Add((New-Lbl 'Instalador y activador de Microsoft Office para Windows 10 y 11' 78 44 8.5 '#D6E4F7'))
+  # a 44 rozaba el título de 14 pt en cuanto la letra era un poco mayor
+  $h.Controls.Add((New-Lbl 'Instalador y activador de Microsoft Office para Windows 10 y 11' 78 48 8.5 '#D6E4F7'))
   Set-Redondeado $h 9
   $cont.Controls.Add($h)
 
@@ -1062,7 +1110,7 @@ function Pantalla-Ayuda {
     $lk.AutoSize = $true; $lk.Font = Fuente 8.5
     $lk.LinkColor = Hex $C.Gris
     $lk.Tag = $a[2]
-    $lk.Add_LinkClicked({ Start-Process $this.Tag }.GetNewClosure())
+    $lk.Add_LinkClicked({ Start-Process $this.Tag })
     $p.Controls.Add($lk)
     Set-Redondeado $p 9
     $cont.Controls.Add($p)
@@ -1137,12 +1185,16 @@ function Pantalla-Inicio {
   $r.Controls.Add($lm)
 
   $b = New-Boton 'Instalar esto' 640 26 140 38 $true
+  # la versión recomendada viaja en el Tag y no capturada en un closure:
+  # dentro de GetNewClosure() $script:sel apunta a otro sitio y el botón
+  # se quedaba sin hacer nada
+  $b.Tag = $rec.Clave
   $b.Add_Click({
-    $script:sel.Producto = $rec.Clave
-    $script:sel.Edicion  = @((Get-Producto $rec.Clave).Ediciones.Keys)[0]
+    $script:sel.Producto = $this.Tag
+    $script:sel.Edicion  = @((Get-Producto $this.Tag).Ediciones.Keys)[0]
     Ajustar-Seleccion
     Mostrar-Pantalla 'Instalar'
-  }.GetNewClosure())
+  })
   $r.Controls.Add($b)
   Set-Redondeado $r 11
   $cont.Controls.Add($r)
@@ -1471,7 +1523,9 @@ function Get-RutaRelanzable {
   if ($PSCommandPath -and (Test-Path $PSCommandPath)) { return $PSCommandPath }
 
   $tmp = Join-Path $env:TEMP 'OfficeGo.ps1'
-  # BOM UTF-8, o PowerShell 5.1 lo leerá como ANSI y romperá los acentos
+  # Esta copia solo se ejecuta con -File, nunca como texto, así que aquí
+  # el BOM sí conviene: ahorra la relectura por los acentos y no puede
+  # romper el param(), que es lo que pasa por la otra vía.
   $utf8 = [Text.UTF8Encoding]::new($true)
 
   if ($script:FUENTE -and $script:FUENTE.Length -gt 2000) {
@@ -1546,6 +1600,47 @@ function Write-Paso($texto) { Write-Host "  $texto" -ForegroundColor Gray }
 function Write-Bien($texto) { Write-Host "  $texto" -ForegroundColor Green }
 function Write-Mal($texto)  { Write-Host "  $texto" -ForegroundColor Red }
 
+# Todo lo que se puede decir que está mal sin tocar el equipo. Se mira
+# ANTES de pedir permisos: sacar el aviso de Windows para luego decir que
+# la edición no existe es hacer trabajar al usuario para nada.
+function Test-Peticion {
+  if (-not ($Instalar -or $Activar -or $Desinstalar)) {
+    return @('-Silencioso necesita saber qué hacer.',
+             'Añada -Instalar, -Activar o -Desinstalar. Con -Ayuda se ven los ejemplos.')
+  }
+  if ($Instalar) {
+    $prod = Get-Producto $Instalar
+    if (-not $prod.Ediciones.Contains($Edicion)) {
+      return @("$($prod.Nombre) no tiene la edición $Edicion.",
+               "Tiene: $($prod.Ediciones.Keys -join ', ')")
+    }
+    if ($prod.Via -eq 'ODT') {
+      $malas = @($Apps | Where-Object { -not $script:APLICACIONES[$_] })
+      if ($malas) {
+        return @("No existe$(if ($malas.Count -gt 1) { 'n' }) $($malas -join ', ').",
+                 "Hay: $($script:APLICACIONES.Keys -join ', ')")
+      }
+    }
+    foreach ($c in $Complementos) {
+      $comp = $script:COMPLEMENTOS | Where-Object { $_.Clave -eq $c } | Select-Object -First 1
+      if (-not $comp) {
+        return @("No existe el complemento $c.",
+                 "Hay: $(($script:COMPLEMENTOS.Clave) -join ', ')")
+      }
+      # existe, pero puede que no para esta versión de Office
+      if (-not $comp.Ids[$prod.Clave]) {
+        return @("$($comp.Nombre) no sale para $($prod.Nombre).",
+                 "Sale para: $(($comp.Ids.Keys | Sort-Object) -join ', ')")
+      }
+    }
+    if (-not $script:IDIOMAS[$Idioma]) {
+      return @("El idioma $Idioma no está en la lista.",
+               "Hay: $($script:IDIOMAS.Keys -join ', ')")
+    }
+  }
+  $null
+}
+
 function Invoke-Consola {
   Write-Host ""
   Write-Host "  OfficeGo $script:VERSION" -ForegroundColor Cyan
@@ -1566,11 +1661,6 @@ function Invoke-Consola {
   # ── instalar
   if ($Instalar) {
     $prod = Get-Producto $Instalar
-    if (-not $prod.Ediciones.Contains($Edicion)) {
-      Write-Mal "$($prod.Nombre) no tiene la edición $Edicion."
-      Write-Paso "Tiene: $($prod.Ediciones.Keys -join ', ')"
-      return 1
-    }
     $bits = if ($Bits) { $Bits } elseif ([Environment]::Is64BitOperatingSystem) { '64' } else { '32' }
 
     Write-Paso "$($prod.Nombre) · $Edicion · $Idioma · $bits bits"
@@ -1643,14 +1733,20 @@ function Actualizar-BarraEstado {
     @($(if (Test-Internet) { 'Conectado' } else { 'Sin internet' }), $(if (Test-Internet) { $C.Verde } else { $C.Rojo })),
     @($(if ($eq.Defender) { 'Defender activo' } else { 'Defender apagado' }), '#E8A33D')
   )
+  # El ancho lo dice el propio control: al ser AutoSize, en cuanto está
+  # creado su Width es lo que de verdad mide el texto. Antes se calculaba
+  # a ojo con 6,1 px por letra, y en cuanto el nombre del Windows era
+  # largo los estados se montaban unos encima de otros.
   $x = 18
   foreach ($it in $items) {
     $barra.Controls.Add((Punto $x $it[1]))
     $l = New-Lbl $it[0] ($x + 14) 7 8 $C.Gris
     $barra.Controls.Add($l)
-    $x += 16 + [int]($it[0].Length * 6.1) + 18
+    $x += 14 + $l.Width + 20
   }
-  $v = New-Lbl "OfficeGo $script:VERSION" 920 7 8 $C.GrisClaro
+  # la versión, pegada a la derecha y nunca encima de lo anterior
+  $v = New-Lbl "OfficeGo $script:VERSION" 0 7 8 $C.GrisClaro
+  $v.Left = [Math]::Max($x, $barra.Width - $v.Width - 18)
   $barra.Controls.Add($v)
 }
 
@@ -1684,12 +1780,12 @@ function Start-OfficeGo {
   $porConsola = $Silencioso -or $Instalar -or $Desinstalar -or $Activar
   if (-not $porConsola) { Start-Ventana; return }
 
-  # Antes de pedir permisos, mirar que haya algo que hacer: molestar con el
-  # aviso de Windows para luego decir «no me ha dicho qué» es de mal gusto.
-  if (-not ($Instalar -or $Activar -or $Desinstalar)) {
+  $mal = Test-Peticion
+  if ($mal) {
     Write-Host ""
-    Write-Mal '-Silencioso necesita saber qué hacer.'
-    Write-Paso 'Añada -Instalar, -Activar o -Desinstalar. Con -Ayuda se ven los ejemplos.'
+    Write-Mal  $mal[0]
+    Write-Paso $mal[1]
+    Write-Host ""
     exit 1
   }
 

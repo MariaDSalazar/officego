@@ -30,12 +30,16 @@ function Pantalla-Inicio {
   $r.Controls.Add($lm)
 
   $b = New-Boton 'Instalar esto' 640 26 140 38 $true
+  # la versión recomendada viaja en el Tag y no capturada en un closure:
+  # dentro de GetNewClosure() $script:sel apunta a otro sitio y el botón
+  # se quedaba sin hacer nada
+  $b.Tag = $rec.Clave
   $b.Add_Click({
-    $script:sel.Producto = $rec.Clave
-    $script:sel.Edicion  = @((Get-Producto $rec.Clave).Ediciones.Keys)[0]
+    $script:sel.Producto = $this.Tag
+    $script:sel.Edicion  = @((Get-Producto $this.Tag).Ediciones.Keys)[0]
     Ajustar-Seleccion
     Mostrar-Pantalla 'Instalar'
-  }.GetNewClosure())
+  })
   $r.Controls.Add($b)
   Set-Redondeado $r 11
   $cont.Controls.Add($r)

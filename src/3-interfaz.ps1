@@ -6,8 +6,16 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 try { [Windows.Forms.Application]::EnableVisualStyles() } catch {}
-try { Add-Type -MemberDefinition '[DllImport("user32.dll")] public static extern bool SetProcessDPIAware();' `
-        -Name D -Namespace W -PassThru | ForEach-Object { [void]$_::SetProcessDPIAware() } } catch {}
+
+# Aquí había un SetProcessDPIAware() y era justo lo que descolocaba la
+# ventana. Al declararse DPI-aware, Windows deja de escalar y entonces
+# las letras, que van en puntos, crecen con la pantalla mientras las
+# coordenadas, que van en píxeles, se quedan igual: a 125 % se solapaban
+# 21 controles y a 150 % ciento y pico. Sin esa llamada Windows estira
+# la ventana entera: se ve un pelín menos nítida en pantallas densas,
+# pero proporcionada y sin nada encima de nada.
+#
+# Lo comprueba prueba-interfaz.ps1 -Factor 1.5
 
 $C = @{
   Fondo='#F6F7F9'; Panel='#FFFFFF'; Borde='#E0E3E7'; Azul='#0B57D0'; AzulSuave='#E8F0FE'
@@ -18,6 +26,23 @@ $C = @{
 function Hex($h) { [Drawing.ColorTranslator]::FromHtml($h) }
 function Fuente($t = 9, $b = $false) {
   New-Object Drawing.Font('Segoe UI', $t, $(if ($b) { [Drawing.FontStyle]::Bold } else { [Drawing.FontStyle]::Regular }))
+}
+
+# Pone el mismo clic en un control y en todo lo que lleva dentro, con el
+# mismo Tag. Hacen falta las dos cosas: si se pulsa justo encima del icono
+# o del texto, el evento lo recibe ese hijo y no la tarjeta, y entonces
+# $this.Tag tiene que valer lo mismo o el manejador no sabe qué se pulsó.
+#
+# Ojo con GetNewClosure() aquí: dentro de un closure $script: apunta a su
+# propio módulo, así que $script:sel se pierde y el clic no hace nada. Por
+# eso lo que necesita saber el manejador viaja en el Tag y no capturado.
+function Set-ClicEnTodo($ctl, $accion) {
+  $ctl.Add_Click($accion)
+  foreach ($h in $ctl.Controls) {
+    $h.Cursor = $ctl.Cursor
+    $h.Tag    = $ctl.Tag
+    Set-ClicEnTodo $h $accion
+  }
 }
 
 function Set-Redondeado($ctl, $r = 8) {
@@ -135,7 +160,7 @@ foreach ($p in $script:PANTALLAS) {
   $b.TextAlign = 'MiddleLeft'; $b.Font = Fuente 9.5
   $b.BackColor = Hex $C.Panel; $b.ForeColor = Hex $C.Gris; $b.Cursor = 'Hand'
   $b.Tag = $p
-  $b.Add_Click({ Mostrar-Pantalla $this.Tag }.GetNewClosure())
+  $b.Add_Click({ Mostrar-Pantalla $this.Tag })
   Set-Redondeado $b 7
   $side.Controls.Add($b)
   $script:botonesNav[$p] = $b

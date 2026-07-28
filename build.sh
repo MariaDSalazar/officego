@@ -62,12 +62,16 @@ CAB
   echo "Start-OfficeGo"
 } > "$SALIDA"
 
-# BOM UTF-8: sin él PowerShell 5.1 lee el archivo como ANSI y rompe los acentos
+# SIN BOM, y es a propósito: con BOM, ese carácter invisible viaja dentro
+# del texto que devuelve irm, param() deja de ser lo primero del bloque y
+# PowerShell lo parsea como una llamada a un comando. Los acentos en
+# PowerShell 5.1 los arregla la relectura de 0-parametros.ps1.
 python3 - "$SALIDA" <<'PY'
 import sys, pathlib
 p = pathlib.Path(sys.argv[1]); d = p.read_bytes()
-if not d.startswith(b'\xef\xbb\xbf'):
-    p.write_bytes(b'\xef\xbb\xbf' + d)
+if d.startswith(b'\xef\xbb\xbf'):
+    p.write_bytes(d[3:])
+assert not p.read_bytes().startswith(b'\xef\xbb\xbf'), 'quedo BOM'
 PY
 
 echo "→ $SALIDA · $(wc -l < "$SALIDA") líneas · $(du -h "$SALIDA" | cut -f1)"
