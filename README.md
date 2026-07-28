@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/badge/Portable-un_solo_archivo-0B57D0" alt="portable">
     <img src="https://img.shields.io/badge/Sin_dependencias-0_instalaciones-16A34A" alt="sin dependencias">
     <img src="https://img.shields.io/badge/Licencia-MIT-6366F1" alt="MIT">
-    <img src="https://img.shields.io/badge/versión-1.4_·_2.0-0B57D0" alt="versiones">
+    <img src="https://img.shields.io/badge/versión-1.5_·_2.0-0B57D0" alt="versiones">
     <img src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" alt="Tauri">
   </p>
   <p>

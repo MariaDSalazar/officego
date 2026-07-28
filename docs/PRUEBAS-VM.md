@@ -20,7 +20,7 @@ puede salir mal aquí es de posición de controles o de permisos, y se arregla r
 
 ---
 
-## 1 · La versión de PowerShell (1.4)
+## 1 · La versión de PowerShell (1.5)
 
 > **Lo que se arregló en la 1.4 y hay que mirar primero.** La 1.3 salió con el
 > comando roto y media ventana muerta. Si estas tres cosas van, lo demás es afinar:

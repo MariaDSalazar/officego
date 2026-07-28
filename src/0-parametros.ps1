@@ -60,7 +60,7 @@ if ($PSCommandPath -and 'á'.Length -ne 1 -and (Test-Path $PSCommandPath)) {
   return
 }
 
-$script:VERSION = '1.4'
+$script:VERSION = '1.5'
 $script:URL_SCRIPT = 'https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1'
 
 # Se guardan aquí porque hacen falta para volver a lanzarse como
