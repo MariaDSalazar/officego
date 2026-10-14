@@ -159,6 +159,15 @@ Comprobar 'descarga con /download' ($script:lanzado -match '/download')
 Remove-Item function:Start-Process
 Remove-Item -LiteralPath $destino -Recurse -Force
 
+Write-Host "`nOFFICE 2016 Y 2013" -ForegroundColor Cyan
+function Invoke-Descarga { param($Url, $Destino, $AlAvanzar) $script:pedida = $Url; $Destino }
+function Start-Process { }
+Start-InstalacionC2R $p2016 'ProPlus' 'es-es' '32' $null | Out-Null
+Comprobar 'a 32 bits se pide platform=x86' ($script:pedida -match 'platform=x86&') $script:pedida
+Start-InstalacionC2R $p2016 'ProPlus' 'es-es' '64' $null | Out-Null
+Comprobar 'a 64 bits se pide platform=x64' ($script:pedida -match 'platform=x64&') $script:pedida
+Remove-Item function:Start-Process, function:Invoke-Descarga
+
 Write-Host ""
 if ($fallos) { Write-Host "$fallos prueba(s) fallando" -ForegroundColor Red; exit 1 }
 Write-Host "Todas las pruebas pasan" -ForegroundColor Green

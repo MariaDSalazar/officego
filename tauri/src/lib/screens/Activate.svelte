@@ -47,6 +47,8 @@
 
 {#if app.machine?.defender}
   <Notice tone="warn">{t('activate:defender')}</Notice>
+{:else if app.machine?.defender === null}
+  <Notice tone="warn">{t('activate:defenderUnknown')}</Notice>
 {/if}
 <Notice>{t('activate:legal')}</Notice>
 

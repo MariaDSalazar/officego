@@ -5,5 +5,6 @@
   "defenderOn": "Defender activo",
   "defenderOff": "Defender apagado",
   "officeInstalled": "Office instalado",
-  "officeMissing": "Office no instalado"
+  "officeMissing": "Office no instalado",
+  "defenderUnknown": "Defender: no responde"
 }

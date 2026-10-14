@@ -6,5 +6,6 @@
   "notNow": "Not now",
   "yes": "yes",
   "no": "no",
-  "checking": "Checking this computer…"
+  "checking": "Checking this computer…",
+  "unknown": "unknown"
 }

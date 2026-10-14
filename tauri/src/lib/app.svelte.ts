@@ -117,7 +117,11 @@ class App {
     this.go('install');
   };
 
-  toggleApp = (app: string) => this.choose({ apps: toggle(this.selection.apps, app) });
+  /** The last app cannot be unticked: an installation with no apps installs nothing. */
+  toggleApp = (app: string) => {
+    const apps = toggle(this.selection.apps, app);
+    if (apps.length) this.choose({ apps });
+  };
 
   toggleAddOn = (addOn: string) => this.choose({ addOns: toggle(this.selection.addOns, addOn) });
 
@@ -193,6 +197,13 @@ class App {
     });
   };
 
+  /** Offers to reopen with administrator rights when they are missing, before asking anything else. */
+  private lacksAdmin = async () => {
+    if (this.machine?.admin) return false;
+    await this.offerAdmin('admin:needed');
+    return true;
+  };
+
   private offerAdmin = async (messageKey: 'admin:startup' | 'admin:needed') => {
     const answer = await this.ask({
       title: this.t('admin:title'),
@@ -214,7 +225,7 @@ class App {
 
   install = async () => {
     const { catalog, product } = this;
-    if (!catalog || !product) return;
+    if (!catalog || !product || (await this.lacksAdmin())) return;
     const edition = catalog.editions.find((candidate) => candidate.key === this.selection.edition)?.name ?? '';
     const apps = product.route === 'c2r' ? this.t('install:wholeSuite') : this.selection.apps.join(', ');
     const answer = await this.ask({
@@ -263,6 +274,7 @@ class App {
   };
 
   applyKey = async () => {
+    if (await this.lacksAdmin()) return;
     const key = await this.ask({
       title: this.t('activate:keyTitle'),
       message: this.t('activate:keyMessage'),
@@ -279,6 +291,7 @@ class App {
   };
 
   activateWithMas = async () => {
+    if (await this.lacksAdmin()) return;
     const answer = await this.ask({
       title: this.t('activate:masConfirmTitle'),
       message: this.t('activate:masConfirm'),
@@ -295,6 +308,7 @@ class App {
   };
 
   repair = async () => {
+    if (await this.lacksAdmin()) return;
     const answer = await this.ask({
       title: this.t('tools:repairTitle'),
       message: this.t('tools:repairConfirm'),
@@ -309,6 +323,7 @@ class App {
   };
 
   uninstall = async () => {
+    if (await this.lacksAdmin()) return;
     const word = this.t('tools:uninstallWord');
     const answer = await this.ask({
       title: this.t('tools:uninstallTitle'),
@@ -367,7 +382,7 @@ class App {
       resolution: machine.resolution,
       disks: disks.join('\n'),
       admin: this.t(machine.admin ? 'common:yes' : 'common:no'),
-      defender: this.t(machine.defender ? 'common:yes' : 'common:no'),
+      defender: this.t(machine.defender === null ? 'common:unknown' : machine.defender ? 'common:yes' : 'common:no'),
       office: office ? `${office.products} ${office.version} ${office.language} ${office.architecture}` : this.t('machine:noOffice'),
       recommended: productOf(catalog, recommendation.product).name,
       reason: this.t(`recommendation:reasons.${recommendation.reason}`),

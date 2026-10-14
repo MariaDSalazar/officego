@@ -245,9 +245,11 @@ function Get-EquipoInfo {
   $so   = Get-CimInstance Win32_OperatingSystem
   $cpu  = Get-CimInstance Win32_Processor | Select-Object -First 1
   # Con dos gráficas, o en escritorio remoto, la primera puede ser el
-  # adaptador genérico de Microsoft: se prefiere una con controlador propio.
+  # adaptador genérico de Microsoft: se prefiere una con controlador propio
+  # y, entre esas, la que mueve una pantalla (la otra no tiene resolución).
   $gpu  = Get-CimInstance Win32_VideoController |
-            Sort-Object { $_.Name -match 'Microsoft Basic|Standard VGA|Remote Display' } |
+            Sort-Object { $_.Name -match 'Microsoft Basic|Standard VGA|Remote Display' },
+                        { -not $_.CurrentHorizontalResolution } |
             Select-Object -First 1
   $rams = @(Get-CimInstance Win32_PhysicalMemory)
   $build = [Environment]::OSVersion.Version.Build
@@ -356,6 +358,12 @@ function Invoke-Descarga {
 
   $req = [Net.HttpWebRequest]::Create($Url); $req.Timeout = 30000
   $res = $req.GetResponse()
+  # Cuando Microsoft no tiene lo pedido redirige a una página de aviso: sin
+  # esto se guardaba como OfficeSetup.exe y fallaba al ejecutarla.
+  if ($res.ContentType -like 'text/html*') {
+    $res.Close()
+    throw "Microsoft no ofrece esa descarga ahora mismo ($($res.ResponseUri.Host))."
+  }
   $total = $res.ContentLength
   $ent = $res.GetResponseStream(); $sal = [IO.File]::Create($Destino)
   $buf = New-Object byte[] 65536
@@ -453,7 +461,9 @@ function Start-InstalacionC2R {
   New-Item -ItemType Directory -Force -Path $script:TRABAJO | Out-Null
   $exe = Join-Path $script:TRABAJO 'OfficeSetup.exe'
   $id  = $Producto.Ediciones[$Edicion]
-  $url = "$($script:C2R_URL)?ProductreleaseID=$id&platform=x$Bits&language=$Idioma&version=$($Producto.Version)"
+  # c2rsetup llama x86 a los 32 bits: con platform=x32 devuelve su página de error
+  $plataforma = if ($Bits -eq '32') { 'x86' } else { 'x64' }
+  $url = "$($script:C2R_URL)?ProductreleaseID=$id&platform=$plataforma&language=$Idioma&version=$($Producto.Version)"
   Invoke-Descarga $url $exe $AlAvanzar | Out-Null
   Start-Process $exe -PassThru
 }

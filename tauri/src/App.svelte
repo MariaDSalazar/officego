@@ -99,7 +99,9 @@
       <span><i class:good={machine.supported}></i>{machine.os} · {machine.build.split('.')[0]}</span>
       <span><i class:good={machine.admin}></i>{t(machine.admin ? 'status:admin' : 'status:noAdmin')}</span>
       <span><i class:good={disk.freeGb >= (app.catalog?.minimumFreeGb ?? 0)}></i>{t('status:free', { free: app.format.gigabytes(disk.freeGb) })}</span>
-      <span><i class="neutral"></i>{t(machine.defender ? 'status:defenderOn' : 'status:defenderOff')}</span>
+      <span
+        ><i class="neutral"></i>{t(machine.defender === null ? 'status:defenderUnknown' : machine.defender ? 'status:defenderOn' : 'status:defenderOff')}</span
+      >
       <span><i class="neutral"></i>{t(app.report?.office ? 'status:officeInstalled' : 'status:officeMissing')}</span>
     {/if}
     <span class="version">OfficeGo {app.version}</span>

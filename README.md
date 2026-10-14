@@ -62,8 +62,8 @@ pantalla.
 | 🖥️ | **Conoce tu equipo** | Procesador con uso en vivo, memoria, cada disco con su ocupación y la tarjeta gráfica con su marca: NVIDIA, AMD o Intel. |
 | 🧰 | **Herramientas** | Reparar la instalación, crear un instalador sin conexión para otros equipos, y desinstalar (pidiendo escribir `BORRAR`). |
 | 🚑 | **Ayuda de verdad** | Los errores frecuentes con el **mensaje literal** que sale en pantalla y el comando exacto que los arregla. |
-| 🪶 | **Portable** | Un `.ps1` de 76 KB. Cabe en un USB, no deja rastro en el registro, no necesita instalarse. |
-| 🧪 | **Se prueba sola** | 44 pruebas del motor, el arranque por las dos vías, y un analizador que monta las seis pantallas con controles simulados y busca controles solapados. Todo corre en cada compilación, y también en el PowerShell 5.1 que trae Windows. |
+| 🪶 | **Portable** | Un `.ps1` de 90 KB. Cabe en un USB, no deja rastro en el registro, no necesita instalarse. |
+| 🧪 | **Se prueba sola** | 65 pruebas del motor, el arranque por las dos vías, y un analizador que monta las seis pantallas con controles simulados y busca controles solapados. Todo corre en cada compilación, y también en el PowerShell 5.1 que trae Windows. |
 | ⚡ | **Desatendido** | `-Instalar 2021 -Apps Word,Excel -Silencioso -Activar` deja un aula entera igual, sin que nadie toque nada. Y si faltan permisos, se los pide y se relanza con las mismas opciones. |
 | 🔒 | **Sin telemetría** | No manda nada a ninguna parte. El código está aquí para leerlo. |
 
@@ -107,7 +107,7 @@ officego/
 │   ├── 6-acciones.ps1      Qué pasa al pulsar cada botón
 │   ├── 7-arranque.ps1      Elevación, modo consola y puesta en marcha
 │   └── Lanzador.cs         Envoltorio del .exe (C#, compilación opcional)
-├── test.ps1            → 63 pruebas del motor
+├── test.ps1            → 65 pruebas del motor
 ├── prueba-arranque.ps1 → que arranque por irm|iex y como archivo
 ├── prueba-interfaz.ps1 → monta las pantallas y busca solapes, sin Windows
 ├── prueba-exe.ps1      → que el .exe lleve dentro lo que dice (solo Windows)
@@ -157,7 +157,7 @@ avisos que correspondan.
 | | **1.x · PowerShell** | **2.x · escritorio** |
 |---|---|---|
 | Interfaz | Windows Forms | Svelte 5 sobre Tauri 2 (Rust) |
-| Peso | 88 KB | ~4 MB (instalador de 1,5 MB) |
+| Peso | 90 KB | ~4 MB (instalador de 1,5 MB) |
 | Windows 10 antiguo | Funciona siempre | Necesita WebView2 |
 | Antivirus | Tranquilo | SmartScreen avisa la primera vez |
 | `irm \| iex` | Sí | No, hay que descargar |
@@ -309,7 +309,7 @@ la protección un momento y **volver a encenderla al terminar**.
 
 ## Estado del proyecto
 
-Cada compilación pasa las 44 pruebas del motor, comprueba que el script arranque por
+Cada compilación pasa las 65 pruebas del motor, comprueba que el script arranque por
 las dos vías y monta las seis pantallas buscando controles solapados. Todo eso se
 repite además en el **PowerShell 5.1 que trae Windows**, que no lee los archivos igual
 que el 7 y es donde se escondía uno de los fallos de la 1.3.
@@ -342,7 +342,7 @@ se solapaban 21 controles. Ya no se declara, así que Windows escala la ventana 
 
 ```bash
 ./build.sh                             # junta src/*.ps1 y valida la sintaxis
-pwsh test.ps1                          # 63 pruebas del motor
+pwsh test.ps1                          # 65 pruebas del motor
 pwsh prueba-arranque.ps1               # que arranque por las dos vías
 pwsh prueba-interfaz.ps1               # que la ventana no se solape
 pwsh prueba-interfaz.ps1 -Factor 1.15  # ídem con la letra más ancha

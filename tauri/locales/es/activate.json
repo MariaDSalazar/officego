@@ -32,5 +32,6 @@
   "masConfirmTitle": "Antes de activar",
   "masConfirm": "MAS es una herramienta externa (massgrave.dev) que OfficeGo ejecutará en segundo plano, sin abrir su menú.\n\nWindows Defender la detecta siempre, por diseño, aunque no sea dañina. Si la protección en tiempo real está encendida puede interrumpirla a mitad de camino.\n\nActivar productos sin licencia va contra los términos de Microsoft.",
   "doneTitle": "Office activado",
-  "done": "Office quedó activado."
+  "done": "Office quedó activado.",
+  "defenderUnknown": "No se pudo saber si Defender u otro antivirus están encendidos. Si lo están, pueden interrumpir a MAS a mitad de camino."
 }

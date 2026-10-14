@@ -5,5 +5,6 @@
   "defenderOn": "Defender on",
   "defenderOff": "Defender off",
   "officeInstalled": "Office installed",
-  "officeMissing": "Office not installed"
+  "officeMissing": "Office not installed",
+  "defenderUnknown": "Defender: no answer"
 }

@@ -10,7 +10,12 @@
 - Se cambió el instalador sin conexión para que deje setup.exe, su configuration.xml e instalar.cmd listos para otro equipo, y se arregló que se rompiera con un & en la carpeta.
 - Se arregló que cambiar de versión o de edición borrara los complementos marcados (Visio, Project) en la 1.x.
 - Se cambió «Solo descargar» para que, con Office 2016 o 2013, avise antes de pedir la carpeta.
-- Se arregló que en equipos con dos gráficas o en escritorio remoto se mostrara el adaptador genérico de Microsoft.
+- Se arregló que Office 2016 y 2013 de 32 bits no se pudieran instalar: se pedía platform=x32 y Microsoft respondía con su página de error.
+- Se arregló que una página de error de Microsoft se guardara como instalador y fallara al abrirse: ahora se avisa de que esa descarga no está disponible.
+- Se arregló que en equipos con dos gráficas o en escritorio remoto se mostrara el adaptador genérico de Microsoft o una gráfica sin pantalla.
+- Se arregló que la versión de escritorio diera Defender por apagado cuando no podía leer su estado, y que entonces no avisara de que el antivirus puede cortar la activación.
+- Se cambió la versión de escritorio para que ofrezca los permisos de administrador antes de confirmar una tarea que los necesita, no después.
+- Se arregló que al desmarcar la última aplicación se volvieran a marcar tres solas.
 - Se arregló que la barra de estado de la 1.x tardara 16 segundos en pintarse sin conexión.
 - Se cambió TLS 1.2 para que se sume a lo que permita el sistema, sin apagar TLS 1.3 donde exista.
 - Se retiró prueba-tauri.ps1: lo comprueban los tipos generados y las pruebas de Rust.

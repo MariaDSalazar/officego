@@ -139,13 +139,14 @@ enum End {
 fn write_engine() -> std::io::Result<PathBuf> {
     let folder = std::env::temp_dir().join(ENGINE_FOLDER);
     std::fs::create_dir_all(folder.join("motor"))?;
-    let with_bom = |text: &str| [UTF8_BOM, text.as_bytes()].concat();
+    let write = |path: PathBuf, text: &str| {
+        let bytes = [UTF8_BOM, text.as_bytes()].concat();
+        if std::fs::read(&path).is_ok_and(|current| current == bytes) { Ok(path) } else { std::fs::write(&path, bytes).map(|()| path) }
+    };
     for (name, text) in ENGINE {
-        std::fs::write(folder.join("motor").join(name), with_bom(text))?;
+        write(folder.join("motor").join(name), text)?;
     }
-    let bridge = folder.join("motor-api.ps1");
-    std::fs::write(&bridge, with_bom(BRIDGE))?;
-    Ok(bridge)
+    write(folder.join("motor-api.ps1"), BRIDGE)
 }
 
 /// The bridge script on disk, written once per run.
