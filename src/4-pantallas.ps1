@@ -347,8 +347,8 @@ function Pantalla-Ayuda {
 
   $cont.Controls.Add((Titulo 'Quién lo hace' 18 126))
   $autores = @(
-    @('Diego Fernando Loján Tenesaca', 'Desarrollo e interfaz', 'https://github.com/DiegoFernandoLojanTenesaca'),
-    @('María del Carmen Salazar Torres', 'Script base y documentación', 'https://github.com/MariaDSalazar')
+    @('Diego Fernando Loján Tenesaca', 'Autor', 'https://github.com/DiegoFernandoLojanTenesaca'),
+    @('María del Carmen Salazar Torres', 'Coautora', 'https://github.com/MariaDSalazar')
   )
   $x = 18
   foreach ($a in $autores) {

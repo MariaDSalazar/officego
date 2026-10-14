@@ -3,8 +3,8 @@
   "subtitle": "Microsoft Office installer for Windows 10 and 11",
   "authors": "Who makes it",
   "roles": {
-    "development": "Development and interface",
-    "engine": "Base script and documentation"
+    "author": "Author",
+    "coAuthor": "Co-author"
   },
   "links": "Links",
   "linkNames": {

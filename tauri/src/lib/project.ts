@@ -9,8 +9,8 @@ export const LINKS = {
 };
 
 export const AUTHORS = [
-  { name: 'Diego Fernando Loján Tenesaca', user: 'DiegoFernandoLojanTenesaca', role: 'development' },
-  { name: 'María del Carmen Salazar Torres', user: 'MariaDSalazar', role: 'engine' },
+  { name: 'Diego Fernando Loján Tenesaca', user: 'DiegoFernandoLojanTenesaca', role: 'author' },
+  { name: 'María del Carmen Salazar Torres', user: 'MariaDSalazar', role: 'coAuthor' },
 ] as const;
 
 export const githubProfile = (user: string) => `https://github.com/${user}`;

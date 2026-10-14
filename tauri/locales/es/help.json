@@ -3,8 +3,8 @@
   "subtitle": "Instalador de Microsoft Office para Windows 10 y 11",
   "authors": "Quién lo hace",
   "roles": {
-    "development": "Desarrollo e interfaz",
-    "engine": "Script base y documentación"
+    "author": "Autor",
+    "coAuthor": "Coautora"
   },
   "links": "Enlaces",
   "linkNames": {
