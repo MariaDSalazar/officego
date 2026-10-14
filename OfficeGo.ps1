@@ -140,32 +140,33 @@ $script:EDICIONES = @{
 }
 
 # Catálogo. Id = Product ID que entiende Microsoft.
+# BuildMinimo = la compilación de Windows más vieja que acepta cada versión.
 $script:PRODUCTOS = @(
   @{ Clave='365';  Nombre='Microsoft 365';   Sub='siempre al día'; Sigla='365'; Color='#D83B01'
-     Tipo='suscripción'; Via='ODT'; Canal='Current'; Peso=1.9
+     Tipo='suscripción'; Via='ODT'; Canal='Current'; Peso=1.9; BuildMinimo=10240
      Ediciones=[ordered]@{ ProPlus='O365ProPlusRetail'; Business='O365BusinessRetail' } }
 
   @{ Clave='2024'; Nombre='Office 2024';     Sub='LTSC';           Sigla='24';  Color='#B7472A'
-     Tipo='volumen'; Via='ODT'; Canal='PerpetualVL2024'; Peso=2.1
+     Tipo='volumen'; Via='ODT'; Canal='PerpetualVL2024'; Peso=2.1; BuildMinimo=19045
      Ediciones=[ordered]@{ ProPlus='ProPlus2024Volume'; Standard='Standard2024Volume' } }
 
   @{ Clave='2021'; Nombre='Office 2021';     Sub='LTSC · recomendada'; Sigla='21'; Color='#C43E1C'
-     Tipo='volumen'; Via='ODT'; Canal='PerpetualVL2021'; Peso=1.9; Recomendado=$true
+     Tipo='volumen'; Via='ODT'; Canal='PerpetualVL2021'; Peso=1.9; BuildMinimo=17763; Recomendado=$true
      Ediciones=[ordered]@{ ProPlus='ProPlus2021Volume'; Standard='Standard2021Volume' } }
 
   @{ Clave='2019'; Nombre='Office 2019';     Sub='perpetua';       Sigla='19';  Color='#D24726'
-     Tipo='volumen'; Via='ODT'; Canal='PerpetualVL2019'; Peso=1.8
+     Tipo='volumen'; Via='ODT'; Canal='PerpetualVL2019'; Peso=1.8; BuildMinimo=10240
      Ediciones=[ordered]@{ ProPlus='ProPlus2019Volume'; Standard='Standard2019Volume' } }
 
   # 2016 y 2013 van por c2rsetup: la suite entera, sin poder excluir nada.
   @{ Clave='2016'; Nombre='Office 2016';     Sub='clásica';        Sigla='16';  Color='#E8590C'
-     Tipo='retail'; Via='C2R'; Version='O16GA'; Peso=2.5
+     Tipo='retail'; Via='C2R'; Version='O16GA'; Peso=2.5; BuildMinimo=7601
      Ediciones=[ordered]@{ ProPlus='ProPlusRetail'; Standard='StandardRetail'
                            Professional='ProfessionalRetail'; HomeBusiness='HomeBusinessRetail'
                            HomeStudent='HomeStudentRetail' } }
 
   @{ Clave='2013'; Nombre='Office 2013';     Sub='antigua';        Sigla='13';  Color='#F08C00'
-     Tipo='retail'; Via='C2R'; Version='O15GA'; Peso=1.5
+     Tipo='retail'; Via='C2R'; Version='O15GA'; Peso=1.5; BuildMinimo=7601
      Ediciones=[ordered]@{ ProPlus='ProPlusRetail'; Standard='StandardRetail'
                            Professional='ProfessionalRetail'; HomeBusiness='HomeBusinessRetail' } }
 )
@@ -578,12 +579,10 @@ function Get-Recomendacion($eq) {
   $avisos = @()
   $b = [int]($eq.Build -split '\.')[0]
 
-  # ── qué versión aguanta este Windows
-  $clave = if     ($b -ge 22000) { '2024' }   # Windows 11
-           elseif ($b -ge 19045) { '2024' }   # Windows 10 22H2
-           elseif ($b -ge 17763) { '2021' }   # Windows 10 1809
-           elseif ($b -ge 10240) { '2019' }   # Windows 10 primeras
-           else                  { '2016' }   # anterior al 10
+  # ── qué versión aguanta este Windows: la más nueva cuyo BuildMinimo cumple
+  $clave = @('2024', '2021', '2019', '2016') |
+    Where-Object { $b -ge (Get-Producto $_).BuildMinimo } | Select-Object -First 1
+  if (-not $clave) { $clave = '2016' }
 
   $motivo = switch ($clave) {
     '2024' { 'El equipo cumple los requisitos de la versión más nueva.' }

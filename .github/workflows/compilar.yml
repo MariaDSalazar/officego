@@ -123,6 +123,7 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm lint
           pnpm check
+          pnpm test
           pnpm build
           cargo fmt --manifest-path src-tauri/Cargo.toml --check
           cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings

@@ -1,10 +1,14 @@
 {
   "start": "Empezar",
   "seeMachine": "Ver el equipo",
-  "installOffice": "Instalar Office",
   "downloadOnly": "Solo descargar",
   "checkLicense": "Comprobar estado",
   "copyReport": "Copiar informe",
   "refresh": "Actualizar",
-  "viewCode": "Ver el código en GitHub"
+  "viewCode": "Ver el código en GitHub",
+  "chooseApps": "Elegir aplicaciones",
+  "review": "Revisar",
+  "backToVersion": "Versión",
+  "backToApps": "Aplicaciones",
+  "installNow": "Instalar ahora"
 }

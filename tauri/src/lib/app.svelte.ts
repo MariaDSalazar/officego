@@ -4,11 +4,14 @@ import { toAppError } from './services/errors';
 import { appVersion, chooseFolder, copyText, openFolder, openLink, relaunchAsAdmin } from './services/system';
 import { checkUpdate, installUpdate } from './services/updates';
 import { BASE_LANGUAGE, formatter, systemLanguage, translator } from './i18n';
-import { DEFAULT_APPS, adjust, officeLanguageFor, pickableApps, productOf, toggle } from './selection';
+import { DEFAULT_APPS, adjust, downloadSizeGb, officeLanguageFor, pickableApps, productOf, toggle } from './selection';
 import type { Catalog, License, MachineReport, Release, Selection, Task, TaskEvent, TaskOutcome, TaskStep } from './types';
 
 export const SCREENS = ['home', 'install', 'activate', 'machine', 'tools', 'help'] as const;
 export type Screen = (typeof SCREENS)[number];
+
+export const INSTALL_STEPS = ['version', 'apps', 'review'] as const;
+export type InstallStep = (typeof INSTALL_STEPS)[number];
 
 export const THEMES = ['system', 'light', 'dark'] as const;
 export type Theme = (typeof THEMES)[number];
@@ -56,6 +59,7 @@ class App {
   ready = $derived(!!this.catalog && !!this.report);
 
   screen = $state<Screen>('home');
+  installStep = $state<InstallStep>('version');
   selection = $state<Selection>(SELECTION_FALLBACK);
 
   busy = $state(false);
@@ -72,6 +76,13 @@ class App {
   systemDisk = $derived(this.machine?.disks.find((disk) => disk.system) ?? null);
   product = $derived(this.catalog ? productOf(this.catalog, this.selection.product) : null);
   pickableApps = $derived(this.catalog ? pickableApps(this.catalog, this.selection) : []);
+  /** What the footer says about the choice while nothing is running. */
+  installNote = $derived.by(() => {
+    if (!this.catalog || !this.product || this.installStep === 'review') return '';
+    const size = this.format.gigabytes(downloadSizeGb(this.catalog, this.selection));
+    if (this.installStep === 'version' || this.product.route === 'c2r') return this.t('install:sizeNote', { size });
+    return this.t('install:appsNote', { count: this.selection.apps.length + this.selection.addOns.length, size });
+  });
 
   load = async () => {
     this.language = systemLanguage();
@@ -125,11 +136,19 @@ class App {
     if (this.catalog) this.selection = adjust(this.catalog, { ...this.selection, ...change });
   };
 
+  startInstall = () => {
+    this.installStep = 'version';
+    this.go('install');
+  };
+
   chooseRecommended = () => {
     if (!this.report) return;
     this.choose({ product: this.report.recommendation.product, edition: '' });
+    this.installStep = 'apps';
     this.go('install');
   };
+
+  previewConfiguration = () => getConfiguration(this.selection);
 
   /** The last app cannot be unticked: an installation with no apps installs nothing. */
   toggleApp = (app: string) => {
@@ -238,23 +257,7 @@ class App {
   };
 
   install = async () => {
-    const { catalog, product } = this;
-    if (!catalog || !product || (await this.lacksAdmin())) return;
-    const edition = catalog.editions.find((candidate) => candidate.key === this.selection.edition)?.name ?? '';
-    const apps = product.route === 'c2r' ? this.t('install:wholeSuite') : this.selection.apps.join(', ');
-    const answer = await this.ask({
-      title: this.t('install:confirmTitle'),
-      lines: [
-        `${product.name} ${edition}`,
-        this.t('install:summaryApps', { apps }),
-        this.t('install:summaryLanguage', { language: this.format.officeLanguage(this.selection.language) }),
-        this.t('install:summaryBits', { bits: this.selection.bits }),
-      ],
-      message: this.t('install:confirmNote'),
-      confirm: this.t('install:start'),
-      cancel: this.t('common:cancel'),
-    });
-    if (answer !== CONFIRMED) return;
+    if (!this.product || (await this.lacksAdmin())) return;
     const outcome = await this.perform({ action: 'install', selection: this.selection });
     if (!outcome) return;
     await this.refreshMachine();
@@ -406,6 +409,8 @@ class App {
   };
 
   openLink = (url: string) => void openLink(url);
+
+  copy = (text: string) => copyText(text);
 
   checkForUpdate = async () => {
     try {

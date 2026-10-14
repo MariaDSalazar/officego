@@ -25,20 +25,12 @@ pub struct Product {
     pub name: String,
     pub abbreviation: String,
     pub color: String,
-    pub kind: ProductKind,
     pub route: Route,
     pub channel: String,
     pub weight_gb: f64,
+    /// The oldest Windows build this version installs on.
+    pub minimum_build: u32,
     pub editions: Vec<String>,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[serde(rename_all = "camelCase")]
-pub enum ProductKind {
-    Subscription,
-    Volume,
-    Retail,
 }
 
 /// How Microsoft delivers a product: the Deployment Tool can leave apps out, Click-to-Run setup installs the whole suite.

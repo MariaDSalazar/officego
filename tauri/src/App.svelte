@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { RefreshCw } from '@lucide/svelte';
+  import { ChevronLeft, Download, RefreshCw } from '@lucide/svelte';
   import type { Component } from 'svelte';
-  import { app, type Screen } from './lib/app.svelte';
+  import { app, type InstallStep, type Screen } from './lib/app.svelte';
   import { applyTokens } from './lib/design/theme';
   import { LINKS } from './lib/project';
   import Activate from './lib/screens/Activate.svelte';
@@ -17,18 +17,15 @@
   import Sidebar from './lib/ui/Sidebar.svelte';
   import TitleBar from './lib/ui/TitleBar.svelte';
 
-  type Action = { key: string; primary?: boolean; run: () => void };
+  type Action = { key: string; primary?: boolean; back?: boolean; icon?: Component<{ size?: number }>; shown?: () => boolean; run: () => void };
 
   const VIEWS: Record<Screen, Component> = { home: Home, install: Install, activate: Activate, machine: Machine, tools: Tools, help: Help };
   const ACTIONS: Record<Screen, Action[]> = {
     home: [
       { key: 'seeMachine', run: () => app.go('machine') },
-      { key: 'start', primary: true, run: () => app.go('install') },
+      { key: 'start', primary: true, run: app.startInstall },
     ],
-    install: [
-      { key: 'downloadOnly', run: app.downloadOffline },
-      { key: 'installOffice', primary: true, run: app.install },
-    ],
+    install: [],
     activate: [{ key: 'checkLicense', run: app.refreshLicense }],
     machine: [
       { key: 'refresh', run: app.refreshMachine },
@@ -37,9 +34,29 @@
     tools: [],
     help: [{ key: 'viewCode', run: () => app.openLink(LINKS.repository) }],
   };
+  const INSTALL_ACTIONS: Record<InstallStep, Action[]> = {
+    version: [{ key: 'chooseApps', primary: true, run: () => (app.installStep = 'apps') }],
+    apps: [
+      { key: 'backToVersion', back: true, run: () => (app.installStep = 'version') },
+      { key: 'review', primary: true, run: () => (app.installStep = 'review') },
+    ],
+    review: [
+      { key: 'backToApps', back: true, run: () => (app.installStep = 'apps') },
+      { key: 'downloadOnly', shown: () => app.product?.route === 'odt', run: app.downloadOffline },
+      { key: 'installNow', primary: true, icon: Download, run: app.install },
+    ],
+  };
 
   const t = $derived(app.t);
   const View = $derived(VIEWS[app.screen]);
+  const actions = $derived((app.screen === 'install' ? INSTALL_ACTIONS[app.installStep] : ACTIONS[app.screen]).filter((action) => action.shown?.() ?? true));
+  const note = $derived(app.screen === 'install' && !app.busy && app.installNote ? app.installNote : app.status);
+  let main = $state<HTMLElement>();
+
+  $effect(() => {
+    void [app.screen, app.installStep];
+    main?.scrollTo({ top: 0 });
+  });
 
   $effect.pre(() => applyTokens(app.dark));
   $effect(() => void setWindowTheme(app.theme === 'system' ? null : app.theme));
@@ -58,7 +75,7 @@
   <div class="body">
     <Sidebar />
     <section class="card">
-      <main>
+      <main bind:this={main}>
         {#if app.loadError}
           <Notice tone="error"><b>{t('errors:loadTitle')}</b> {app.loadError}</Notice>
         {:else if app.ready}
@@ -69,15 +86,22 @@
       </main>
 
       <footer>
+        {#if app.ready}
+          {#each actions.filter((action) => action.back) as action (action.key)}
+            <Button variant="ghost" icon={ChevronLeft} disabled={app.busy} onclick={action.run}>{t(`actions:${action.key}`)}</Button>
+          {/each}
+        {/if}
         <div class="progress">
           {#if app.busy}
             <div class="bar" class:unknown={app.progress === null}><i style:width="{app.progress ?? 100}%"></i></div>
           {/if}
-          <p aria-live="polite">{app.status}</p>
+          <p aria-live="polite">{note}</p>
         </div>
         {#if app.ready}
-          {#each ACTIONS[app.screen] as action (action.key)}
-            <Button variant={action.primary ? 'primary' : 'ghost'} disabled={app.busy} onclick={action.run}>{t(`actions:${action.key}`)}</Button>
+          {#each actions.filter((action) => !action.back) as action (action.key)}
+            <Button variant={action.primary ? 'primary' : 'ghost'} icon={action.icon} disabled={app.busy} onclick={action.run}>
+              {t(`actions:${action.key}`)}
+            </Button>
           {/each}
         {/if}
       </footer>

@@ -1,15 +1,18 @@
 {
-  "taglines": {
-    "365": "always up to date",
-    "2024": "LTSC",
-    "2021": "LTSC, recommended",
-    "2019": "perpetual",
-    "2016": "classic",
-    "2013": "old"
+  "descriptions": {
+    "365": "Subscription, always up to date.",
+    "2024": "One-time purchase. The newest.",
+    "2021": "One-time purchase. Stable and proven.",
+    "2019": "One-time purchase. For older Windows 10.",
+    "2016": "Classic. Installs in full.",
+    "2013": "The lightest. Installs in full."
   },
-  "kinds": {
-    "subscription": "subscription",
-    "volume": "volume",
-    "retail": "retail"
+  "requirements": {
+    "365": "Needs Windows 10 or 11",
+    "2024": "Needs Windows 10 22H2 or 11",
+    "2021": "Needs Windows 10 1809 or newer",
+    "2019": "Needs Windows 10 or 11",
+    "2016": "Needs Windows 7 SP1 or newer",
+    "2013": "Needs Windows 7 SP1 or newer"
   }
 }

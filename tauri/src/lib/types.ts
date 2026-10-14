@@ -8,7 +8,6 @@ export type { License } from './generated/License';
 export type { MachineReport } from './generated/MachineReport';
 export type { OfficeApp } from './generated/OfficeApp';
 export type { Product } from './generated/Product';
-export type { ProductKind } from './generated/ProductKind';
 export type { Release } from './generated/Release';
 export type { Selection } from './generated/Selection';
 export type { Task } from './generated/Task';

@@ -37,7 +37,6 @@ function Esperar($p) {
 $alAvanzar = { param($pc, $h, $t)
   Evento @{ event = 'progress'; percent = [int]$pc; doneMb = [double]$h; totalMb = [double]$t } }
 
-$TIPOS  = @{ 'suscripción' = 'subscription'; 'volumen' = 'volume'; 'retail' = 'retail' }
 $MARCAS = @{ 'NVIDIA' = 'nvidia'; 'AMD' = 'amd'; 'Intel' = 'intel'; 'Sin controlador' = 'noDriver'
              'Otra' = 'other'; 'Desconocida' = 'unknown' }
 
@@ -71,8 +70,8 @@ try {
       Responder @{
         products = @($script:PRODUCTOS | ForEach-Object {
           @{ key = $_.Clave; name = $_.Nombre; abbreviation = $_.Sigla; color = $_.Color
-             kind = $TIPOS[$_.Tipo]; route = $_.Via.ToLower(); channel = [string]$_.Canal
-             weightGb = [double]$_.Peso; editions = @($_.Ediciones.Keys) } })
+             route = $_.Via.ToLower(); channel = [string]$_.Canal; weightGb = [double]$_.Peso
+             minimumBuild = [int]$_.BuildMinimo; editions = @($_.Ediciones.Keys) } })
         editions = @($script:EDICIONES.Keys | ForEach-Object {
           @{ key = $_; name = $script:EDICIONES[$_].Nombre; apps = @($script:EDICIONES[$_].Apps) } })
         apps = @($script:APLICACIONES.Keys | ForEach-Object {

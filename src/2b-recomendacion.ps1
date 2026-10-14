@@ -35,12 +35,10 @@ function Get-Recomendacion($eq) {
   $avisos = @()
   $b = [int]($eq.Build -split '\.')[0]
 
-  # ── qué versión aguanta este Windows
-  $clave = if     ($b -ge 22000) { '2024' }   # Windows 11
-           elseif ($b -ge 19045) { '2024' }   # Windows 10 22H2
-           elseif ($b -ge 17763) { '2021' }   # Windows 10 1809
-           elseif ($b -ge 10240) { '2019' }   # Windows 10 primeras
-           else                  { '2016' }   # anterior al 10
+  # ── qué versión aguanta este Windows: la más nueva cuyo BuildMinimo cumple
+  $clave = @('2024', '2021', '2019', '2016') |
+    Where-Object { $b -ge (Get-Producto $_).BuildMinimo } | Select-Object -First 1
+  if (-not $clave) { $clave = '2016' }
 
   $motivo = switch ($clave) {
     '2024' { 'El equipo cumple los requisitos de la versión más nueva.' }

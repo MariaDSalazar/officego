@@ -27,6 +27,9 @@ export function adjust(catalog: Catalog, selection: Selection): Selection {
   };
 }
 
+/** Whether a version runs on the Windows build the engine reported, like 26100.4351. */
+export const fitsMachine = (product: Product, build: string) => Number.parseInt(build, 10) >= product.minimumBuild;
+
 export const toggle = (list: string[], item: string) => (list.includes(item) ? list.filter((entry) => entry !== item) : [...list, item]);
 
 export const downloadSizeGb = (catalog: Catalog, selection: Selection) =>
