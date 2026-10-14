@@ -115,8 +115,9 @@ jobs:
           version=$(sed -n 's/^version = "\(.*\)"/\1/p' src-tauri/Cargo.toml | head -1)
           [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "La etiqueta $GITHUB_REF_NAME no coincide con la versión $version de Cargo.toml"; exit 1; }
 
-      # --include-ignored corre también el motor de verdad: catálogo,
-      # equipo, licencia y configuración en el Windows del runner.
+      # La prueba que corre el motor de verdad (--ignored) se pasa en un
+      # Windows de escritorio antes de etiquetar: el runner es un Windows
+      # Server virtual, que no es donde se usa OfficeGo.
       - name: Comprobaciones
         run: |
           pnpm install --frozen-lockfile
@@ -125,7 +126,7 @@ jobs:
           pnpm build
           cargo fmt --manifest-path src-tauri/Cargo.toml --check
           cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
-          cargo test --manifest-path src-tauri/Cargo.toml -- --include-ignored
+          cargo test --manifest-path src-tauri/Cargo.toml
           git diff --exit-code src/lib/generated
 
       # Nombres sin versión: los enlaces de /releases/latest/download/

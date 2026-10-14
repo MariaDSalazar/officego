@@ -63,7 +63,9 @@ el usuario tiene que saber.
 
 1. Subir `version` en `src-tauri/Cargo.toml` (la app, el instalador y la pantalla Ayuda la leen de ahí) y, si cambió la 1.x, `$script:VERSION` en `src/0-parametros.ps1` y `./build.sh`.
 2. Reemplazar `CHANGELOG.md` de la raíz con lo cambiado desde la última versión: son las notas del release.
-3. Commit, push y `git tag v2.4.0 && git push origin v2.4.0`.
+3. En un Windows 10 u 11 de escritorio, `cargo test --manifest-path src-tauri/Cargo.toml -- --ignored`: corre el motor de verdad,
+   que el CI no prueba porque su runner es un Windows Server virtual.
+4. Commit, push y `git tag v2.4.0 && git push origin v2.4.0`. El CI solo corre con la etiqueta: nada se compila en cada push.
 
 `.github/workflows/compilar.yml` comprueba que la etiqueta coincide con la versión,
 corre todas las comprobaciones de las dos versiones y publica `OfficeGo.exe`,

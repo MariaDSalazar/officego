@@ -116,10 +116,8 @@ pub enum TaskReason {
 }
 
 #[derive(Deserialize)]
-#[serde(untagged)]
-enum Answer<T> {
-    Failure { error: String },
-    Data { data: T },
+struct Answer<T> {
+    data: T,
 }
 
 #[derive(Deserialize)]
@@ -183,10 +181,13 @@ fn tail(text: &[u8]) -> String {
     text[start..].to_string()
 }
 
+/// The bridge's last JSON line: its data, its error, or why the data does not fit the type the UI expects.
 fn parse_answer<T: DeserializeOwned>(stdout: &str) -> Option<Result<T>> {
-    stdout.lines().rev().find_map(|line| serde_json::from_str::<Answer<T>>(line.trim()).ok()).map(|answer| match answer {
-        Answer::Data { data } => Ok(data),
-        Answer::Failure { error } => Err(AppError::Engine(error)),
+    let line = stdout.lines().rev().map(str::trim).find(|line| serde_json::from_str::<serde_json::Value>(line).is_ok_and(|value| value.is_object()))?;
+    let answer: serde_json::Value = serde_json::from_str(line).ok()?;
+    Some(match answer.get("error").and_then(serde_json::Value::as_str) {
+        Some(error) => Err(AppError::Engine(error.to_string())),
+        None => serde_json::from_str::<Answer<T>>(line).map(|answer| answer.data).map_err(|e| AppError::EngineAnswer(e.to_string())),
     })
 }
 
@@ -272,6 +273,8 @@ mod tests {
         let failure = "{\"error\":\"Acción desconocida\",\"event\":\"failed\"}";
         assert_eq!(parse_answer::<Option<License>>(failure).unwrap(), Err(AppError::Engine("Acción desconocida".into())));
         assert!(parse_answer::<Option<License>>("").is_none());
+        let misfit = parse_answer::<License>("{\"data\":{\"activated\":\"yes\",\"name\":\"Office\"}}").unwrap();
+        assert!(matches!(misfit, Err(AppError::EngineAnswer(detail)) if detail.contains("invalid type")));
     }
 
     #[test]
@@ -314,7 +317,10 @@ mod tests {
     fn the_real_engine_answers() {
         let catalog: Catalog = query(&Query::Catalog).unwrap();
         assert_eq!(catalog.products.len(), 6);
-        let report: MachineReport = query(&Query::Machine).unwrap();
+        let report: MachineReport = query(&Query::Machine).unwrap_or_else(|error| {
+            let raw = command(&Query::Machine).unwrap().output().unwrap();
+            panic!("{error:?}\n{}", String::from_utf8_lossy(&raw.stdout))
+        });
         assert!(report.machine.ram_gb > 0.0);
         let _: Option<License> = query(&Query::License).unwrap();
         let selection = Selection {
