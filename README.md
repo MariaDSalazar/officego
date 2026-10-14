@@ -14,18 +14,18 @@
     <img src="https://img.shields.io/badge/Portable-un_solo_archivo-0B57D0" alt="portable">
     <img src="https://img.shields.io/badge/Sin_dependencias-0_instalaciones-16A34A" alt="sin dependencias">
     <img src="https://img.shields.io/badge/Licencia-MIT-6366F1" alt="MIT">
-    <img src="https://img.shields.io/badge/versión-1.5_·_2.0-0B57D0" alt="versiones">
+    <img src="https://img.shields.io/badge/versión-1.6_·_2.4-0B57D0" alt="versiones">
     <img src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" alt="Tauri">
   </p>
   <p>
     <a href="https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.exe">
       <img src="https://img.shields.io/badge/Descargar-OfficeGo.exe-16A34A?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar OfficeGo.exe"></a>
     <a href="https://github.com/MariaDSalazar/officego/releases/latest">
-      <img src="https://img.shields.io/badge/Instalador-versión_2.0-0B57D0?style=for-the-badge&logo=tauri&logoColor=white" alt="Instalador de la versión 2.0"></a>
+      <img src="https://img.shields.io/badge/Instalador-versión_de_escritorio-0B57D0?style=for-the-badge&logo=tauri&logoColor=white" alt="Instalador de la versión de escritorio"></a>
     <a href="#-puesta-en-marcha">
       <img src="https://img.shields.io/badge/o_con_un_comando-PowerShell-5391FE?style=for-the-badge&logo=powershell&logoColor=white" alt="Ejecutar con un comando"></a>
   </p>
-  <p><sub><strong>Descargar</strong> es un solo archivo, no se instala, se abre y ya · <strong>Instalador</strong> es la versión 2.0 con la interfaz nueva</sub></p>
+  <p><sub><strong>Descargar</strong> es un solo archivo, no se instala, se abre y ya · <strong>Instalador</strong> es la versión de escritorio, con la interfaz nueva</sub></p>
   <p><em>Lo primero que ves no es un menú: es qué versión le conviene a tu equipo.</em></p>
 </div>
 
@@ -107,14 +107,14 @@ officego/
 │   ├── 6-acciones.ps1      Qué pasa al pulsar cada botón
 │   ├── 7-arranque.ps1      Elevación, modo consola y puesta en marcha
 │   └── Lanzador.cs         Envoltorio del .exe (C#, compilación opcional)
-├── test.ps1            → 44 pruebas del motor
+├── test.ps1            → 63 pruebas del motor
 ├── prueba-arranque.ps1 → que arranque por irm|iex y como archivo
 ├── prueba-interfaz.ps1 → monta las pantallas y busca solapes, sin Windows
-├── prueba-tauri.ps1    → que las tres capas de la 2.0 se entiendan
 ├── prueba-exe.ps1      → que el .exe lleve dentro lo que dice (solo Windows)
 ├── build.sh            → ensambla src/*.ps1 y valida la sintaxis
-├── tauri/              → versión 2.0 (Tauri): ui/ en HTML + src-tauri/ en Rust
-├── .github/workflows/  → compila el .exe en un runner de Windows
+├── tauri/              → versión de escritorio: Svelte 5 + Rust (Tauri 2) · ver tauri/LEEME.md
+├── .github/workflows/  → comprueba y compila todo en un runner de Windows al etiquetar
+├── CHANGELOG.md        → lo nuevo de la última versión: son las notas del release
 ├── assets/             → icono en .ico (7 tamaños) y .png
 └── capturas/           → las pantallas
 ```
@@ -154,21 +154,24 @@ avisos que correspondan.
 
 ## Dos versiones, un mismo motor
 
-| | **1.x · PowerShell** | **2.0 · Tauri** |
+| | **1.x · PowerShell** | **2.x · escritorio** |
 |---|---|---|
-| Interfaz | Windows Forms | El HTML de los diseños, tal cual |
-| Peso | 76 KB | ~8 MB |
+| Interfaz | Windows Forms | Svelte 5 sobre Tauri 2 (Rust) |
+| Peso | 88 KB | ~4 MB (instalador de 1,5 MB) |
 | Windows 10 antiguo | Funciona siempre | Necesita WebView2 |
 | Antivirus | Tranquilo | SmartScreen avisa la primera vez |
 | `irm \| iex` | Sí | No, hay que descargar |
+| Se actualiza sola | No, siempre baja la última | Sí, desde la propia app |
+| Idiomas | Español | Español e inglés, según el sistema |
 
-**Las dos comparten el motor.** La versión Tauri no reimplementa nada en Rust: deja el
-mismo PowerShell en `%TEMP%` y lo invoca, reenviando a la interfaz cada línea de
-progreso. Un arreglo en `src/2-motor.ps1` vale para ambas.
+**Las dos comparten el motor.** La versión de escritorio no reimplementa nada en Rust:
+deja el mismo PowerShell en `%TEMP%` y lo invoca, y Rust tipa cada respuesta y reenvía
+a la interfaz cada línea de progreso. Un arreglo en `src/2-motor.ps1` vale para ambas.
 
 La 1.x es la vía universal, la del comando de una línea, la que funciona en el portátil
-viejo. La 2.0 es el ejecutable con la interfaz exacta, para equipos normales. Ver
-[`tauri/LEEME.md`](tauri/LEEME.md).
+viejo. La de escritorio es la interfaz cuidada para equipos normales: clave de producto,
+reparación, instalador sin conexión con selector de carpeta y actualización desde la
+propia app. Ver [`tauri/LEEME.md`](tauri/LEEME.md).
 
 ## ⬇️ Descargas
 
@@ -178,8 +181,8 @@ Si no sabes cuál, el primero.
 | Archivo | Qué es | Cuándo te sirve |
 |---|---|---|
 | [**OfficeGo.exe**](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.exe) | El programa entero en un archivo. Doble clic y ya | **Lo normal.** No se instala, no toca el registro, cabe en un USB |
-| [**Instalador 2.0**](https://github.com/MariaDSalazar/officego/releases/latest) | La versión con la interfaz nueva, con su acceso en el menú Inicio | Si lo vas a usar a menudo en el mismo equipo |
-| [OfficeGo-2.0-portable.exe](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-2.0-portable.exe) | La 2.0 sin instalar nada | La interfaz nueva, pero desde un USB |
+| [**OfficeGo-setup.exe**](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe) | La versión de escritorio, con su acceso en el menú Inicio y que se actualiza sola | Si lo vas a usar a menudo en el mismo equipo |
+| [OfficeGo-portable.exe](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-portable.exe) | La versión de escritorio sin instalar nada | La interfaz nueva, pero desde un USB |
 | [OfficeGo.ps1](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.ps1) + [OfficeGo.cmd](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.cmd) | El script suelto, en texto legible | Para leer qué hace antes de ejecutarlo, o para un aula |
 
 > **Windows dirá «Windows protegió su PC» la primera vez.** Sale con cualquier `.exe`
@@ -339,14 +342,17 @@ se solapaban 21 controles. Ya no se declara, así que Windows escala la ventana 
 
 ```bash
 ./build.sh                             # junta src/*.ps1 y valida la sintaxis
-pwsh test.ps1                          # 44 pruebas del motor
+pwsh test.ps1                          # 63 pruebas del motor
 pwsh prueba-arranque.ps1               # que arranque por las dos vías
 pwsh prueba-interfaz.ps1               # que la ventana no se solape
 pwsh prueba-interfaz.ps1 -Factor 1.15  # ídem con la letra más ancha
-pwsh prueba-tauri.ps1                  # que las capas de la 2.0 encajen
 ```
 
-**Ninguna necesita Windows.** Las del motor comprueban que cada edición declare las
+La versión de escritorio tiene sus propias comprobaciones (lint, tipos, clippy y las
+pruebas de Rust, incluida una que corre el motor de verdad): están en
+[`tauri/LEEME.md`](tauri/LEEME.md).
+
+**Las de PowerShell no necesitan Windows.** Las del motor comprueban que cada edición declare las
 aplicaciones que de verdad incluye, que el `configuration.xml` salga bien formado con
 sus `ExcludeApp`, y que la recomendación acierte con siete equipos distintos.
 
@@ -356,10 +362,9 @@ salidos de su caja. Recorre además las 17 combinaciones de versión y edición,
 el reparto de la pantalla Instalar cambia con cada una. Con `-Factor` se simula una
 letra más ancha, que es lo que pasa cuando la fuente del equipo no es la esperada.
 
-`prueba-tauri.ps1` cruza las tres capas de la versión 2.0, que se hablan por nombres
-sueltos dentro de cadenas de texto y por tanto nadie comprueba: cada acción que pide
-la interfaz existe en el puente, cada `invoke` existe en Rust, y cada archivo que Rust
-incrusta está donde el puente lo busca.
+Lo que antes cruzaba `prueba-tauri.ps1` (que cada acción de la interfaz exista en el
+puente, que cada `invoke` exista en Rust y que el puente cargue lo que Rust escribe)
+ahora lo comprueban los tipos que Rust genera para la interfaz y las pruebas de Rust.
 
 ## Créditos
 

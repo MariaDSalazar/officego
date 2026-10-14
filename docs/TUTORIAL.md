@@ -187,9 +187,9 @@ Es la misma herramienta con la interfaz nueva. Esta sí se instala.
 
 <https://github.com/MariaDSalazar/officego/releases/latest>
 
-Baje hasta **Assets** y pulse **OfficeGo_2.0.0_x64-setup.exe**.
+Baje hasta **Assets** y pulse **OfficeGo-setup.exe**.
 
-**Qué debería ver:** se descarga un archivo de alrededor de 1 MB.
+**Qué debería ver:** se descarga un archivo de unos pocos MB.
 
 ### Paso 2 · Instalarlo
 
@@ -202,10 +202,16 @@ Después, el instalador: **Siguiente**, **Siguiente**, **Instalar**.
 
 ### Paso 3 · Abrirlo con permisos
 
-**Qué hacer:** en el menú Inicio, **clic derecho** sobre OfficeGo →
+**Qué hacer:** ábralo desde el menú Inicio. Si se abrió sin permisos de administrador,
+OfficeGo lo dice nada más empezar y ofrece **Reiniciar con permisos**: púlselo y
+acepte el aviso de Windows.
+
+Si prefiere no reiniciarlo, puede mirar todas las pantallas, pero no podrá instalar,
+activar ni reparar nada. También vale **clic derecho** sobre OfficeGo →
 **Ejecutar como administrador**.
 
-Si lo abre con doble clic normal, se abre igual, pero no podrá instalar nada.
+Cuando salga una versión nueva, la barra lateral muestra **Nueva versión** y se
+actualiza desde ahí, sin desinstalar nada.
 
 > **Si dice que falta WebView2:** Windows 11 lo trae de serie y Windows 10 al día
 > también. Si su equipo no lo tiene, se baja gratis de Microsoft en

@@ -1,0 +1,16 @@
+- Se rehízo la versión de escritorio en Svelte 5 y TypeScript, con los textos en español e inglés según el idioma del sistema, y Rust pasó a tipar cada respuesta del motor.
+- La versión de escritorio pasó a abrir en unos 3 segundos: antes encadenaba cuatro llamadas a PowerShell y tardaba más de 10.
+- Se arreglaron los acentos rotos de la versión de escritorio («versi�n»): PowerShell respondía en la página de códigos OEM.
+- Se arregló que la versión de escritorio se quedara ocupada para siempre cuando el motor fallaba a mitad de una tarea.
+- Se arregló que «Ver el configuration.xml» se colgara en la versión de escritorio.
+- Se añadieron a la versión de escritorio el reinicio con permisos de administrador, la clave de producto, la reparación, el instalador sin conexión en la carpeta elegida, la carpeta de trabajo y el informe del equipo.
+- Se añadió a la versión de escritorio el aviso de versiones nuevas y la actualización desde la propia app, comprobando la descarga con el SHA-256 que publica GitHub.
+- Se arregló que OfficeGo no encontrara Office 2019, 2021, 2024 y 365 instalados por Click-to-Run, con lo que no podía leer ni comprobar la licencia.
+- Se cambió la clave de producto para que se aplique con guiones, el formato que el servicio de licencias acepta siempre.
+- Se cambió el instalador sin conexión para que deje setup.exe, su configuration.xml e instalar.cmd listos para otro equipo, y se arregló que se rompiera con un & en la carpeta.
+- Se arregló que cambiar de versión o de edición borrara los complementos marcados (Visio, Project) en la 1.x.
+- Se cambió «Solo descargar» para que, con Office 2016 o 2013, avise antes de pedir la carpeta.
+- Se arregló que en equipos con dos gráficas o en escritorio remoto se mostrara el adaptador genérico de Microsoft.
+- Se arregló que la barra de estado de la 1.x tardara 16 segundos en pintarse sin conexión.
+- Se cambió TLS 1.2 para que se sume a lo que permita el sistema, sin apagar TLS 1.3 donde exista.
+- Se retiró prueba-tauri.ps1: lo comprueban los tipos generados y las pruebas de Rust.
