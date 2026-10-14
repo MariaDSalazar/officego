@@ -10,12 +10,14 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![
             commands::catalog,
             commands::machine,
             commands::license,
             commands::configuration,
             commands::run_task,
+            commands::stop_task,
             commands::relaunch_as_admin,
             commands::open_folder,
             commands::check_update,
@@ -67,7 +69,7 @@ mod tests {
         for file in fs::read_dir(services).unwrap().map(|entry| entry.unwrap().path()) {
             invoked.extend(invoked_commands(&fs::read_to_string(file).unwrap()));
         }
-        assert!(invoked.len() >= 9, "only found {invoked:?}");
+        assert!(invoked.len() >= 10, "only found {invoked:?}");
         for command in invoked {
             assert!(registered.contains(&format!("commands::{command},")), "the UI invokes '{command}', which main.rs does not register");
         }

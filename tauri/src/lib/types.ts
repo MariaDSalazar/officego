@@ -9,6 +9,7 @@ export type { MachineReport } from './generated/MachineReport';
 export type { OfficeApp } from './generated/OfficeApp';
 export type { Product } from './generated/Product';
 export type { Release } from './generated/Release';
+export type { Route } from './generated/Route';
 export type { Selection } from './generated/Selection';
 export type { Task } from './generated/Task';
 export type { TaskEvent } from './generated/TaskEvent';

@@ -27,6 +27,16 @@ export function adjust(catalog: Catalog, selection: Selection): Selection {
   };
 }
 
+const nameOf = (key: string, list: { key: string; name: string }[]) => list.find((item) => item.key === key)?.name ?? key;
+
+export const editionName = (catalog: Catalog, key: string) => nameOf(key, catalog.editions);
+
+/** The names of the apps and add-ons ticked, in the order they are shown. */
+export const chosenNames = (catalog: Catalog, selection: Selection) => [
+  ...selection.apps.map((key) => nameOf(key, catalog.apps)),
+  ...selection.addOns.map((key) => nameOf(key, catalog.addOns)),
+];
+
 /** Whether a version runs on the Windows build the engine reported, like 26100.4351. */
 export const fitsMachine = (product: Product, build: string) => Number.parseInt(build, 10) >= product.minimumBuild;
 

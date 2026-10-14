@@ -253,6 +253,45 @@ function Start-InstalacionODT {
   Start-Process $Setup -ArgumentList "/configure `"$Xml`"" -PassThru
 }
 
+# La instalación por ODT va en dos tiempos: primero setup.exe /download
+# deja Office en esta carpeta (se puede cortar y retomar) y después
+# /configure instala desde ahí sin volver a internet.
+function Get-CarpetaDescarga($Producto, [string]$Bits) {
+  Join-Path $script:TRABAJO "Office-$($Producto.Clave)-$Bits"
+}
+
+# Hace que el XML tome Office de esa carpeta. Va escapado: una ruta con &
+# rompía el XML.
+function Add-OrigenAlXml([string]$Xml, [string]$Carpeta) {
+  $ruta = [Security.SecurityElement]::Escape($Carpeta)
+  $conRuta = (Get-Content $Xml -Raw).Replace('<Add ', "<Add SourcePath=`"$ruta`" ")
+  [IO.File]::WriteAllText($Xml, $conRuta, [Text.UTF8Encoding]::new($false))
+}
+
+function Start-DescargaODT([string]$Setup, [string]$Xml) {
+  Start-Process $Setup -ArgumentList "/download `"$Xml`"" -PassThru
+}
+
+# Cuánto de una descarga de Office ya está en el disco. setup.exe crea los
+# .dat dispersos con su tamaño final desde el principio, así que su tamaño
+# no dice nada: lo que ya bajó es lo que ocupan de verdad.
+function Get-DescargaEnDisco([string]$Carpeta) {
+  if (-not ('OfficeGo.Disco' -as [type])) {
+    Add-Type -Namespace OfficeGo -Name Disco -MemberDefinition @'
+[DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+public static extern uint GetCompressedFileSizeW(string nombre, out uint alto);
+'@
+  }
+  $hecho = [uint64]0; $total = [uint64]0
+  foreach ($f in Get-ChildItem -LiteralPath $Carpeta -Recurse -File -ErrorAction SilentlyContinue) {
+    $alto = [uint32]0
+    $bajo = [OfficeGo.Disco]::GetCompressedFileSizeW($f.FullName, [ref]$alto)
+    $hecho += [math]::Min([uint64]$f.Length, ([uint64]$alto -shl 32) + $bajo)
+    $total += $f.Length
+  }
+  [pscustomobject]@{ Hecho = $hecho; Total = $total }
+}
+
 function Start-InstalacionC2R {
   param($Producto, [string]$Edicion, [string]$Idioma, [string]$Bits, [scriptblock]$AlAvanzar)
   New-Item -ItemType Directory -Force -Path $script:TRABAJO | Out-Null
@@ -271,7 +310,7 @@ function Start-InstalacionC2R {
 # configuration.xml SIN SourcePath (así setup.exe busca Office a su lado)
 # e instalar.cmd para no tener que escribir nada. El XML que se usa para
 # descargar sí lleva SourcePath, escapado: una carpeta con & lo rompía.
-function Start-DescargaSinConexion {
+function New-CarpetaSinConexion {
   param($Producto, [string]$Edicion, [string]$Idioma, [string]$Bits,
         [string[]]$AppsQueSi, [string[]]$Complementos, [string]$Destino, [scriptblock]$AlAvanzar)
 
@@ -284,10 +323,15 @@ function Start-DescargaSinConexion {
   [IO.File]::WriteAllText((Join-Path $Destino 'instalar.cmd'),
     "@echo off`r`ncd /d `"%~dp0`"`r`nsetup.exe /configure configuration.xml`r`n", [Text.Encoding]::ASCII)
 
-  $ruta = [Security.SecurityElement]::Escape($Destino)
-  $conRuta = (Get-Content $xml -Raw).Replace('<Add ', "<Add SourcePath=`"$ruta`" ")
-  [IO.File]::WriteAllText($xml, $conRuta, [Text.UTF8Encoding]::new($false))
-  Start-Process $setup -ArgumentList "/download `"$xml`"" -PassThru
+  Add-OrigenAlXml $xml $Destino
+  [pscustomobject]@{ Setup = $setup; Xml = $xml }
+}
+
+function Start-DescargaSinConexion {
+  param($Producto, [string]$Edicion, [string]$Idioma, [string]$Bits,
+        [string[]]$AppsQueSi, [string[]]$Complementos, [string]$Destino, [scriptblock]$AlAvanzar)
+  $c = New-CarpetaSinConexion @PSBoundParameters
+  Start-DescargaODT $c.Setup $c.Xml
 }
 
 # ────────────────────────────────────────────────────────────── reparación

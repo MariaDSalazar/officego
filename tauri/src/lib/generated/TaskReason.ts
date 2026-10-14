@@ -3,4 +3,4 @@
 /**
  * Why a task ended without doing its job.
  */
-export type TaskReason = "notAdmin" | "lowDisk" | "offline" | "onlineOnly" | "noOffice" | "invalidKey" | "keyRejected" | "notActivated" | "installerFailed" | "stillInstalled";
+export type TaskReason = "notAdmin" | "lowDisk" | "offline" | "onlineOnly" | "noOffice" | "invalidKey" | "keyRejected" | "notActivated" | "installerFailed" | "stillInstalled" | "stopped";

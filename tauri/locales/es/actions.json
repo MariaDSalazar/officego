@@ -10,5 +10,12 @@
   "review": "Revisar",
   "backToVersion": "Versión",
   "backToApps": "Aplicaciones",
-  "installNow": "Instalar ahora"
+  "installNow": "Instalar ahora",
+  "stop": "Detener",
+  "resume": "Reanudar",
+  "retry": "Intentar de nuevo",
+  "backToReview": "Volver",
+  "goActivate": "Ir a Activar",
+  "installAnother": "Instalar otra",
+  "openFolder": "Abrir la carpeta"
 }

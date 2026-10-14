@@ -1,0 +1,80 @@
+{
+  "titles": {
+    "install": {
+      "running": "Installing {{product}}",
+      "done": "{{product}} is installed",
+      "failed": "The installation did not finish",
+      "stopped": "Download stopped"
+    },
+    "download": {
+      "running": "Downloading {{product}}",
+      "done": "The installer is ready",
+      "failed": "The download did not finish",
+      "stopped": "Download stopped"
+    }
+  },
+  "leads": {
+    "install": {
+      "running": "{{choice}} You can minimize OfficeGo: we let you know when it ends.",
+      "done": "It is in the Start menu. It still needs activating."
+    },
+    "download": {
+      "running": "{{choice}} You can minimize OfficeGo: we let you know when it ends.",
+      "done": "It is in {{folder}}. Copy that folder to another computer and open instalar.cmd."
+    },
+    "stopped": "OfficeGo stopped downloading; Microsoft's service may finish the file it was halfway through in the background. What was downloaded is kept and resuming picks up where it was left."
+  },
+  "choice": "{{edition}} with {{apps}}.",
+  "choiceSuite": "The full {{edition}}.",
+  "ring": {
+    "starting": "starting",
+    "downloadSetup": "downloading",
+    "downloadOffice": "downloading",
+    "install": "installing",
+    "verify": "checking",
+    "done": "done",
+    "failed": "unfinished",
+    "stopped": "stopped"
+  },
+  "steps": {
+    "downloadSetup": {
+      "title": "Microsoft's installer",
+      "hint": "From Microsoft's servers"
+    },
+    "downloadOffice": {
+      "title": "Downloading Office",
+      "hint": "What comes down is kept"
+    },
+    "install": {
+      "title": "Installing",
+      "hint": "Microsoft installs Office in its own window",
+      "hintSuite": "Microsoft downloads and installs Office in its own window"
+    },
+    "verify": {
+      "title": "Check",
+      "hint": "That Office got installed"
+    }
+  },
+  "downloaded": "{{done}} of {{total}}",
+  "detail": "{{done}} of {{total}}, {{speed}}, {{remaining}}",
+  "remaining_one": "one minute left",
+  "remaining_other": "about {{count}} minutes left",
+  "remainingSoon": "less than a minute left",
+  "tips": {
+    "download": "If you stop it, what was downloaded is kept and next time it picks up where it was left.",
+    "install": "Do not turn the computer off until it ends."
+  },
+  "notify": {
+    "install": {
+      "done": "{{product}} is installed",
+      "failed": "The {{product}} installation did not finish",
+      "stopped": "The {{product}} download was stopped"
+    },
+    "download": {
+      "done": "The {{product}} installer is ready",
+      "failed": "The {{product}} download did not finish",
+      "stopped": "The {{product}} download was stopped"
+    },
+    "open": "Open OfficeGo to see the details."
+  }
+}

@@ -5,6 +5,7 @@
     "downloadSetup": "Descargando el instalador de Microsoft",
     "downloadOffice": "Descargando Office",
     "install": "Instalando Office",
+    "verify": "Comprobando la instalación",
     "activate": "Activando Office",
     "applyKey": "Aplicando la clave",
     "repair": "Reparando Office",
@@ -25,6 +26,7 @@
     "keyRejected": "Microsoft no aceptó la clave. Esto es lo que respondió:",
     "notActivated": "La herramienta terminó, pero Office sigue sin aparecer activado. Lo más probable es que Defender la interrumpiera: pause la protección en tiempo real un momento y repita.",
     "installerFailed": "El instalador de Microsoft terminó con el código {{code}}. Sus registros quedan en {{workFolder}} y en la carpeta temporal.",
-    "stillInstalled": "La desinstalación terminó, pero Office sigue en el equipo."
+    "stillInstalled": "La desinstalación terminó, pero Office sigue en el equipo.",
+    "stopped": "Se detuvo. El servicio de Microsoft puede terminar el archivo que tenía a medias; lo descargado queda guardado y al reanudar sigue donde quedó."
   }
 }

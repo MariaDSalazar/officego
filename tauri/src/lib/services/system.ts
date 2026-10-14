@@ -1,7 +1,8 @@
 import { getVersion } from '@tauri-apps/api/app';
 import { invoke } from '@tauri-apps/api/core';
-import { Effect, getCurrentWindow, type Theme } from '@tauri-apps/api/window';
+import { Effect, ProgressBarStatus, getCurrentWindow, type Theme } from '@tauri-apps/api/window';
 import { open } from '@tauri-apps/plugin-dialog';
+import { sendNotification } from '@tauri-apps/plugin-notification';
 import { openUrl } from '@tauri-apps/plugin-opener';
 
 type ClientHints = { userAgentData?: { getHighEntropyValues: (hints: string[]) => Promise<{ platformVersion?: string }> } };
@@ -20,6 +21,18 @@ export const toggleMaximizeWindow = () => appWindow.toggleMaximize();
 export const closeWindow = () => appWindow.close();
 export const isMaximized = () => appWindow.isMaximized();
 export const onWindowResized = (handler: () => void) => appWindow.onResized(handler);
+export const isWindowFocused = () => appWindow.isFocused();
+export const notify = (title: string, body: string) => sendNotification({ title, body });
+
+/** The taskbar button as a progress bar: a share from 0 to 100, null for working without a known share, undefined for idle. */
+export const setTaskbarProgress = (progress: number | null | undefined) =>
+  appWindow.setProgressBar(
+    progress === undefined
+      ? { status: ProgressBarStatus.None }
+      : progress === null
+        ? { status: ProgressBarStatus.Indeterminate }
+        : { status: ProgressBarStatus.Normal, progress: Math.round(progress) },
+  );
 
 /** Windows 11 reports a platform version of 13 or higher; Mica only exists there. */
 export const supportsMica = async () => {

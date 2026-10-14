@@ -1,0 +1,80 @@
+{
+  "titles": {
+    "install": {
+      "running": "Instalando {{product}}",
+      "done": "{{product}} quedó instalado",
+      "failed": "La instalación no terminó",
+      "stopped": "Descarga detenida"
+    },
+    "download": {
+      "running": "Descargando {{product}}",
+      "done": "El instalador quedó listo",
+      "failed": "La descarga no terminó",
+      "stopped": "Descarga detenida"
+    }
+  },
+  "leads": {
+    "install": {
+      "running": "{{choice}} Puede minimizar OfficeGo: le avisamos al terminar.",
+      "done": "Ya está en el menú Inicio. Falta activarlo."
+    },
+    "download": {
+      "running": "{{choice}} Puede minimizar OfficeGo: le avisamos al terminar.",
+      "done": "Quedó en {{folder}}. Copie esa carpeta a otro equipo y abra instalar.cmd."
+    },
+    "stopped": "OfficeGo dejó de descargar; el servicio de Microsoft puede terminar en segundo plano el archivo que tenía a medias. Lo descargado queda guardado y al reanudar sigue donde quedó."
+  },
+  "choice": "{{edition}} con {{apps}}.",
+  "choiceSuite": "{{edition}} completo.",
+  "ring": {
+    "starting": "empezando",
+    "downloadSetup": "descargando",
+    "downloadOffice": "descargando",
+    "install": "instalando",
+    "verify": "comprobando",
+    "done": "listo",
+    "failed": "sin terminar",
+    "stopped": "detenido"
+  },
+  "steps": {
+    "downloadSetup": {
+      "title": "Instalador de Microsoft",
+      "hint": "Desde los servidores de Microsoft"
+    },
+    "downloadOffice": {
+      "title": "Descargando Office",
+      "hint": "Lo que baja queda guardado"
+    },
+    "install": {
+      "title": "Instalando",
+      "hint": "Microsoft instala Office en su propia ventana",
+      "hintSuite": "Microsoft descarga e instala Office en su propia ventana"
+    },
+    "verify": {
+      "title": "Comprobación",
+      "hint": "Que Office quedó instalado"
+    }
+  },
+  "downloaded": "{{done}} de {{total}}",
+  "detail": "{{done}} de {{total}}, {{speed}}, {{remaining}}",
+  "remaining_one": "queda un minuto",
+  "remaining_other": "quedan unos {{count}} minutos",
+  "remainingSoon": "queda menos de un minuto",
+  "tips": {
+    "download": "Si lo detiene, lo descargado queda guardado y la próxima vez sigue donde quedó.",
+    "install": "No apague el equipo hasta que termine."
+  },
+  "notify": {
+    "install": {
+      "done": "{{product}} quedó instalado",
+      "failed": "La instalación de {{product}} no terminó",
+      "stopped": "Se detuvo la descarga de {{product}}"
+    },
+    "download": {
+      "done": "El instalador de {{product}} quedó listo",
+      "failed": "La descarga de {{product}} no terminó",
+      "stopped": "Se detuvo la descarga de {{product}}"
+    },
+    "open": "Abra OfficeGo para ver los detalles."
+  }
+}

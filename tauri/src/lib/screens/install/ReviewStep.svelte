@@ -1,6 +1,6 @@
 <script lang="ts">
   import { app } from '../../app.svelte';
-  import { downloadSizeGb } from '../../selection';
+  import { chosenNames, downloadSizeGb, editionName } from '../../selection';
   import Notice from '../../ui/Notice.svelte';
   import PageTitle from '../../ui/PageTitle.svelte';
   import XmlView from '../../ui/XmlView.svelte';
@@ -11,12 +11,11 @@
   const product = $derived(app.product!);
   const selection = $derived(app.selection);
   const suite = $derived(product.route === 'c2r');
-  const nameOf = (key: string, list: { key: string; name: string }[]) => list.find((item) => item.key === key)?.name ?? key;
   const sentence = $derived(
     t(suite ? 'install:sentenceSuite' : 'install:sentence', {
       product: product.name,
-      edition: nameOf(selection.edition, catalog.editions),
-      apps: format.list([...selection.apps.map((key) => nameOf(key, catalog.apps)), ...selection.addOns.map((key) => nameOf(key, catalog.addOns))]),
+      edition: editionName(catalog, selection.edition),
+      apps: format.list(chosenNames(catalog, selection)),
       language: format.officeLanguage(selection.language),
       bits: selection.bits,
     }),

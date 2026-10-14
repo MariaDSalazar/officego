@@ -9,6 +9,8 @@
 #  Consultas: una línea {"data":...} o {"error":"..."}.
 #  Tareas:    una línea por evento (step, progress, waiting) y al final
 #             {"event":"done",...} o {"event":"failed","error":"..."}.
+#  Instalar por ODT va en dos tiempos: /download a una carpeta, con el
+#  avance medido en el disco, y /configure desde esa carpeta.
 # =====================================================================
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -23,7 +25,13 @@ $ProgressPreference = 'SilentlyContinue'
 function Json($obj) { $obj | ConvertTo-Json -Depth 8 -Compress }
 function Responder($data) { Write-Host (Json @{ data = $data }) }
 function Evento($obj) { Write-Host (Json $obj) }
-function Fin($ok, $extra = @{}) { Evento (@{ event = 'done'; ok = [bool]$ok } + $extra) }
+# En 5.1 un $(if ...) que no devuelve nada sale en el JSON como {} y no
+# como null, y Rust no lo puede leer: lo vacío no se envía.
+function Fin($ok, $extra = @{}) {
+  $fin = @{ event = 'done'; ok = [bool]$ok }
+  foreach ($clave in $extra.Keys) { if ($null -ne $extra[$clave]) { $fin[$clave] = $extra[$clave] } }
+  Evento $fin
+}
 
 function Esperar($p) {
   $t0 = Get-Date
@@ -33,6 +41,41 @@ function Esperar($p) {
   }
   $p.ExitCode
 }
+
+# Mientras setup.exe baja Office, el avance sale de lo que ya ocupa la
+# carpeta; el peso del catálogo cubre los primeros segundos, cuando aún no
+# están todos los archivos.
+function Avance($d, [double]$estimadoGb) {
+  $total = [math]::Max([double]$d.Total, $estimadoGb * 1GB)
+  Evento @{ event = 'progress'; percent = [int][math]::Min(99, 100 * $d.Hecho / $total)
+            doneMb = [math]::Round($d.Hecho / 1MB, 1); totalMb = [math]::Round($total / 1MB, 1) }
+}
+
+function Esperar-Descarga($p, [string]$carpeta, [double]$estimadoGb) {
+  $null = $p.Handle
+  while (-not $p.HasExited) {
+    Start-Sleep -Milliseconds 900
+    Avance (Get-DescargaEnDisco $carpeta) $estimadoGb
+  }
+  $p.ExitCode
+}
+
+# Tras detener una descarga, el servicio de Office del sistema puede seguir
+# escribiendo el archivo que tenía a medias; otro /download encima falla
+# con el error 30015-2056 (archivo en uso). Se espera a que la carpeta deje
+# de crecer, mostrando ese avance, que también es descarga.
+function Esperar-CarpetaLibre([string]$carpeta, [double]$estimadoGb) {
+  $antes = (Get-DescargaEnDisco $carpeta).Hecho
+  $quieta = 0
+  while ($antes -gt 0 -and $quieta -lt 5) {
+    Start-Sleep -Seconds 1
+    $d = Get-DescargaEnDisco $carpeta
+    if ($d.Hecho -eq $antes) { $quieta++ } else { $quieta = 0; $antes = $d.Hecho }
+    Avance $d $estimadoGb
+  }
+}
+
+function Get-PesoGb($s) { $s.Producto.Peso + @($s.Complementos).Count * $script:PESO_COMPLEMENTO_GB }
 
 $alAvanzar = { param($pc, $h, $t)
   Evento @{ event = 'progress'; percent = [int]$pc; doneMb = [double]$h; totalMb = [double]$t } }
@@ -92,6 +135,12 @@ try {
       $g   = Get-MarcaGrafica $eq.GPU
       $rec = Get-Recomendacion $eq
       $of  = Get-OfficeInstalado
+      # Un $(if ...) vacío saldría como {} y no como null (ver Fin)
+      $office = $null
+      if ($of) {
+        $office = @{ products = [string]$of.Productos; version = [string]$of.Version
+                     language = [string]$of.Idioma; architecture = [string]$of.Arquitectura }
+      }
       Responder @{
         machine = @{
           os = [string]$eq.SO; build = [string]$eq.Build; supported = [bool]$eq.Compatible
@@ -107,8 +156,7 @@ try {
         }
         graphics = @{ brand = $MARCAS[$g.Marca]; color = $g.Color; abbreviation = $g.Sigla
                       old = [bool](Test-GraficaAntigua $eq) }
-        office = $(if ($of) { @{ products = [string]$of.Productos; version = [string]$of.Version
-                                 language = [string]$of.Idioma; architecture = [string]$of.Arquitectura } })
+        office = $office
         recommendation = @{
           product = $rec.Clave; reason = $rec.Codigo; supported = [bool]$rec.Apto
           warnings = @($rec.Avisos | ForEach-Object { @{ level = $_.Tipo; code = $_.Codigo; values = $_.Datos } })
@@ -131,20 +179,33 @@ try {
       if ($no) { Fin $false @{ reason = $no }; break }
       $s = Get-Seleccion $d.selection
       $habia = [bool](Get-OfficeInstalado)
+      $carpeta = $null
       if ($s.Producto.Via -eq 'ODT') {
         Evento @{ event = 'step'; step = 'downloadSetup' }
         $setup = Get-SetupODT $alAvanzar
+        $carpeta = Get-CarpetaDescarga $s.Producto $s.Bits
+        # Lo que quedó de otra versión a medio bajar ya no sirve y ocupa gigas
+        Get-ChildItem -LiteralPath $script:TRABAJO -Directory -Filter 'Office-*' |
+          Where-Object { $_.FullName -ne $carpeta } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+        New-Item -ItemType Directory -Force -Path $carpeta | Out-Null
         $xml = New-ConfiguracionXml $s.Producto $s.Edicion $s.Idioma $s.Bits $s.Apps $s.Complementos
+        Add-OrigenAlXml $xml $carpeta
+        Evento @{ event = 'step'; step = 'downloadOffice' }
+        Esperar-CarpetaLibre $carpeta (Get-PesoGb $s)
+        $rc = Esperar-Descarga (Start-DescargaODT $setup $xml) $carpeta (Get-PesoGb $s)
+        if ($rc -ne 0) { Fin $false @{ exitCode = $rc; reason = 'installerFailed' }; break }
         Evento @{ event = 'step'; step = 'install' }
         $p = Start-InstalacionODT $setup $xml
       } else {
-        Evento @{ event = 'step'; step = 'downloadOffice' }
+        Evento @{ event = 'step'; step = 'downloadSetup' }
         $p = Start-InstalacionC2R $s.Producto $s.Edicion $s.Idioma $s.Bits $alAvanzar
         Evento @{ event = 'step'; step = 'install' }
       }
       $rc = Esperar $p
+      Evento @{ event = 'step'; step = 'verify' }
       # Si ya había Office, que siga estando no prueba nada: manda el código
       $ok = [bool](Get-OfficeInstalado) -and ($rc -eq 0 -or -not $habia)
+      if ($ok -and $carpeta) { Remove-Item -LiteralPath $carpeta -Recurse -Force -ErrorAction SilentlyContinue }
       Fin $ok @{ exitCode = $rc; reason = $(if (-not $ok) { 'installerFailed' }) }
     }
 
@@ -153,10 +214,12 @@ try {
       if ($s.Producto.Via -eq 'C2R') { Fin $false @{ reason = 'onlineOnly' }; break }
       if (-not (Test-Internet)) { Fin $false @{ reason = 'offline' }; break }
       Evento @{ event = 'step'; step = 'downloadSetup' }
-      $p = Start-DescargaSinConexion $s.Producto $s.Edicion $s.Idioma $s.Bits $s.Apps $s.Complementos `
+      $c = New-CarpetaSinConexion $s.Producto $s.Edicion $s.Idioma $s.Bits $s.Apps $s.Complementos `
              ([string]$d.folder) $alAvanzar
       Evento @{ event = 'step'; step = 'downloadOffice' }
-      $rc = Esperar $p
+      Esperar-CarpetaLibre ([string]$d.folder) (Get-PesoGb $s)
+      $p = Start-DescargaODT $c.Setup $c.Xml
+      $rc = Esperar-Descarga $p ([string]$d.folder) (Get-PesoGb $s)
       Fin ($rc -eq 0) @{ exitCode = $rc; folder = [string]$d.folder; reason = $(if ($rc) { 'installerFailed' }) }
     }
 

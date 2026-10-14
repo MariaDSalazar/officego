@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ChevronLeft, Download, RefreshCw } from '@lucide/svelte';
   import type { Component } from 'svelte';
-  import { app, type InstallStep, type Screen } from './lib/app.svelte';
+  import { DOWNLOAD_STEPS, app, type InstallStep, type Screen } from './lib/app.svelte';
   import { applyTokens } from './lib/design/theme';
   import { LINKS } from './lib/project';
   import Activate from './lib/screens/Activate.svelte';
@@ -10,20 +10,29 @@
   import Install from './lib/screens/Install.svelte';
   import Machine from './lib/screens/Machine.svelte';
   import Tools from './lib/screens/Tools.svelte';
-  import { applyMica, setWindowTheme, supportsMica } from './lib/services/system';
+  import { applyMica, setTaskbarProgress, setWindowTheme, supportsMica } from './lib/services/system';
   import Button from './lib/ui/Button.svelte';
   import Dialog from './lib/ui/Dialog.svelte';
   import Notice from './lib/ui/Notice.svelte';
   import Sidebar from './lib/ui/Sidebar.svelte';
   import TitleBar from './lib/ui/TitleBar.svelte';
 
-  type Action = { key: string; primary?: boolean; back?: boolean; icon?: Component<{ size?: number }>; shown?: () => boolean; run: () => void };
+  type Action = {
+    key: string;
+    variant?: 'primary' | 'danger';
+    back?: boolean;
+    icon?: Component<{ size?: number }>;
+    /** Stays usable while a task runs. */
+    whileBusy?: boolean;
+    shown?: () => boolean;
+    run: () => void;
+  };
 
   const VIEWS: Record<Screen, Component> = { home: Home, install: Install, activate: Activate, machine: Machine, tools: Tools, help: Help };
   const ACTIONS: Record<Screen, Action[]> = {
     home: [
       { key: 'seeMachine', run: () => app.go('machine') },
-      { key: 'start', primary: true, run: app.startInstall },
+      { key: 'start', variant: 'primary', run: app.startInstall },
     ],
     install: [],
     activate: [{ key: 'checkLicense', run: app.refreshLicense }],
@@ -35,22 +44,56 @@
     help: [{ key: 'viewCode', run: () => app.openLink(LINKS.repository) }],
   };
   const INSTALL_ACTIONS: Record<InstallStep, Action[]> = {
-    version: [{ key: 'chooseApps', primary: true, run: () => (app.installStep = 'apps') }],
+    version: [{ key: 'chooseApps', variant: 'primary', run: () => (app.installStep = 'apps') }],
     apps: [
       { key: 'backToVersion', back: true, run: () => (app.installStep = 'version') },
-      { key: 'review', primary: true, run: () => (app.installStep = 'review') },
+      { key: 'review', variant: 'primary', run: () => (app.installStep = 'review') },
     ],
     review: [
       { key: 'backToApps', back: true, run: () => (app.installStep = 'apps') },
       { key: 'downloadOnly', shown: () => app.product?.route === 'odt', run: app.downloadOffline },
-      { key: 'installNow', primary: true, icon: Download, run: app.install },
+      { key: 'installNow', variant: 'primary', icon: Download, run: app.install },
     ],
   };
+  const JOB_ACTIONS = {
+    running: [
+      { key: 'openFolder', whileBusy: true, run: app.openJobFolder },
+      { key: 'stop', variant: 'danger', whileBusy: true, shown: () => DOWNLOAD_STEPS.includes(app.job?.step ?? 'install'), run: app.stopJob },
+    ],
+    installed: [
+      { key: 'installAnother', back: true, run: app.closeJob },
+      { key: 'goActivate', variant: 'primary', run: app.activateAfterInstall },
+    ],
+    downloaded: [
+      { key: 'backToReview', back: true, run: app.closeJob },
+      { key: 'openFolder', variant: 'primary', run: app.openJobFolder },
+    ],
+    stopped: [
+      { key: 'backToReview', back: true, run: app.closeJob },
+      { key: 'resume', variant: 'primary', run: app.retryJob },
+    ],
+    failed: [
+      { key: 'backToReview', back: true, run: app.closeJob },
+      { key: 'retry', variant: 'primary', run: app.retryJob },
+    ],
+  } satisfies Record<string, Action[]>;
 
   const t = $derived(app.t);
   const View = $derived(VIEWS[app.screen]);
-  const actions = $derived((app.screen === 'install' ? INSTALL_ACTIONS[app.installStep] : ACTIONS[app.screen]).filter((action) => action.shown?.() ?? true));
-  const note = $derived(app.screen === 'install' && !app.busy && app.installNote ? app.installNote : app.status);
+  const job = $derived(app.screen === 'install' ? app.installJob : null);
+  const jobActions = $derived.by((): Action[] => {
+    if (!job) return [];
+    if (job.endedAt === null) return JOB_ACTIONS.running;
+    if (job.outcome?.ok) return job.task.action === 'install' ? JOB_ACTIONS.installed : JOB_ACTIONS.downloaded;
+    return job.outcome?.reason === 'stopped' ? JOB_ACTIONS.stopped : JOB_ACTIONS.failed;
+  });
+  const actions = $derived(
+    (job ? jobActions : app.screen === 'install' ? INSTALL_ACTIONS[app.installStep] : ACTIONS[app.screen]).filter((action) => action.shown?.() ?? true),
+  );
+  const note = $derived.by(() => {
+    if (job) return job.endedAt === null ? app.t(`progress:tips.${DOWNLOAD_STEPS.includes(job.step ?? 'downloadSetup') ? 'download' : 'install'}`) : '';
+    return app.screen === 'install' && !app.busy && app.installNote ? app.installNote : app.status;
+  });
   let main = $state<HTMLElement>();
 
   $effect(() => {
@@ -58,6 +101,7 @@
     main?.scrollTo({ top: 0 });
   });
 
+  $effect(() => void setTaskbarProgress(app.busy ? app.progress : undefined));
   $effect.pre(() => applyTokens(app.dark));
   $effect(() => void setWindowTheme(app.theme === 'system' ? null : app.theme));
 
@@ -88,18 +132,18 @@
       <footer>
         {#if app.ready}
           {#each actions.filter((action) => action.back) as action (action.key)}
-            <Button variant="ghost" icon={ChevronLeft} disabled={app.busy} onclick={action.run}>{t(`actions:${action.key}`)}</Button>
+            <Button variant="ghost" icon={ChevronLeft} disabled={app.busy && !action.whileBusy} onclick={action.run}>{t(`actions:${action.key}`)}</Button>
           {/each}
         {/if}
         <div class="progress">
-          {#if app.busy}
+          {#if app.busy && !job}
             <div class="bar" class:unknown={app.progress === null}><i style:width="{app.progress ?? 100}%"></i></div>
           {/if}
           <p aria-live="polite">{note}</p>
         </div>
         {#if app.ready}
           {#each actions.filter((action) => !action.back) as action (action.key)}
-            <Button variant={action.primary ? 'primary' : 'ghost'} icon={action.icon} disabled={app.busy} onclick={action.run}>
+            <Button variant={action.variant ?? 'ghost'} icon={action.icon} disabled={app.busy && !action.whileBusy} onclick={action.run}>
               {t(`actions:${action.key}`)}
             </Button>
           {/each}

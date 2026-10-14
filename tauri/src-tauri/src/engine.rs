@@ -7,7 +7,10 @@ use std::{
     io::{BufRead, BufReader, Read},
     path::PathBuf,
     process::{Command, Stdio},
-    sync::OnceLock,
+    sync::{
+        Mutex, OnceLock, PoisonError,
+        atomic::{AtomicBool, Ordering},
+    },
 };
 use ts_rs::TS;
 
@@ -27,6 +30,10 @@ const ENGINE_FOLDER: &str = "OfficeGo-motor";
 const PAYLOAD_VARIABLE: &str = "OFFICEGO_PAYLOAD";
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 const STDERR_TAIL: usize = 600;
+
+/// The PowerShell process of the task under way, so it can be stopped.
+static RUNNING: Mutex<Option<u32>> = Mutex::new(None);
+static STOPPED: AtomicBool = AtomicBool::new(false);
 
 /// One-shot questions to the engine.
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -76,6 +83,7 @@ pub enum TaskStep {
     DownloadSetup,
     DownloadOffice,
     Install,
+    Verify,
     Activate,
     ApplyKey,
     Repair,
@@ -113,6 +121,7 @@ pub enum TaskReason {
     NotActivated,
     InstallerFailed,
     StillInstalled,
+    Stopped,
 }
 
 #[derive(Deserialize)]
@@ -153,10 +162,14 @@ fn bridge() -> Result<PathBuf> {
     WRITTEN.get_or_init(|| write_engine().map_err(|e| e.to_string())).clone().map_err(AppError::Storage)
 }
 
-/// Windows PowerShell by its full path: an elevated process must not run whatever `powershell.exe` the PATH finds first.
-pub fn power_shell() -> PathBuf {
+/// A Windows tool by its full path: an elevated process must not run whatever the PATH finds first.
+fn system_tool(relative: &str) -> PathBuf {
     let system = std::env::var_os("SystemRoot").map_or_else(|| PathBuf::from(r"C:\Windows"), PathBuf::from);
-    system.join(r"System32\WindowsPowerShell\v1.0\powershell.exe")
+    system.join("System32").join(relative)
+}
+
+pub fn power_shell() -> PathBuf {
+    system_tool(r"WindowsPowerShell\v1.0\powershell.exe")
 }
 
 fn command(payload: &impl Serialize) -> Result<Command> {
@@ -200,9 +213,18 @@ fn parse_line(line: &str) -> Option<Line> {
     serde_json::from_str(line.trim()).ok()
 }
 
+/// Why a line that looks like a task event does not fit, so a mismatch is not taken for a crash.
+fn unreadable_event(line: &str) -> Option<String> {
+    let value: serde_json::Value = serde_json::from_str(line.trim()).ok()?;
+    value.get("event")?;
+    serde_json::from_value::<Line>(value).err().map(|error| format!("{error}: {}", line.trim()))
+}
+
 /// Runs a task, handing each progress event to `report`; a task always ends, even if PowerShell dies halfway.
 pub fn run(task: &Task, mut report: impl FnMut(TaskEvent)) -> Result<TaskOutcome> {
     let mut child = command(task)?.spawn().map_err(AppError::power_shell)?;
+    STOPPED.store(false, Ordering::SeqCst);
+    *RUNNING.lock().unwrap_or_else(PoisonError::into_inner) = Some(child.id());
     let stderr = child.stderr.take().map(|mut pipe| {
         std::thread::spawn(move || {
             let mut text = Vec::new();
@@ -210,22 +232,41 @@ pub fn run(task: &Task, mut report: impl FnMut(TaskEvent)) -> Result<TaskOutcome
         })
     });
     let mut end = None;
+    let mut unreadable = None;
     if let Some(stdout) = child.stdout.take() {
         for line in BufReader::new(stdout).lines().map_while(std::result::Result::ok) {
             match parse_line(&line) {
                 Some(Line::Event(event)) => report(event),
                 Some(Line::End(found)) => end = Some(found),
-                None => {}
+                None => unreadable = unreadable_event(&line).or(unreadable),
             }
         }
     }
     child.wait()?;
+    RUNNING.lock().unwrap_or_else(PoisonError::into_inner).take();
     let stderr = stderr.and_then(|reader| reader.join().ok()).unwrap_or_default();
+    if STOPPED.load(Ordering::SeqCst) {
+        return Ok(TaskOutcome { ok: false, reason: Some(TaskReason::Stopped), ..TaskOutcome::default() });
+    }
     match end {
         Some(End::Done(outcome)) => Ok(outcome),
         Some(End::Failed { error }) => Err(AppError::Engine(error)),
-        None => Err(AppError::EngineStopped(tail(&stderr))),
+        None => Err(unreadable.map_or_else(|| AppError::EngineStopped(tail(&stderr)), AppError::EngineAnswer)),
     }
+}
+
+/// Ends the task under way with everything it started; Microsoft's own service may still finish the file it was on.
+pub fn stop() -> Result<()> {
+    let Some(pid) = *RUNNING.lock().unwrap_or_else(PoisonError::into_inner) else {
+        return Ok(());
+    };
+    STOPPED.store(true, Ordering::SeqCst);
+    let mut command = Command::new(system_tool("taskkill.exe"));
+    command.args(["/PID", &pid.to_string(), "/T", "/F"]).stdout(Stdio::null()).stderr(Stdio::null());
+    #[cfg(windows)]
+    command.creation_flags(CREATE_NO_WINDOW);
+    command.status().map_err(AppError::power_shell)?;
+    Ok(())
 }
 
 #[cfg(test)]
@@ -286,6 +327,15 @@ mod tests {
         let failed = parse_line(r#"{"event":"failed","error":"boom"}"#);
         assert!(matches!(failed, Some(Line::End(End::Failed { .. }))));
         assert!(parse_line("Descargando…").is_none());
+    }
+
+    #[test]
+    fn an_end_that_does_not_fit_says_so() {
+        let misfit = r#"{"event":"done","ok":true,"reason":{}}"#;
+        assert!(parse_line(misfit).is_none());
+        assert!(unreadable_event(misfit).is_some_and(|detail| detail.contains("reason")));
+        assert!(unreadable_event(r#"{"event":"done","ok":true,"exitCode":0}"#).is_none());
+        assert!(unreadable_event("Descargando…").is_none());
     }
 
     #[test]

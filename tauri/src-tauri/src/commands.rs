@@ -52,6 +52,11 @@ pub async fn run_task(task: Task, events: Channel<TaskEvent>) -> Result<TaskOutc
     .await
 }
 
+#[tauri::command]
+pub async fn stop_task() -> Result<()> {
+    blocking(engine::stop).await
+}
+
 /// Opens OfficeGo again with administrator rights and closes this copy; Windows asks the user first.
 #[tauri::command]
 pub async fn relaunch_as_admin(app: AppHandle) -> Result<()> {

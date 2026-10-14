@@ -5,6 +5,7 @@
     "downloadSetup": "Downloading Microsoft's installer",
     "downloadOffice": "Downloading Office",
     "install": "Installing Office",
+    "verify": "Checking the installation",
     "activate": "Activating Office",
     "applyKey": "Applying the key",
     "repair": "Repairing Office",
@@ -25,6 +26,7 @@
     "keyRejected": "Microsoft did not accept the key. This is what it answered:",
     "notActivated": "The tool finished, but Office still does not show as activated. Most likely Defender stopped it: pause real-time protection for a moment and try again.",
     "installerFailed": "Microsoft's installer ended with code {{code}}. Its logs are in {{workFolder}} and in the temporary folder.",
-    "stillInstalled": "The uninstall finished, but Office is still on the computer."
+    "stillInstalled": "The uninstall finished, but Office is still on the computer.",
+    "stopped": "It was stopped. Microsoft's service may finish the file it was halfway through; what was downloaded is kept and resuming picks up where it was left."
   }
 }

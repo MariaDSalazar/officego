@@ -1,6 +1,6 @@
 <script lang="ts">
   import { app } from '../../app.svelte';
-  import { addOnAvailable } from '../../selection';
+  import { addOnAvailable, editionName as nameOfEdition } from '../../selection';
   import AppTile from '../../ui/AppTile.svelte';
   import PageTitle from '../../ui/PageTitle.svelte';
   import SectionTitle from '../../ui/SectionTitle.svelte';
@@ -17,7 +17,7 @@
   const suite = $derived(product.route === 'c2r');
   const addOns = $derived(catalog.addOns.filter((addOn) => addOnAvailable(catalog, addOn.key, product.key)));
   const editionApps = $derived(catalog.editions.find((edition) => edition.key === selection.edition)?.apps ?? []);
-  const editionName = (key: string) => catalog.editions.find((edition) => edition.key === key)?.name ?? key;
+  const editionName = (key: string) => nameOfEdition(catalog, key);
 </script>
 
 <PageTitle

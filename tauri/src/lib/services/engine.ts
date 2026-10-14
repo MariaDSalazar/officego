@@ -10,3 +10,5 @@ export function runTask(task: Task, onEvent: (event: TaskEvent) => void) {
   const events = new Channel<TaskEvent>(onEvent);
   return invoke<TaskOutcome>('run_task', { task, events });
 }
+
+export const stopTask = () => invoke<void>('stop_task');

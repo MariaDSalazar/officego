@@ -160,6 +160,23 @@ Comprobar 'descarga con /download' ($script:lanzado -match '/download')
 Remove-Item function:Start-Process
 Remove-Item -LiteralPath $destino -Recurse -Force
 
+Write-Host "`nLO DESCARGADO SE MIDE EN EL DISCO" -ForegroundColor Cyan
+$medir = Join-Path $script:TRABAJO 'medir'
+New-Item -ItemType Directory -Force -Path $medir | Out-Null
+[IO.File]::WriteAllBytes((Join-Path $medir 'lleno.cab'), [byte[]]::new(3000))
+$disperso = Join-Path $medir 'stream.dat'
+[IO.File]::WriteAllBytes($disperso, [byte[]]::new(0))
+fsutil sparse setflag $disperso | Out-Null
+$fs = [IO.File]::OpenWrite($disperso); $fs.SetLength(10MB); $fs.Close()
+$medida = Get-DescargaEnDisco $medir
+Comprobar 'el total suma el tamaño de cada archivo' ($medida.Total -eq (10MB + 3000)) $medida.Total
+Comprobar 'un archivo disperso vacío no cuenta como descargado' ($medida.Hecho -lt 1MB) $medida.Hecho
+Comprobar 'una carpeta que no existe da cero' ((Get-DescargaEnDisco (Join-Path $medir 'no')).Total -eq 0)
+$xmlOrigen = Join-Path $medir 'origen.xml'
+[IO.File]::WriteAllText($xmlOrigen, '<Configuration><Add OfficeClientEdition="64"></Add></Configuration>')
+Add-OrigenAlXml $xmlOrigen 'C:\Uno & Dos'
+Comprobar 'el origen va escapado en el XML' (([xml](Get-Content $xmlOrigen -Raw)).Configuration.Add.SourcePath -eq 'C:\Uno & Dos')
+
 Write-Host "`nOFFICE 2016 Y 2013" -ForegroundColor Cyan
 function Invoke-Descarga { param($Url, $Destino, $AlAvanzar) $script:pedida = $Url; $Destino }
 function Start-Process { }

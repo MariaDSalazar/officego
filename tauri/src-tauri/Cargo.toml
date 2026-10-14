@@ -18,6 +18,7 @@ serde_json = "1"
 ts-rs = { version = "12", features = ["no-serde-warnings"] }
 reqwest = { version = "0.13", default-features = false, features = ["json", "native-tls"] }
 sha2 = "0.10"
+tauri-plugin-notification = "2"
 
 [profile.release]
 codegen-units = 1

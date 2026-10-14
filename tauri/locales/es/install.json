@@ -45,8 +45,5 @@
   "classicText": "Office {{version}} se descarga con c2rsetup, el instalador de Microsoft para esa versión. No usa configuration.xml: trae la suite entera en el idioma y la arquitectura elegidos.",
   "sizeNote": "Unos {{size}} desde Microsoft",
   "appsNote_one": "{{count}} aplicación, unos {{size}}",
-  "appsNote_other": "{{count}} aplicaciones, unos {{size}}",
-  "doneTitle": "Office quedó instalado",
-  "doneMessage": "¿Quiere activarlo ahora?",
-  "goActivate": "Ir a Activar"
+  "appsNote_other": "{{count}} aplicaciones, unos {{size}}"
 }
