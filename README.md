@@ -1,7 +1,7 @@
 <p align="center"><img src="assets/banner.png" alt="OfficeGo" width="100%"></p>
 
 <p align="center">
-  <a href="https://github.com/MariaDSalazar/officego/releases/latest"><img alt="Descargar" src="https://img.shields.io/github/v/release/MariaDSalazar/officego?style=for-the-badge&label=descargar&color=0b57d0"></a>
+  <a href="https://github.com/MariaDSalazar/officego/releases/latest"><img alt="Descargar" src="https://img.shields.io/github/v/release/MariaDSalazar/officego?style=for-the-badge&label=descargar&color=3f51e0"></a>
   <a href="https://github.com/MariaDSalazar/officego/releases"><img alt="Descargas" src="https://img.shields.io/github/downloads/MariaDSalazar/officego/total?style=for-the-badge&label=descargas&color=1f2937"></a>
   <img alt="Windows 10 y 11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-1f2937?style=for-the-badge">
   <img alt="Español e inglés" src="https://img.shields.io/badge/idioma-espa%C3%B1ol%20%7C%20english-1f2937?style=for-the-badge">
@@ -21,7 +21,7 @@ script de PowerShell que funciona hasta en el portátil más viejo.</p>
   <a href="docs/TUTORIAL.md"><b>Tutorial paso a paso</b></a>
 </p>
 
-<p align="center"><img src="capturas/escritorio/inicio.png" alt="Pantalla de inicio de OfficeGo con la versión recomendada para el equipo" width="92%"></p>
+<p align="center"><img src="capturas/escritorio/version.png" alt="Paso 1 de Instalar: las seis versiones de Office, con la que le conviene al equipo marcada" width="92%"></p>
 
 *English version below.*
 
@@ -49,16 +49,15 @@ semántico](https://semver.org/lang/es/): el tercer número sube con arreglos y 
 
 <table>
   <tr>
-    <td width="50%"><img src="capturas/escritorio/instalar.png" alt="Instalar"><br><b>Instalar:</b> versión, edición, idioma y aplicaciones, con el tamaño de la descarga al lado</td>
-    <td width="50%"><img src="capturas/escritorio/equipo.png" alt="Equipo"><br><b>Equipo:</b> procesador, memoria, discos y gráfica, con la recomendación arriba</td>
+    <td width="50%"><img src="capturas/escritorio/aplicaciones.png" alt="Aplicaciones"><br><b>Aplicaciones:</b> edición, idioma y arquitectura, y solo las apps que marques. En tema claro u oscuro</td>
+    <td width="50%"><img src="capturas/escritorio/revisar.png" alt="Revisar"><br><b>Sin secretos:</b> antes de instalar ves tu elección y el <code>configuration.xml</code> exacto que recibirá Microsoft</td>
   </tr>
   <tr>
-    <td><img src="capturas/escritorio/herramientas.png" alt="Herramientas"><br><b>Herramientas:</b> reparar, instalador sin conexión, carpeta de trabajo y desinstalar</td>
-    <td><img src="capturas/escritorio/xml.png" alt="configuration.xml"><br><b>Sin secretos:</b> el <code>configuration.xml</code> exacto que recibirá Microsoft</td>
+    <td><img src="capturas/escritorio/descargando.png" alt="Descargando"><br><b>Avance de verdad:</b> porcentaje, velocidad y lo que falta; si la detienes, sigue donde quedó</td>
+    <td><img src="capturas/escritorio/equipo.png" alt="Equipo"><br><b>Equipo:</b> procesador, memoria, discos y gráfica, con la recomendación arriba</td>
   </tr>
   <tr>
-    <td><img src="capturas/escritorio/ayuda.png" alt="Ayuda"><br><b>Ayuda:</b> enlaces, problemas frecuentes y quién hace OfficeGo</td>
-    <td><img src="capturas/inicio.png" alt="Versión PowerShell"><br><b>Versión PowerShell:</b> la misma recomendación en Windows Forms, sin instalar nada</td>
+    <td colspan="2" align="center"><img src="capturas/inicio.png" alt="Versión PowerShell" width="50%"><br><b>Versión PowerShell:</b> la misma recomendación en Windows Forms, sin instalar nada</td>
   </tr>
 </table>
 
