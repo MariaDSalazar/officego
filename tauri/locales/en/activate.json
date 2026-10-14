@@ -1,0 +1,36 @@
+{
+  "status": "License status",
+  "states": {
+    "checking": "Checking the license…",
+    "activated": "Office is activated",
+    "notActivated": "Office is not activated",
+    "unreadable": "The license could not be read",
+    "noOffice": "Office is not installed"
+  },
+  "stateHints": {
+    "checking": "Office itself is asked; it takes a few seconds.",
+    "activated": "Valid license.",
+    "notActivated": "No valid license.",
+    "unreadable": "Office is installed but did not answer about its license.",
+    "noOffice": "Install it from the Install screen."
+  },
+  "check": "Check",
+  "how": "How to activate",
+  "keyTitle": "Product key",
+  "keyDescription": "If you have a 25-character key, that is the right and legal way",
+  "use": "Use",
+  "masTitle": "MAS · massgrave.dev",
+  "masDescription": "External tool OfficeGo runs without opening its menu",
+  "defender": "Defender is on. It flags every activation tool by design and may stop MAS halfway.",
+  "legal": "Activating products without a license breaks Microsoft's terms. This option is offered for information only.",
+  "keyMessage": "The key comes on the card or in the purchase email. You can type it with or without dashes.",
+  "keyLabel": "Product key",
+  "keyApply": "Apply the key",
+  "keyDoneTitle": "Key applied",
+  "keyDone": "The key was applied and Office is activated.",
+  "keyDonePending": "The key was applied. Office will finish activating when it reaches Microsoft; check again in a moment.",
+  "masConfirmTitle": "Before activating",
+  "masConfirm": "MAS is an external tool (massgrave.dev) that OfficeGo will run in the background, without opening its menu.\n\nWindows Defender always detects it, by design, even though it is not harmful. If real-time protection is on, it may stop it halfway.\n\nActivating products without a license breaks Microsoft's terms.",
+  "doneTitle": "Office activated",
+  "done": "Office is activated."
+}

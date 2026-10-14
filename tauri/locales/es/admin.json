@@ -1,0 +1,6 @@
+{
+  "title": "Permisos de administrador",
+  "startup": "OfficeGo se abrió sin permisos de administrador.\n\nPuede mirar las pantallas, pero no podrá instalar, activar ni reparar nada. ¿Lo reinicia con permisos?",
+  "needed": "Esto necesita permisos de administrador. ¿Reinicia OfficeGo con permisos? Windows le preguntará antes.",
+  "relaunch": "Reiniciar con permisos"
+}

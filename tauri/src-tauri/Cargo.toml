@@ -1,21 +1,27 @@
 [package]
-name        = "officego"
-version     = "2.0.0"
-description = "Instalador y activador de Microsoft Office"
-authors     = ["Diego Fernando Loján Tenesaca", "María del Carmen Salazar Torres"]
-license     = "MIT"
-edition     = "2021"
-rust-version = "1.77"
+name = "officego"
+version = "2.4.0"
+description = "Microsoft Office installer that downloads straight from Microsoft"
+authors = ["Diego Fernando Loján Tenesaca", "María del Carmen Salazar Torres"]
+license = "MIT"
+edition = "2024"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ts-rs = { version = "12", features = ["no-serde-warnings"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "native-tls"] }
+sha2 = "0.10"
 
 [profile.release]
-opt-level = "s"     # el peso importa mas que el microrrendimiento
-lto        = true
-strip      = true
 codegen-units = 1
-panic     = "abort"
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

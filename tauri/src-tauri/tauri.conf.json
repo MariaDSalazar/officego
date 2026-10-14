@@ -1,39 +1,45 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "OfficeGo",
-  "version": "2.0.0",
   "identifier": "dev.officego.app",
   "build": {
-    "frontendDist": "../ui"
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "OfficeGo",
         "width": 1016,
         "height": 700,
         "minWidth": 960,
         "minHeight": 640,
-        "resizable": true,
-        "center": true,
-        "decorations": true
+        "center": true
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'"
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost",
+      "devCsp": null
     }
   },
   "bundle": {
     "active": true,
     "targets": ["nsis"],
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.ico"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico"],
+    "publisher": "OfficeGo",
+    "category": "Utility",
     "copyright": "MIT · Diego Fernando Loján Tenesaca y María del Carmen Salazar Torres",
-    "shortDescription": "Instalador y activador de Microsoft Office",
-    "longDescription": "Instala Microsoft Office descargándolo de los servidores oficiales de Microsoft. Seis versiones con sus ediciones, recomendación según el equipo y activación integrada.",
+    "shortDescription": "Instalador de Microsoft Office desde los servidores de Microsoft",
+    "longDescription": "Instala Microsoft Office descargándolo de los servidores oficiales de Microsoft. Seis versiones con sus ediciones, recomendación según el equipo, activación con su clave, reparación e instalador sin conexión.",
     "windows": {
       "nsis": {
         "installMode": "currentUser",
-        "languages": ["Spanish", "English"]
+        "installerIcon": "icons/icon.ico",
+        "languages": ["Spanish", "English"],
+        "displayLanguageSelector": true
       }
     }
   }

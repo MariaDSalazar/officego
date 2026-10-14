@@ -1,0 +1,9 @@
+{
+  "available": "Nueva versión {{version}}",
+  "downloading": "Descargando {{percent}}",
+  "title": "OfficeGo {{version}}",
+  "installable": "Hay una versión nueva. Tiene la {{current}} y se instalará la {{version}} encima, sin perder nada; OfficeGo se cerrará y volverá a abrirse.",
+  "portable": "Hay una versión nueva. Tiene la {{current}}; esta copia es portable, así que la nueva se descarga desde la página de la versión {{version}}.",
+  "now": "Actualizar ahora",
+  "download": "Ir a la descarga"
+}

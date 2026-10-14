@@ -1,154 +1,205 @@
 # =====================================================================
-#  OfficeGo · puente entre la interfaz web y el motor
+#  OfficeGo · puente entre la versión de escritorio y el motor
 #
-#  Recibe una acción, devuelve JSON. Es el MISMO motor que usa la
-#  versión de PowerShell: un arreglo en la lógica vale para las dos.
+#  Es el MISMO motor que usa la versión de PowerShell: un arreglo en la
+#  lógica vale para las dos. Aquí solo se traduce: la petición llega en
+#  la variable OFFICEGO_PAYLOAD como JSON ({"action":"machine",...}) y la
+#  respuesta sale en JSON con los nombres que espera Rust (model.rs).
 #
-#  Uso:  motor-api.ps1 -Accion equipo
-#        motor-api.ps1 -Accion instalar -Datos '{"producto":"2021",...}'
+#  Consultas: una línea {"data":...} o {"error":"..."}.
+#  Tareas:    una línea por evento (step, progress, waiting) y al final
+#             {"event":"done",...} o {"event":"failed","error":"..."}.
 # =====================================================================
-param(
-  [Parameter(Mandatory)][string]$Accion,
-  [string]$Datos = '{}'
-)
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
+# Sin esto la salida va en la página de códigos OEM y Rust, que lee UTF-8,
+# recibía «versi�n».
+[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
 
-# El motor va incrustado por el compilador: aquí solo se carga.
 . "$PSScriptRoot\motor\1-catalogo.ps1"
 . "$PSScriptRoot\motor\2-motor.ps1"
 . "$PSScriptRoot\motor\2b-recomendacion.ps1"
 
-function Salida($obj) { $obj | ConvertTo-Json -Depth 6 -Compress }
-function Error-Json($msg) { Salida @{ ok = $false; error = "$msg" } }
+function Json($obj) { $obj | ConvertTo-Json -Depth 8 -Compress }
+function Responder($data) { Write-Host (Json @{ data = $data }) }
+function Evento($obj) { Write-Host (Json $obj) }
+function Fin($ok, $extra = @{}) { Evento (@{ event = 'done'; ok = [bool]$ok } + $extra) }
 
-try {
-  $d = $Datos | ConvertFrom-Json
+function Esperar($p) {
+  $t0 = Get-Date
+  while (-not $p.HasExited) {
+    Start-Sleep -Milliseconds 900
+    Evento @{ event = 'waiting'; seconds = [int]((Get-Date) - $t0).TotalSeconds }
+  }
+  $p.ExitCode
+}
 
-  switch ($Accion) {
+$alAvanzar = { param($pc, $h, $t)
+  Evento @{ event = 'progress'; percent = [int]$pc; doneMb = [double]$h; totalMb = [double]$t } }
 
-    'equipo' {
-      $eq = Get-EquipoInfo
-      $g  = Get-MarcaGrafica $eq.GPU
-      Salida @{
-        ok = $true
-        equipo = $eq
-        grafica = @{ marca = $g.Marca; color = $g.Color; sigla = $g.Sigla
-                     antigua = (Test-GraficaAntigua $eq) }
-        office = Get-OfficeInstalado
-      }
-    }
+$TIPOS  = @{ 'suscripción' = 'subscription'; 'volumen' = 'volume'; 'retail' = 'retail' }
+$MARCAS = @{ 'NVIDIA' = 'nvidia'; 'AMD' = 'amd'; 'Intel' = 'intel'; 'Sin controlador' = 'noDriver'
+             'Otra' = 'other'; 'Desconocida' = 'unknown' }
 
-    'catalogo' {
-      Salida @{
-        ok = $true
-        productos = @($script:PRODUCTOS | ForEach-Object {
-          @{ clave=$_.Clave; nombre=$_.Nombre; sub=$_.Sub; sigla=$_.Sigla
-             color=$_.Color; tipo=$_.Tipo; via=$_.Via; peso=$_.Peso
-             canal=$_.Canal; ediciones=@($_.Ediciones.Keys) }
-        })
-        ediciones = $script:EDICIONES
-        aplicaciones = $script:APLICACIONES
-        complementos = @($script:COMPLEMENTOS | ForEach-Object {
-          @{ clave=$_.Clave; nombre=$_.Nombre; sigla=$_.Sigla; color=$_.Color
-             versiones=@($_.Ids.Keys) } })
-        idiomas = $script:IDIOMAS
-      }
-    }
-
-    'recomendar' {
-      $eq = Get-EquipoInfo
-      Salida @{ ok = $true; recomendacion = (Get-Recomendacion $eq) }
-    }
-
-    'licencia' {
-      Salida @{ ok = $true; licencia = Get-EstadoLicencia }
-    }
-
-    'preparar-xml' {
-      $prod = Get-Producto $d.producto
-      $ruta = New-ConfiguracionXml $prod $d.edicion $d.idioma $d.bits `
-                                   @($d.apps) @($d.complementos)
-      Salida @{ ok = $true; xml = $ruta; contenido = (Get-Content $ruta -Raw) }
-    }
-
-    # La instalación escribe el progreso línea a línea para que la
-    # interfaz lo lea según va saliendo, sin esperar al final.
-    'instalar' {
-      $prod = Get-Producto $d.producto
-      if ($prod.Via -eq 'ODT') {
-        Write-Host (Salida @{ evento='paso'; texto='Descargando el instalador'; pc=0 })
-        $setup = Get-SetupODT { param($pc,$h,$t)
-          Write-Host (Salida @{ evento='progreso'; pc=$pc; hecho=$h; total=$t }) }
-        $xml = New-ConfiguracionXml $prod $d.edicion $d.idioma $d.bits @($d.apps) @($d.complementos)
-        Write-Host (Salida @{ evento='paso'; texto='Instalando Office'; pc=100 })
-        $p = Start-InstalacionODT $setup $xml
-      } else {
-        Write-Host (Salida @{ evento='paso'; texto='Descargando Office'; pc=0 })
-        $p = Start-InstalacionC2R $prod $d.edicion $d.idioma $d.bits { param($pc,$h,$t)
-          Write-Host (Salida @{ evento='progreso'; pc=$pc; hecho=$h; total=$t }) }
-      }
-      $t0 = Get-Date
-      while (-not $p.HasExited) {
-        Start-Sleep -Milliseconds 900
-        Write-Host (Salida @{ evento='espera'; segundos=[int]((Get-Date)-$t0).TotalSeconds })
-      }
-      $ok = [bool](Get-OfficeInstalado)
-      Write-Host (Salida @{ evento='fin'; ok=$ok; codigo=$p.ExitCode })
-    }
-
-    # El boton «Solo descargar» de la interfaz llamaba aqui y no habia
-    # nada: respondia «Accion desconocida: descargar».
-    'descargar' {
-      $prod = Get-Producto $d.producto
-      if ($prod.Via -eq 'C2R') {
-        Write-Host (Salida @{ evento='fin'; ok=$false
-          texto="Office $($prod.Clave) solo se puede instalar en linea: esa via de Microsoft no permite descargar los archivos aparte." })
-        break
-      }
-      $destino = Join-Path ([Environment]::GetFolderPath('Desktop')) "OfficeGo-$($prod.Clave)"
-      New-Item -ItemType Directory -Force -Path $destino | Out-Null
-
-      Write-Host (Salida @{ evento='paso'; texto='Descargando el instalador'; pc=0 })
-      $setup = Get-SetupODT { param($pc,$h,$t)
-        Write-Host (Salida @{ evento='progreso'; pc=$pc; hecho=$h; total=$t }) }
-
-      $xml = New-ConfiguracionXml $prod $d.edicion $d.idioma $d.bits @($d.apps) @($d.complementos)
-      # SourcePath manda los archivos a la carpeta elegida
-      $conRuta = (Get-Content $xml -Raw) -replace '<Add ', "<Add SourcePath=`"$destino`" "
-      [IO.File]::WriteAllText($xml, $conRuta, [Text.UTF8Encoding]::new($false))
-
-      Write-Host (Salida @{ evento='paso'; texto='Descargando Office'; pc=100 })
-      $p = Start-Process $setup -ArgumentList "/download `"$xml`"" -PassThru
-      $t0 = Get-Date
-      while (-not $p.HasExited) {
-        Start-Sleep -Milliseconds 900
-        Write-Host (Salida @{ evento='espera'; segundos=[int]((Get-Date)-$t0).TotalSeconds })
-      }
-      Write-Host (Salida @{ evento='fin'; ok=($p.ExitCode -eq 0); carpeta=$destino
-        texto="Los archivos quedaron en $destino" })
-    }
-
-    'activar' {
-      Write-Host (Salida @{ evento='paso'; texto='Descargando MAS' })
-      $p = Invoke-MAS 'Ohook'
-      while (-not $p.HasExited) { Start-Sleep -Milliseconds 900
-        Write-Host (Salida @{ evento='espera' }) }
-      Start-Sleep -Seconds 2
-      $lic = Get-EstadoLicencia
-      Write-Host (Salida @{ evento='fin'; ok=[bool]($lic -and $lic.Activado); licencia=$lic })
-    }
-
-    'desinstalar' {
-      $setup = Get-SetupODT { param($pc,$h,$t)
-        Write-Host (Salida @{ evento='progreso'; pc=$pc }) }
-      $p = Start-InstalacionODT $setup (New-XmlDesinstalar)
-      while (-not $p.HasExited) { Start-Sleep -Milliseconds 900
-        Write-Host (Salida @{ evento='espera' }) }
-      Write-Host (Salida @{ evento='fin'; ok=(-not (Get-OfficeInstalado)) })
-    }
-
-    default { Error-Json "Acción desconocida: $Accion" }
+function Get-Seleccion($s) {
+  [pscustomobject]@{
+    Producto = Get-Producto $s.product; Edicion = [string]$s.edition; Idioma = [string]$s.language
+    Bits = [string]$s.bits; Apps = @($s.apps); Complementos = @($s.addOns)
   }
 }
-catch { Error-Json $_.Exception.Message }
+
+function Get-MotivoNoListo {
+  if (-not (Test-Administrador)) { return 'notAdmin' }
+  $sis = (Get-EquipoInfo).Discos | Where-Object { $_.Sistema } | Select-Object -First 1
+  if ($sis -and $sis.LibreGB -lt $script:DISCO_MINIMO_GB) { return 'lowDisk' }
+  if (-not (Test-Internet)) { return 'offline' }
+  $null
+}
+
+function Get-Licencia {
+  $lic = Get-EstadoLicencia
+  if (-not $lic) { return $null }
+  @{ activated = [bool]$lic.Activado; name = [string]$lic.Nombre }
+}
+
+try {
+  $d = $env:OFFICEGO_PAYLOAD | ConvertFrom-Json
+
+  switch ($d.action) {
+
+    'catalog' {
+      Responder @{
+        products = @($script:PRODUCTOS | ForEach-Object {
+          @{ key = $_.Clave; name = $_.Nombre; abbreviation = $_.Sigla; color = $_.Color
+             kind = $TIPOS[$_.Tipo]; route = $_.Via.ToLower(); channel = [string]$_.Canal
+             weightGb = [double]$_.Peso; editions = @($_.Ediciones.Keys) } })
+        editions = @($script:EDICIONES.Keys | ForEach-Object {
+          @{ key = $_; name = $script:EDICIONES[$_].Nombre; apps = @($script:EDICIONES[$_].Apps) } })
+        apps = @($script:APLICACIONES.Keys | ForEach-Object {
+          $a = $script:APLICACIONES[$_]
+          @{ key = $_; name = $a.Nombre; abbreviation = $a.Sigla; color = $a.Color } })
+        addOns = @($script:COMPLEMENTOS | ForEach-Object {
+          @{ key = $_.Clave; name = $_.Nombre; abbreviation = $_.Sigla; color = $_.Color
+             products = @($_.Ids.Keys) } })
+        languages = @($script:IDIOMAS.Keys)
+        addOnWeightGb = [double]$script:PESO_COMPLEMENTO_GB
+        minimumFreeGb = [double]$script:DISCO_MINIMO_GB
+        workFolder = $script:TRABAJO
+      }
+    }
+
+    'machine' {
+      $eq  = Get-EquipoInfo
+      $g   = Get-MarcaGrafica $eq.GPU
+      $rec = Get-Recomendacion $eq
+      $of  = Get-OfficeInstalado
+      Responder @{
+        machine = @{
+          os = [string]$eq.SO; build = [string]$eq.Build; supported = [bool]$eq.Compatible
+          architecture = [string]$eq.Arquitectura; bits = [string]$eq.Bits; powershell = [string]$eq.PowerShell
+          cpu = [string]$eq.CPU; cpuGhz = [double]$eq.CPUGhz; cores = [int]$eq.Nucleos; threads = [int]$eq.Hilos
+          cpuLoad = [int]$eq.CPUUso; ramGb = [double]$eq.RamGB; ramFreeGb = [double]$eq.RamLibreGB
+          ramLoad = [int]$eq.RamUsoPc; ramModules = [int]$eq.RamModulos; ramSpeed = [string]$eq.RamTipo
+          gpu = [string]$eq.GPU; resolution = [string]$eq.Resolucion; admin = [bool]$eq.Admin
+          defender = $eq.Defender
+          disks = @($eq.Discos | ForEach-Object {
+            @{ letter = [string]$_.Letra; totalGb = [double]$_.TotalGB; freeGb = [double]$_.LibreGB
+               usedPercent = [int]$_.UsadoPc; system = [bool]$_.Sistema } })
+        }
+        graphics = @{ brand = $MARCAS[$g.Marca]; color = $g.Color; abbreviation = $g.Sigla
+                      old = [bool](Test-GraficaAntigua $eq) }
+        office = $(if ($of) { @{ products = [string]$of.Productos; version = [string]$of.Version
+                                 language = [string]$of.Idioma; architecture = [string]$of.Arquitectura } })
+        recommendation = @{
+          product = $rec.Clave; reason = $rec.Codigo; supported = [bool]$rec.Apto
+          warnings = @($rec.Avisos | ForEach-Object { @{ level = $_.Tipo; code = $_.Codigo; values = $_.Datos } })
+        }
+      }
+    }
+
+    'license' { Responder (Get-Licencia) }
+
+    'configuration' {
+      $s = Get-Seleccion $d.selection
+      $ruta = New-ConfiguracionXml $s.Producto $s.Edicion $s.Idioma $s.Bits $s.Apps $s.Complementos
+      # Get-Content no: en 5.1 su texto lleva PSDrive y PSProvider colgando
+      # y ConvertTo-Json se queda recorriéndolos sin terminar nunca
+      Responder ([IO.File]::ReadAllText($ruta))
+    }
+
+    'install' {
+      $no = Get-MotivoNoListo
+      if ($no) { Fin $false @{ reason = $no }; break }
+      $s = Get-Seleccion $d.selection
+      $habia = [bool](Get-OfficeInstalado)
+      if ($s.Producto.Via -eq 'ODT') {
+        Evento @{ event = 'step'; step = 'downloadSetup' }
+        $setup = Get-SetupODT $alAvanzar
+        $xml = New-ConfiguracionXml $s.Producto $s.Edicion $s.Idioma $s.Bits $s.Apps $s.Complementos
+        Evento @{ event = 'step'; step = 'install' }
+        $p = Start-InstalacionODT $setup $xml
+      } else {
+        Evento @{ event = 'step'; step = 'downloadOffice' }
+        $p = Start-InstalacionC2R $s.Producto $s.Edicion $s.Idioma $s.Bits $alAvanzar
+        Evento @{ event = 'step'; step = 'install' }
+      }
+      $rc = Esperar $p
+      # Si ya había Office, que siga estando no prueba nada: manda el código
+      $ok = [bool](Get-OfficeInstalado) -and ($rc -eq 0 -or -not $habia)
+      Fin $ok @{ exitCode = $rc; reason = $(if (-not $ok) { 'installerFailed' }) }
+    }
+
+    'download' {
+      $s = Get-Seleccion $d.selection
+      if ($s.Producto.Via -eq 'C2R') { Fin $false @{ reason = 'onlineOnly' }; break }
+      if (-not (Test-Internet)) { Fin $false @{ reason = 'offline' }; break }
+      Evento @{ event = 'step'; step = 'downloadSetup' }
+      $p = Start-DescargaSinConexion $s.Producto $s.Edicion $s.Idioma $s.Bits $s.Apps $s.Complementos `
+             ([string]$d.folder) $alAvanzar
+      Evento @{ event = 'step'; step = 'downloadOffice' }
+      $rc = Esperar $p
+      Fin ($rc -eq 0) @{ exitCode = $rc; folder = [string]$d.folder; reason = $(if ($rc) { 'installerFailed' }) }
+    }
+
+    'activate' {
+      if (-not (Test-Administrador)) { Fin $false @{ reason = 'notAdmin' }; break }
+      Evento @{ event = 'step'; step = 'activate' }
+      $p = Invoke-MAS 'Ohook'
+      Esperar $p | Out-Null
+      Start-Sleep -Seconds 2
+      $lic = Get-Licencia
+      Fin ($lic -and $lic.activated) @{ reason = $(if (-not ($lic -and $lic.activated)) { 'notActivated' }) }
+    }
+
+    'apply-key' {
+      if (-not (Test-Administrador)) { Fin $false @{ reason = 'notAdmin' }; break }
+      Evento @{ event = 'step'; step = 'applyKey' }
+      $r = Set-ClaveProducto ([string]$d.key)
+      Fin $r.Ok @{ reason = $(if ($r.Motivo) { $r.Motivo }); detail = $r.Salida }
+    }
+
+    'repair' {
+      if (-not (Get-OfficeInstalado)) { Fin $false @{ reason = 'noOffice' }; break }
+      if (-not (Test-Administrador)) { Fin $false @{ reason = 'notAdmin' }; break }
+      Evento @{ event = 'step'; step = 'repair' }
+      $rc = Esperar (Start-Reparacion 'Rapida')
+      Fin ($rc -eq 0) @{ exitCode = $rc; reason = $(if ($rc) { 'installerFailed' }) }
+    }
+
+    'uninstall' {
+      if (-not (Get-OfficeInstalado)) { Fin $false @{ reason = 'noOffice' }; break }
+      if (-not (Test-Administrador)) { Fin $false @{ reason = 'notAdmin' }; break }
+      Evento @{ event = 'step'; step = 'downloadSetup' }
+      $setup = Get-SetupODT $alAvanzar
+      Evento @{ event = 'step'; step = 'uninstall' }
+      $rc = Esperar (Start-InstalacionODT $setup (New-XmlDesinstalar))
+      $ok = -not (Get-OfficeInstalado)
+      Fin $ok @{ exitCode = $rc; reason = $(if (-not $ok) { 'stillInstalled' }) }
+    }
+
+    default { throw "Acción desconocida: $($d.action)" }
+  }
+}
+catch {
+  Write-Host (Json @{ event = 'failed'; error = $_.Exception.Message })
+}

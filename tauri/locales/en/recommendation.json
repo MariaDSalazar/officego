@@ -1,0 +1,17 @@
+{
+  "reasons": {
+    "latest": "This computer meets the requirements of the newest version.",
+    "win10Before22H2": "Its Windows 10 is older than version 22H2, which Office 2024 requires.",
+    "win10Early": "Its Windows 10 is one of the first releases: 2021 and 2024 need a newer one.",
+    "beforeWin10": "Its Windows is older than 10, so only a classic version fits.",
+    "lowMemory": "With little RAM the lightest version is best; the new ones need 4 GB."
+  },
+  "warnings": {
+    "lowMemory": "There is only {{ram}} of RAM. Office will work, but it will be tight with several documents open.",
+    "windows32": "32-bit Windows: 32-bit Office will be installed, which cannot use more than 2 GB per document.",
+    "lowDisk": "{{drive}} has {{free}} free and at least {{minimum}} are needed.",
+    "oldGraphics": "The graphics card is old or has no driver of its own. If Word or Excel flicker, turn off hardware acceleration in File > Options > Advanced.",
+    "defenderOn": "Defender is on. It does not get in the way of installing, but it will flag activation tools."
+  },
+  "unsupported": "This computer runs a Windows older than 10. Office 2019, 2021 and 2024 cannot be installed here."
+}

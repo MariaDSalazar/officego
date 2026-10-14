@@ -9,3 +9,5 @@ OfficeGo.exe
 # Tauri
 tauri/src-tauri/target/
 tauri/src-tauri/gen/
+tauri/node_modules/
+tauri/dist/

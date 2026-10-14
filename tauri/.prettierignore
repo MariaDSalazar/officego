@@ -1,0 +1,7 @@
+dist
+src-tauri
+src/lib/generated
+locales
+design
+pnpm-lock.yaml
+*.md

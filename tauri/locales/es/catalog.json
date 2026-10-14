@@ -1,0 +1,15 @@
+{
+  "taglines": {
+    "365": "siempre al día",
+    "2024": "LTSC",
+    "2021": "LTSC · recomendada",
+    "2019": "perpetua",
+    "2016": "clásica",
+    "2013": "antigua"
+  },
+  "kinds": {
+    "subscription": "suscripción",
+    "volume": "volumen",
+    "retail": "retail"
+  }
+}

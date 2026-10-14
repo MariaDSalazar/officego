@@ -1,115 +1,86 @@
-// =====================================================================
-//  OfficeGo · capa Rust
-//
-//  Deliberadamente fina. Todo el trabajo lo hace el mismo motor de
-//  PowerShell que usa la version 1.x: aqui solo se le llama y se
-//  reenvia lo que responde a la interfaz web.
-// =====================================================================
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::io::{BufRead, BufReader, Write};
-use std::path::PathBuf;
-use std::process::{Command, Stdio};
-use tauri::{Emitter, Window};
-
-#[cfg(windows)]
-use std::os::windows::process::CommandExt;
-#[cfg(windows)]
-const SIN_VENTANA: u32 = 0x0800_0000; // CREATE_NO_WINDOW
-
-// El motor viaja dentro del ejecutable, y se toma directamente de src/:
-// una copia aparte se desincroniza en cuanto alguien arregla algo en una sola.
-const API: &str = include_str!("../motor-api.ps1");
-const CATALOGO: &str = include_str!("../../../src/1-catalogo.ps1");
-const MOTOR: &str = include_str!("../../../src/2-motor.ps1");
-const RECOM: &str = include_str!("../../../src/2b-recomendacion.ps1");
-
-/// Deja el motor en %TEMP%\OfficeGo-motor y devuelve la ruta del api.
-fn preparar_motor() -> Result<PathBuf, String> {
-    let base = std::env::temp_dir().join("OfficeGo-motor");
-    let sub = base.join("motor");
-    std::fs::create_dir_all(&sub).map_err(|e| e.to_string())?;
-
-    let escribir = |ruta: PathBuf, contenido: &str| -> Result<(), String> {
-        let mut f = std::fs::File::create(&ruta).map_err(|e| e.to_string())?;
-        // BOM UTF-8: sin el, PowerShell 5.1 lee el archivo como ANSI
-        // y destroza los acentos y los caracteres de dibujo.
-        f.write_all(&[0xEF, 0xBB, 0xBF]).map_err(|e| e.to_string())?;
-        f.write_all(contenido.as_bytes()).map_err(|e| e.to_string())
-    };
-
-    let api = base.join("motor-api.ps1");
-    escribir(api.clone(), API)?;
-    escribir(sub.join("1-catalogo.ps1"), CATALOGO)?;
-    escribir(sub.join("2-motor.ps1"), MOTOR)?;
-    escribir(sub.join("2b-recomendacion.ps1"), RECOM)?;
-    Ok(api)
-}
-
-fn comando_ps(api: &PathBuf, accion: &str, datos: &str) -> Command {
-    let mut c = Command::new("powershell.exe");
-    c.args([
-        "-NoProfile",
-        "-ExecutionPolicy", "Bypass",
-        "-File", api.to_str().unwrap_or_default(),
-        "-Accion", accion,
-        "-Datos", datos,
-    ]);
-    #[cfg(windows)]
-    c.creation_flags(SIN_VENTANA);
-    c
-}
-
-/// Acciones que responden de una vez: devuelven el JSON del motor.
-#[tauri::command]
-async fn consultar(accion: String, datos: Option<String>) -> Result<String, String> {
-    let api = preparar_motor()?;
-    let datos = datos.unwrap_or_else(|| "{}".into());
-    let salida = comando_ps(&api, &accion, &datos)
-        .output()
-        .map_err(|e| format!("No se pudo ejecutar PowerShell: {e}"))?;
-
-    if !salida.status.success() && salida.stdout.is_empty() {
-        return Err(String::from_utf8_lossy(&salida.stderr).trim().to_string());
-    }
-    Ok(String::from_utf8_lossy(&salida.stdout).trim().to_string())
-}
-
-/// Acciones largas: cada linea que escribe el motor se reenvia como
-/// evento, para que la barra de progreso se mueva de verdad.
-#[tauri::command]
-async fn ejecutar(window: Window, accion: String, datos: Option<String>) -> Result<(), String> {
-    let api = preparar_motor()?;
-    let datos = datos.unwrap_or_else(|| "{}".into());
-
-    let mut hijo = comando_ps(&api, &accion, &datos)
-        .stdout(Stdio::piped())
-        .spawn()
-        .map_err(|e| format!("No se pudo ejecutar PowerShell: {e}"))?;
-
-    let salida = hijo.stdout.take().ok_or("Sin salida del motor")?;
-    for linea in BufReader::new(salida).lines().map_while(Result::ok) {
-        let l = linea.trim();
-        if l.is_empty() { continue; }
-        let _ = window.emit("motor", l);
-    }
-    let _ = hijo.wait();
-    Ok(())
-}
-
-#[tauri::command]
-fn abrir_enlace(url: String) {
-    // solo http/https: no queremos que la web lance cualquier cosa
-    if url.starts_with("https://") || url.starts_with("http://") {
-        let _ = Command::new("cmd").args(["/c", "start", "", &url]).spawn();
-    }
-}
+mod commands;
+mod engine;
+mod errors;
+mod model;
+mod updates;
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            consultar, ejecutar, abrir_enlace
+            commands::catalog,
+            commands::machine,
+            commands::license,
+            commands::configuration,
+            commands::run_task,
+            commands::relaunch_as_admin,
+            commands::open_folder,
+            commands::check_update,
+            commands::install_update,
         ])
         .run(tauri::generate_context!())
-        .expect("no se pudo iniciar OfficeGo");
+        .expect("OfficeGo window");
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::Value;
+    use std::{collections::BTreeSet, fs, path::Path};
+
+    const BASE_LANGUAGE: &str = "es";
+
+    fn keys(value: &Value, prefix: &str, found: &mut BTreeSet<String>) {
+        match value.as_object() {
+            Some(object) => object.iter().for_each(|(key, child)| keys(child, &format!("{prefix}{key}."), found)),
+            None => {
+                found.insert(prefix.trim_end_matches('.').to_string());
+            }
+        }
+    }
+
+    fn language_keys(folder: &Path) -> BTreeSet<String> {
+        let mut found = BTreeSet::new();
+        for file in fs::read_dir(folder).unwrap().map(|entry| entry.unwrap().path()) {
+            let namespace = file.file_stem().unwrap().to_string_lossy().to_string();
+            keys(&serde_json::from_str(&fs::read_to_string(&file).unwrap()).unwrap(), &format!("{namespace}:"), &mut found);
+        }
+        found
+    }
+
+    fn invoked_commands(source: &str) -> Vec<String> {
+        source
+            .split("invoke")
+            .skip(1)
+            .filter_map(|call| call.split_once("('").and_then(|(head, rest)| (head.is_empty() || head.starts_with('<')).then_some(rest)))
+            .filter_map(|rest| rest.split_once('\'').map(|(name, _)| name.to_string()))
+            .collect()
+    }
+
+    #[test]
+    fn every_command_the_ui_invokes_is_registered() {
+        let services = Path::new(env!("CARGO_MANIFEST_DIR")).join("../src/lib/services");
+        let registered = include_str!("main.rs").split_once("generate_handler![").unwrap().1.split_once(']').unwrap().0;
+        let mut invoked = Vec::new();
+        for file in fs::read_dir(services).unwrap().map(|entry| entry.unwrap().path()) {
+            invoked.extend(invoked_commands(&fs::read_to_string(file).unwrap()));
+        }
+        assert!(invoked.len() >= 9, "only found {invoked:?}");
+        for command in invoked {
+            assert!(registered.contains(&format!("commands::{command},")), "the UI invokes '{command}', which main.rs does not register");
+        }
+    }
+
+    #[test]
+    fn every_language_has_the_base_keys() {
+        let locales = Path::new(env!("CARGO_MANIFEST_DIR")).join("../locales");
+        let base = language_keys(&locales.join(BASE_LANGUAGE));
+        for language in fs::read_dir(&locales).unwrap().map(|entry| entry.unwrap().path()) {
+            let found = language_keys(&language);
+            let missing: Vec<_> = base.difference(&found).collect();
+            assert!(missing.is_empty(), "{} lacks {missing:?}", language.display());
+        }
+    }
 }

@@ -1,0 +1,30 @@
+{
+  "idle": "Nada se instala hasta que usted lo confirme",
+  "starting": "Empezando…",
+  "steps": {
+    "downloadSetup": "Descargando el instalador de Microsoft",
+    "downloadOffice": "Descargando Office",
+    "install": "Instalando Office",
+    "activate": "Activando Office",
+    "applyKey": "Aplicando la clave",
+    "repair": "Reparando Office",
+    "uninstall": "Desinstalando Office"
+  },
+  "downloading": "Descargando: {{percent}} · {{done}} de {{total}}",
+  "elapsed": "{{doing}} · {{time}}",
+  "done": "Listo",
+  "failed": "La tarea terminó sin completarse",
+  "failedTitle": "No se completó",
+  "reasons": {
+    "notAdmin": "Hacen falta permisos de administrador.",
+    "lowDisk": "No hay espacio suficiente en la unidad del sistema: hacen falta al menos {{minimum}} libres.",
+    "offline": "No se llega a los servidores de Microsoft. Revise el cable o el WiFi.",
+    "onlineOnly": "Esta versión solo se puede instalar en línea: esa vía de Microsoft no permite descargar los archivos aparte.",
+    "noOffice": "No se encontró Office en este equipo.",
+    "invalidKey": "La clave debe tener 25 letras y números.",
+    "keyRejected": "Microsoft no aceptó la clave. Esto es lo que respondió:",
+    "notActivated": "La herramienta terminó, pero Office sigue sin aparecer activado. Lo más probable es que Defender la interrumpiera: pause la protección en tiempo real un momento y repita.",
+    "installerFailed": "El instalador de Microsoft terminó con el código {{code}}. Sus registros quedan en {{workFolder}} y en la carpeta temporal.",
+    "stillInstalled": "La desinstalación terminó, pero Office sigue en el equipo."
+  }
+}

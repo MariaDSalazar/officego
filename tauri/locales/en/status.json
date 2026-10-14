@@ -1,0 +1,9 @@
+{
+  "admin": "Administrator",
+  "noAdmin": "No permissions",
+  "free": "{{free}} free",
+  "defenderOn": "Defender on",
+  "defenderOff": "Defender off",
+  "officeInstalled": "Office installed",
+  "officeMissing": "Office not installed"
+}

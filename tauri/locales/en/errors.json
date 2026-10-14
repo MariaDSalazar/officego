@@ -1,0 +1,13 @@
+{
+  "title": "Something went wrong",
+  "loadTitle": "The computer could not be checked.",
+  "powerShell": "PowerShell could not be run: {{detail}}",
+  "engine": "The engine answered with an error: {{detail}}",
+  "engineAnswer": "The engine gave an answer that cannot be read. {{detail}}",
+  "engineStopped": "The engine stopped before finishing. {{detail}}",
+  "adminDeclined": "The permissions were not granted. You can try again, or open OfficeGo with right click > Run as administrator.",
+  "network": "Could not connect: {{detail}}",
+  "badDownload": "The download arrived incomplete or does not match the published one, so it was discarded. Try again.",
+  "upToDate": "You already have the latest version.",
+  "storage": "Could not write to disk: {{detail}}"
+}

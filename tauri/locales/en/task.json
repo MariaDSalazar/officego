@@ -1,0 +1,30 @@
+{
+  "idle": "Nothing is installed until you confirm it",
+  "starting": "Starting…",
+  "steps": {
+    "downloadSetup": "Downloading Microsoft's installer",
+    "downloadOffice": "Downloading Office",
+    "install": "Installing Office",
+    "activate": "Activating Office",
+    "applyKey": "Applying the key",
+    "repair": "Repairing Office",
+    "uninstall": "Uninstalling Office"
+  },
+  "downloading": "Downloading: {{percent}} · {{done}} of {{total}}",
+  "elapsed": "{{doing}} · {{time}}",
+  "done": "Done",
+  "failed": "The task ended without finishing",
+  "failedTitle": "It did not finish",
+  "reasons": {
+    "notAdmin": "Administrator permissions are needed.",
+    "lowDisk": "There is not enough room on the system drive: at least {{minimum}} must be free.",
+    "offline": "Microsoft's servers cannot be reached. Check the cable or the WiFi.",
+    "onlineOnly": "This version can only be installed online: that route of Microsoft does not allow downloading the files separately.",
+    "noOffice": "Office was not found on this computer.",
+    "invalidKey": "The key must have 25 letters and numbers.",
+    "keyRejected": "Microsoft did not accept the key. This is what it answered:",
+    "notActivated": "The tool finished, but Office still does not show as activated. Most likely Defender stopped it: pause real-time protection for a moment and try again.",
+    "installerFailed": "Microsoft's installer ended with code {{code}}. Its logs are in {{workFolder}} and in the temporary folder.",
+    "stillInstalled": "The uninstall finished, but Office is still on the computer."
+  }
+}

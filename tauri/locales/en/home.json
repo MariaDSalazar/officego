@@ -1,0 +1,23 @@
+{
+  "title": "Install Office in three steps",
+  "subtitle": "Downloaded straight from Microsoft's servers, no third-party sites",
+  "recommended": "What suits this computer",
+  "installThis": "Install this",
+  "howItWorks": "How it works",
+  "steps": {
+    "choose": {
+      "title": "Choose your version",
+      "text": "Six versions from 2013 to Microsoft 365, with their editions"
+    },
+    "pick": {
+      "title": "Tick what you want",
+      "text": "Just Word and Excel, or the whole suite. Only that is downloaded"
+    },
+    "activate": {
+      "title": "Activate when done",
+      "text": "With your product key, or with MAS if you have none"
+    }
+  },
+  "noAdmin": "Administrator permissions are missing: you can look around, but not install or activate.",
+  "ready": "Ready. {{os}} · {{ram}} of RAM · {{free}} free · administrator permissions."
+}

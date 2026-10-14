@@ -1,0 +1,36 @@
+{
+  "status": "Estado de la licencia",
+  "states": {
+    "checking": "Comprobando la licencia…",
+    "activated": "Office está activado",
+    "notActivated": "Office no está activado",
+    "unreadable": "No se pudo leer la licencia",
+    "noOffice": "No hay Office instalado"
+  },
+  "stateHints": {
+    "checking": "Se le pregunta al propio Office; tarda unos segundos.",
+    "activated": "Licencia válida.",
+    "notActivated": "Sin licencia válida.",
+    "unreadable": "Office está instalado, pero no respondió por su licencia.",
+    "noOffice": "Instálelo desde la pantalla Instalar."
+  },
+  "check": "Comprobar",
+  "how": "Cómo activar",
+  "keyTitle": "Clave de producto",
+  "keyDescription": "Si tiene una clave de 25 caracteres, es lo correcto y lo legal",
+  "use": "Usar",
+  "masTitle": "MAS · massgrave.dev",
+  "masDescription": "Herramienta externa que OfficeGo ejecuta sin abrir su menú",
+  "defender": "Defender está encendido. Marca toda herramienta de activación, por diseño, y puede interrumpir a MAS a mitad de camino.",
+  "legal": "Activar productos sin licencia va contra los términos de Microsoft. Esta opción se ofrece a título informativo.",
+  "keyMessage": "La clave viene en la tarjeta o el correo de la compra. Puede escribirla con guiones o sin ellos.",
+  "keyLabel": "Clave de producto",
+  "keyApply": "Aplicar la clave",
+  "keyDoneTitle": "Clave aplicada",
+  "keyDone": "La clave se aplicó y Office quedó activado.",
+  "keyDonePending": "La clave se aplicó. Office terminará de activarse al conectarse con Microsoft; puede comprobarlo en un momento.",
+  "masConfirmTitle": "Antes de activar",
+  "masConfirm": "MAS es una herramienta externa (massgrave.dev) que OfficeGo ejecutará en segundo plano, sin abrir su menú.\n\nWindows Defender la detecta siempre, por diseño, aunque no sea dañina. Si la protección en tiempo real está encendida puede interrumpirla a mitad de camino.\n\nActivar productos sin licencia va contra los términos de Microsoft.",
+  "doneTitle": "Office activado",
+  "done": "Office quedó activado."
+}

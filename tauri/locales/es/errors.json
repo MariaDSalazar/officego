@@ -1,0 +1,13 @@
+{
+  "title": "Algo falló",
+  "loadTitle": "No se pudo consultar el equipo.",
+  "powerShell": "No se pudo ejecutar PowerShell: {{detail}}",
+  "engine": "El motor respondió con un error: {{detail}}",
+  "engineAnswer": "El motor no dio una respuesta que se pueda leer. {{detail}}",
+  "engineStopped": "El motor se detuvo antes de terminar. {{detail}}",
+  "adminDeclined": "No se concedieron los permisos. Puede volver a intentarlo, o abrir OfficeGo con clic derecho > Ejecutar como administrador.",
+  "network": "No se pudo conectar: {{detail}}",
+  "badDownload": "La descarga llegó incompleta o no coincide con la publicada, así que se descartó. Vuelva a intentarlo.",
+  "upToDate": "Ya tiene la última versión.",
+  "storage": "No se pudo escribir en el disco: {{detail}}"
+}

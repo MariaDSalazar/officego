@@ -1,0 +1,6 @@
+{
+  "title": "Administrator permissions",
+  "startup": "OfficeGo opened without administrator permissions.\n\nYou can look around, but you will not be able to install, activate or repair anything. Restart it with permissions?",
+  "needed": "This needs administrator permissions. Restart OfficeGo with them? Windows will ask you first.",
+  "relaunch": "Restart with permissions"
+}

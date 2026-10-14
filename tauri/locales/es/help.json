@@ -1,0 +1,45 @@
+{
+  "title": "OfficeGo {{version}}",
+  "subtitle": "Instalador de Microsoft Office para Windows 10 y 11",
+  "authors": "Quién lo hace",
+  "roles": {
+    "development": "Desarrollo e interfaz",
+    "engine": "Script base y documentación"
+  },
+  "links": "Enlaces",
+  "linkNames": {
+    "repository": "Código de OfficeGo",
+    "mas": "MAS · Microsoft Activation Scripts",
+    "masTroubleshoot": "Guía de problemas de MAS",
+    "reportIssue": "Avisar de un fallo"
+  },
+  "questions": "Problemas frecuentes",
+  "faq": {
+    "noStart": {
+      "question": "La instalación no arranca",
+      "answer": "Compruebe que OfficeGo se abrió con permisos de administrador. Sin ellos Windows no deja instalar nada: use el botón «Reiniciar con permisos»."
+    },
+    "downloadFails": {
+      "question": "La descarga falla nada más empezar",
+      "answer": "Un Windows sin actualizar usa un protocolo de seguridad antiguo. OfficeGo activa TLS 1.2, así que esto solo aparece en equipos muy desactualizados."
+    },
+    "antivirus": {
+      "question": "El antivirus bloquea la activación",
+      "answer": "Defender marca todas las herramientas de activación, por diseño. Pause la protección en tiempo real, active, y vuelva a encenderla."
+    },
+    "frozen": {
+      "question": "Parece congelado durante la instalación",
+      "answer": "La barra puede quedarse quieta varios minutos mientras Microsoft descomprime. Si el tiempo de abajo avanza, está trabajando."
+    },
+    "offlineInstall": {
+      "question": "Cómo uso el instalador sin conexión",
+      "answer": "Copie la carpeta entera al otro equipo y abra instalar.cmd. Windows pedirá permisos y Office se instala desde esos archivos, sin internet."
+    }
+  },
+  "license": "Licencia",
+  "pledges": {
+    "openSource": "Código abierto · licencia MIT",
+    "noTelemetry": "Sin telemetría",
+    "noAds": "Sin publicidad"
+  }
+}

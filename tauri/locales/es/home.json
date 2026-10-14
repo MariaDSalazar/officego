@@ -1,0 +1,23 @@
+{
+  "title": "Instale Office en tres pasos",
+  "subtitle": "Descarga directa de los servidores de Microsoft, sin páginas de terceros",
+  "recommended": "Lo que le conviene a este equipo",
+  "installThis": "Instalar esto",
+  "howItWorks": "Cómo funciona",
+  "steps": {
+    "choose": {
+      "title": "Elija su versión",
+      "text": "Seis versiones desde 2013 hasta Microsoft 365, con sus ediciones"
+    },
+    "pick": {
+      "title": "Marque lo que quiere",
+      "text": "Solo Word y Excel, o la suite entera. Se descarga únicamente eso"
+    },
+    "activate": {
+      "title": "Active al terminar",
+      "text": "Con su clave de producto, o con MAS si no la tiene"
+    }
+  },
+  "noAdmin": "Faltan permisos de administrador: puede mirar las pantallas, pero no instalar ni activar.",
+  "ready": "Equipo listo. {{os}} · {{ram}} de RAM · {{free}} libres · permisos de administrador."
+}
