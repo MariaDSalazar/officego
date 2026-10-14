@@ -9,8 +9,8 @@ los invoca a través de un puente. Un arreglo en `src/2-motor.ps1` vale para las
 
 | Ruta | Qué lleva |
 |---|---|
-| `src-tauri/motor-api.ps1` | El puente: recibe la petición en la variable `OFFICEGO_PAYLOAD` (JSON, sin líos de comillas) y responde en UTF-8 con los nombres que espera Rust. Consultas: una línea `{"data":…}` o `{"error":…}`. Tareas: una línea por evento y al final `done` o `failed`. |
-| `src-tauri/src/engine.rs` | Escribe el motor una vez por ejecución, llama a Windows PowerShell por su ruta completa y tipa cada respuesta. Una tarea siempre termina: si PowerShell muere a mitad, devuelve `engineStopped` con el final de su error. |
+| `src-tauri/motor-api.ps1` | El puente: recibe la petición en la variable `OFFICEGO_PAYLOAD` (JSON, sin líos de comillas) y responde en UTF-8 con los nombres que espera Rust. Consultas: una línea `{"data":…}` o `{"error":…}`. Tareas: una línea por evento y al final `done` o `failed`. Lo vacío no se envía: en PowerShell 5.1 un `$(if …)` sin salida sale en el JSON como `{}` y no como `null`. Instalar por el ODT va en dos tiempos, `/download` a una carpeta con el avance medido en el disco y `/configure` desde ella. |
+| `src-tauri/src/engine.rs` | Escribe el motor una vez por ejecución, llama a Windows PowerShell por su ruta completa y tipa cada respuesta. Una tarea siempre termina: si PowerShell muere a mitad, devuelve `engineStopped` con el final de su error, y si la línea final no encaja, `engineAnswer` con lo que llegó. `stop` corta la tarea en curso con todo lo que abrió y la da por `stopped`. |
 | `src-tauri/src/model.rs` | Los tipos que ve la interfaz. `cargo test` los exporta con ts-rs a `src/lib/generated/`. |
 | `src-tauri/src/errors.rs` | `AppError`: cada fallo tiene un código que la interfaz pinta como `errors:<código>`. |
 | `src-tauri/src/updates.rs` | La última release de GitHub, la descarga del instalador y su comprobación con el SHA-256 que publica GitHub. |
@@ -45,6 +45,7 @@ pnpm install
 pnpm tauri dev
 pnpm lint
 pnpm check
+pnpm test
 pnpm build
 cargo fmt --manifest-path src-tauri/Cargo.toml --check
 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings

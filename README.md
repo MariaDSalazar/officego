@@ -27,22 +27,23 @@ script de PowerShell que funciona hasta en el portátil más viejo.</p>
 
 ## Novedades
 
-**2.4.0**
+**2.5.0**
 
-- **App de escritorio nueva**, hecha con Svelte 5 y Rust: abre en unos 3 segundos (antes tardaba más de 10), habla
-  español o inglés según tu Windows y se actualiza sola desde la barra lateral.
-- **Clave de producto, reparar e instalador sin conexión** ahora también en la app, y te ofrece reiniciar con permisos
-  de administrador justo cuando hacen falta.
-- **Office 2016 y 2013 de 32 bits ya se instalan.** Se le pedía a Microsoft la plataforma `x32` y respondía con su
-  página de error.
-- **Office 2019, 2021, 2024 y 365 se detectan bien:** OfficeGo decía que no había Office y no podía leer la licencia.
-- **Visio y Project** ya no se desmarcan al cambiar de versión o de edición.
+- **La app de escritorio vuelve a abrir en equipos sin Office.** La 2.4.0 se quedaba en el error de carga justo donde
+  más falta hace, y daba por fallida toda tarea que salía bien.
+- **Avance de verdad:** Office se descarga primero, con el porcentaje real, la velocidad y lo que falta, y después se
+  instala desde esa carpeta. La descarga se puede detener y sigue donde quedó.
+- **Instalar en tres pasos:** versión, aplicaciones y revisar. Las versiones que no corren en tu Windows salen apagadas
+  con lo que piden, y antes de instalar ves el `configuration.xml` que recibirá Microsoft.
+- **Tema claro y oscuro**, o el de tu Windows, con el fondo Mica de Windows 11. El botón de la barra de tareas muestra el
+  avance y Windows te avisa al terminar.
 
-**2.3:** Reparar funciona por fin, se detecta Office 2013 y el inicio avisa si faltan permisos. **2.2:** arregla el
-comando de una línea y los botones que dejaban la 2.1 sin responder. **2.1:** opciones en la línea de órdenes y modo
-desatendido para aulas. **2.0:** la primera app de escritorio. Todas las notas en [Releases](../../releases). Desde la
-2.4.0 las versiones siguen el [versionado semántico](https://semver.org/lang/es/): el tercer número sube con arreglos y
-el segundo con funciones nuevas.
+**2.4.0:** app de escritorio nueva en Svelte 5 y Rust, clave de producto, reparar e instalador sin conexión en la app,
+Office 2016 y 2013 de 32 bits y Office 2019 a 365 bien detectados. **2.3:** Reparar funciona por fin, se detecta Office
+2013 y el inicio avisa si faltan permisos. **2.2:** arregla el comando de una línea y los botones que dejaban la 2.1 sin
+responder. **2.1:** opciones en la línea de órdenes y modo desatendido para aulas. **2.0:** la primera app de
+escritorio. Todas las notas en [Releases](../../releases). Desde la 2.4.0 las versiones siguen el [versionado
+semántico](https://semver.org/lang/es/): el tercer número sube con arreglos y el segundo con funciones nuevas.
 
 ## Así se ve
 
@@ -89,12 +90,13 @@ el segundo con funciones nuevas.
 Mira el equipo con WMI => elige la versión con los requisitos de Microsoft => arma el `configuration.xml` con lo que
 marcaste => baja el instalador oficial de `officecdn.microsoft.com` (o de `c2rsetup.officeapps.live.com` para 2016 y
 2013) => Microsoft instala Office => lo activas con tu clave o con MAS. La app de escritorio y la versión PowerShell usan
-**el mismo motor** (`src/*.ps1`): en la app, Rust lo lanza y Svelte pinta lo que responde, paso a paso y con la barra de
-progreso real.
+**el mismo motor** (`src/*.ps1`): en la app, Rust lo lanza y Svelte pinta lo que responde, paso a paso. En la app,
+2019, 2021, 2024 y 365 van en dos tiempos: `setup.exe /download` deja Office en `%TEMP%\OfficeGo` midiendo en el disco
+cuánto lleva, y `setup.exe /configure` lo instala desde ahí.
 
 | Vía de Microsoft | Para | ¿Se eligen aplicaciones? |
 |---|---|---|
-| **Office Deployment Tool** · `setup.exe /configure` | Microsoft 365, 2024, 2021 y 2019 | Sí |
+| **Office Deployment Tool** · `setup.exe /download` y `/configure` | Microsoft 365, 2024, 2021 y 2019 | Sí |
 | **Click-to-Run** · `c2rsetup.officeapps.live.com` | 2016 y 2013 | No, baja la suite entera |
 
 ## Seguridad y privacidad
@@ -104,8 +106,9 @@ progreso real.
 - **Nada sin tu permiso:** no se instala, activa, repara ni desinstala nada hasta que lo confirmas.
 - **Sin telemetría:** no hay cuentas ni estadísticas de uso. Lo único que sale de tu equipo, aparte de las descargas de
   Microsoft, es la consulta de la app a GitHub para saber si hay versión nueva.
-- **Todo a la vista:** trabaja en `%TEMP%\OfficeGo`, donde quedan el instalador de Microsoft y sus registros
-  (Herramientas → Abrir la carpeta de trabajo). El código es abierto y se compila en GitHub a la vista de todos.
+- **Todo a la vista:** trabaja en `%TEMP%\OfficeGo`, donde quedan el instalador de Microsoft, sus registros y Office
+  mientras se instala (Herramientas → Abrir la carpeta de trabajo). El código es abierto y se compila en GitHub a la
+  vista de todos.
 
 ## Cómo se usa
 
@@ -114,9 +117,10 @@ progreso real.
 1. **Descarga** [`OfficeGo-setup.exe`](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe)
    e instálalo. Si Windows avisa con «Windows protegió su PC», pulsa **Más información** → **Ejecutar de todas formas**.
 2. **Ábrelo** desde el menú Inicio. Si te pide permisos de administrador, pulsa **Reiniciar con permisos**.
-3. **Elige:** acepta la versión que te recomienda con **Instalar esto**, o cambia versión, edición, idioma y
-   aplicaciones en **Instalar**.
-4. **Instala** y espera entre 10 y 30 minutos; Word, Excel y PowerPoint se cierran si estaban abiertos.
+3. **Elige:** acepta la versión que te recomienda con **Instalar esto**, o ve por los tres pasos de **Instalar**:
+   versión, aplicaciones y revisar.
+4. **Instala** con **Instalar ahora**. Verás cuánto lleva la descarga y cuánto falta; si la detienes, sigue donde quedó.
+   Word, Excel y PowerPoint se cierran si estaban abiertos.
 5. **Activa** en **Activar** con tu clave de producto.
 
 ¿Sin instalar nada? [`OfficeGo-portable.exe`](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-portable.exe)
@@ -257,8 +261,9 @@ educativos y para administrar equipos propios. Úsalo bajo tu responsabilidad. L
 
 **OfficeGo** installs Microsoft Office on Windows 10 and 11 straight from Microsoft's servers. It checks your computer,
 recommends the version that fits it, and installs exactly the apps you tick. It comes as a desktop app (Svelte 5 and
-Rust, Spanish and English, updates itself) and as a PowerShell script that runs even on old laptops, with an unattended
-mode for classrooms. By **@DiegoFernandoLojanTenesaca** and **@MariaDSalazar**.
+Rust, Spanish and English, light and dark, real download progress that can be paused, updates itself) and as a
+PowerShell script that runs even on old laptops, with an unattended mode for classrooms. By
+**@DiegoFernandoLojanTenesaca** and **@MariaDSalazar**.
 
 - **Recommends a version:** reads Windows, memory, disk and graphics, and applies Microsoft's published requirements.
 - **Six Office versions:** Microsoft 365, 2024, 2021, 2019, 2016 and 2013 with their editions, plus Visio and Project.

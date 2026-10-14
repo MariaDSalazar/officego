@@ -1,6 +1,6 @@
 [package]
 name = "officego"
-version = "2.4.0"
+version = "2.5.0"
 description = "Microsoft Office installer that downloads straight from Microsoft"
 authors = ["Diego Fernando Loján Tenesaca", "María del Carmen Salazar Torres"]
 license = "MIT"

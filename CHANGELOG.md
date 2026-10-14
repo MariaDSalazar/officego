@@ -1,21 +1,9 @@
-- Se rehízo la versión de escritorio en Svelte 5 y TypeScript, con los textos en español e inglés según el idioma del sistema, y Rust pasó a tipar cada respuesta del motor.
-- La versión de escritorio pasó a abrir en unos 3 segundos: antes encadenaba cuatro llamadas a PowerShell y tardaba más de 10.
-- Se arreglaron los acentos rotos de la versión de escritorio («versi�n»): PowerShell respondía en la página de códigos OEM.
-- Se arregló que la versión de escritorio se quedara ocupada para siempre cuando el motor fallaba a mitad de una tarea.
-- Se arregló que «Ver el configuration.xml» se colgara en la versión de escritorio.
-- Se añadieron a la versión de escritorio el reinicio con permisos de administrador, la clave de producto, la reparación, el instalador sin conexión en la carpeta elegida, la carpeta de trabajo y el informe del equipo.
-- Se añadió a la versión de escritorio el aviso de versiones nuevas y la actualización desde la propia app, comprobando la descarga con el SHA-256 que publica GitHub.
-- Se arregló que OfficeGo no encontrara Office 2019, 2021, 2024 y 365 instalados por Click-to-Run, con lo que no podía leer ni comprobar la licencia.
-- Se cambió la clave de producto para que se aplique con guiones, el formato que el servicio de licencias acepta siempre.
-- Se cambió el instalador sin conexión para que deje setup.exe, su configuration.xml e instalar.cmd listos para otro equipo, y se arregló que se rompiera con un & en la carpeta.
-- Se arregló que cambiar de versión o de edición borrara los complementos marcados (Visio, Project) en la 1.x.
-- Se cambió «Solo descargar» para que, con Office 2016 o 2013, avise antes de pedir la carpeta.
-- Se arregló que Office 2016 y 2013 de 32 bits no se pudieran instalar: se pedía platform=x32 y Microsoft respondía con su página de error.
-- Se arregló que una página de error de Microsoft se guardara como instalador y fallara al abrirse: ahora se avisa de que esa descarga no está disponible.
-- Se arregló que en equipos con dos gráficas o en escritorio remoto se mostrara el adaptador genérico de Microsoft o una gráfica sin pantalla.
-- Se arregló que la versión de escritorio diera Defender por apagado cuando no podía leer su estado, y que entonces no avisara de que el antivirus puede cortar la activación.
-- Se cambió la versión de escritorio para que ofrezca los permisos de administrador antes de confirmar una tarea que los necesita, no después.
-- Se arregló que al desmarcar la última aplicación se volvieran a marcar tres solas.
-- Se arregló que la barra de estado de la 1.x tardara 16 segundos en pintarse sin conexión.
-- Se cambió TLS 1.2 para que se sume a lo que permita el sistema, sin apagar TLS 1.3 donde exista.
-- Se retiró prueba-tauri.ps1: lo comprueban los tipos generados y las pruebas de Rust.
+- Se arregló que la versión de escritorio no cargara en equipos sin Office: PowerShell 5.1 enviaba `office: {}` en vez de nada y la app no podía leerlo.
+- Se arregló que toda tarea que terminaba bien en la versión de escritorio (instalar, reparar, la clave de producto…) acabara en «El motor se detuvo».
+- Se cambió la instalación de Microsoft 365, 2024, 2021 y 2019 en la versión de escritorio a dos tiempos: primero se descarga Office con el avance real, la velocidad y lo que falta, y después se instala desde esa carpeta sin volver a internet.
+- Se añadió Detener y Reanudar a las descargas: lo descargado queda guardado y se sigue donde quedó.
+- Se cambió «Solo descargar» para que muestre el avance real de la descarga.
+- Se cambió Instalar a tres pasos (versión, aplicaciones y revisar): las versiones que no corren en ese Windows aparecen apagadas con lo que piden, y Revisar muestra el configuration.xml que recibirá Microsoft.
+- Se añadió una pantalla de progreso con los pasos y su tiempo, el avance en el botón de la barra de tareas y el aviso de Windows al terminar.
+- Se rehízo el aspecto de la versión de escritorio: tema claro y oscuro o el de Windows, barra de título propia con el fondo Mica de Windows 11, y la barra lateral con el resumen del equipo.
+- Se cambió la recomendación para que tome el Windows mínimo de cada versión del catálogo, el mismo dato con el que la app apaga las que no corren.
