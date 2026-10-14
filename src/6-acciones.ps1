@@ -16,8 +16,8 @@ function Test-ListoParaInstalar {
     return $false
   }
   $sis = $script:equipo.Discos | Where-Object { $_.Sistema } | Select-Object -First 1
-  if ($sis -and $sis.LibreGB -lt 5) {
-    Avisar 'Espacio insuficiente' "Quedan $($sis.LibreGB) GB libres en $($sis.Letra) y hacen falta al menos 5 GB." 'Warning'
+  if ($sis -and $sis.LibreGB -lt $script:DISCO_MINIMO_GB) {
+    Avisar 'Espacio insuficiente' "Quedan $($sis.LibreGB) GB libres en $($sis.Letra) y hacen falta al menos $($script:DISCO_MINIMO_GB) GB." 'Warning'
     return $false
   }
   if (-not (Test-Internet)) {
@@ -99,30 +99,30 @@ Tarda entre 10 y 30 minutos. Cierre Word, Excel y PowerPoint antes de seguir.
 }
 
 function Accion-Descargar {
-  if (-not (Test-Internet)) { Avisar 'Sin conexión' 'No se llega a los servidores de Microsoft.' 'Warning'; return }
-  $dlg = New-Object Windows.Forms.FolderBrowserDialog
-  $dlg.Description = 'Elija dónde guardar los archivos de instalación'
-  if ($dlg.ShowDialog() -ne 'OK') { return }
-
+  # antes de pedir la carpeta: elegirla para luego oír que no se puede es trabajar para nada
   $prod = Get-Producto $script:sel.Producto
   if ($prod.Via -eq 'C2R') {
     Avisar 'No disponible' "Office $($prod.Clave) solo se puede instalar en línea: esa vía de Microsoft no permite descargar los archivos aparte." 'Information'
     return
   }
+  if (-not (Test-Internet)) { Avisar 'Sin conexión' 'No se llega a los servidores de Microsoft.' 'Warning'; return }
+  $dlg = New-Object Windows.Forms.FolderBrowserDialog
+  $dlg.Description = 'Elija dónde guardar los archivos de instalación'
+  if ($dlg.ShowDialog() -ne 'OK') { return }
+
   try {
     Set-Progreso 0 'Descargando el instalador…'
-    $setup = Get-SetupODT { param($pc, $h, $t) Set-Progreso $pc "Instalador: $pc %" }
-    $xml = New-ConfiguracionXml $prod $script:sel.Edicion $script:sel.Idioma `
-                                $script:sel.Bits $script:sel.Apps $script:sel.Complementos
-    # SourcePath manda los archivos a la carpeta elegida
-    # sin BOM: Set-Content -Encoding UTF8 sí lo añade en PowerShell 5.1,
-    # y el XML que lee setup.exe conviene dejarlo como lo generó el motor
-    $conRuta = (Get-Content $xml -Raw) -replace '<Add ', "<Add SourcePath=`"$($dlg.SelectedPath)`" "
-    [IO.File]::WriteAllText($xml, $conRuta, [Text.UTF8Encoding]::new($false))
-    $p = Start-Process $setup -ArgumentList "/download `"$xml`"" -PassThru
-    Seguir-Proceso $p 'Descargando Office' | Out-Null
+    $p = Start-DescargaSinConexion $prod $script:sel.Edicion $script:sel.Idioma $script:sel.Bits `
+           $script:sel.Apps $script:sel.Complementos $dlg.SelectedPath `
+           { param($pc, $h, $t) Set-Progreso $pc "Instalador: $pc %" }
+    $rc = Seguir-Proceso $p 'Descargando Office'
+    if ($rc -ne 0) {
+      Set-Progreso 0 ''
+      Avisar 'Falló la descarga' "El descargador de Microsoft terminó con el código $rc." 'Warning'
+      return
+    }
     Set-Progreso 100 'Descarga terminada'
-    Avisar 'Listo' "Los archivos quedaron en:`n$($dlg.SelectedPath)`n`nPara instalar en otro equipo, copie esa carpeta junto con setup.exe."
+    Avisar 'Listo' "Los archivos quedaron en:`n$($dlg.SelectedPath)`n`nPara instalar en otro equipo, copie esa carpeta entera y abra instalar.cmd."
   } catch {
     Set-Progreso 0 ''
     Avisar 'Falló la descarga' $_.Exception.Message 'Error'
@@ -134,20 +134,14 @@ function Accion-Clave {
   $clave = [Microsoft.VisualBasic.Interaction]::InputBox(
     "Escriba la clave de producto de 25 caracteres:", 'Clave de producto', '')
   if (-not $clave) { return }
-  $clave = ($clave -replace '[^A-Za-z0-9]', '').ToUpper()
-  if ($clave.Length -ne 25) { Avisar 'Clave no válida' 'La clave debe tener 25 caracteres.' 'Warning'; return }
-
-  $ospp = Get-RutaOspp
-  if (-not $ospp) { Avisar 'No hay Office' 'No se encontró una instalación de Office.' 'Warning'; return }
-
   Set-Progreso -1 'Aplicando la clave…'
-  $r = & cscript //nologo $ospp /inpkey:$clave 2>&1
+  $r = Set-ClaveProducto $clave
   Set-Progreso 0 ''
-  if ($r -match 'successful') {
-    & cscript //nologo $ospp /act | Out-Null
-    Avisar 'Listo' 'La clave se aplicó correctamente.'
-  } else {
-    Avisar 'No se pudo aplicar' ($r -join "`n") 'Warning'
+  switch ($r.Motivo) {
+    ''            { Avisar 'Listo' 'La clave se aplicó correctamente.' }
+    'invalidKey'  { Avisar 'Clave no válida' 'La clave debe tener 25 caracteres.' 'Warning' }
+    'noOffice'    { Avisar 'No hay Office' 'No se encontró una instalación de Office.' 'Warning' }
+    default       { Avisar 'No se pudo aplicar' $r.Salida 'Warning' }
   }
   Mostrar-Pantalla 'Activar'
 }

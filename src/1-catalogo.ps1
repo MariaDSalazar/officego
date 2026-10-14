@@ -62,7 +62,9 @@ $script:PRODUCTOS = @(
                            Professional='ProfessionalRetail'; HomeBusiness='HomeBusinessRetail' } }
 )
 
-# Complementos: productos aparte que se añaden al mismo configuration.xml
+# Complementos: productos aparte que se añaden al mismo configuration.xml.
+# Cada uno suma más o menos esto a la descarga.
+$script:PESO_COMPLEMENTO_GB = 0.6
 $script:COMPLEMENTOS = @(
   @{ Clave='VisioPro';   Nombre='Visio Professional';   Sigla='V';  Color='#3955A3'
      Ids=@{ '2024'='VisioPro2024Volume'; '2021'='VisioPro2021Volume'; '2019'='VisioPro2019Volume'

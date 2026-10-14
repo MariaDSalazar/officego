@@ -90,7 +90,7 @@ if ($PSCommandPath -and 'á'.Length -ne 1 -and (Test-Path $PSCommandPath)) {
   return
 }
 
-$script:VERSION = '1.5'
+$script:VERSION = '1.6'
 $script:URL_SCRIPT = 'https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1'
 
 # Se guardan aquí porque hacen falta para volver a lanzarse como
@@ -170,7 +170,9 @@ $script:PRODUCTOS = @(
                            Professional='ProfessionalRetail'; HomeBusiness='HomeBusinessRetail' } }
 )
 
-# Complementos: productos aparte que se añaden al mismo configuration.xml
+# Complementos: productos aparte que se añaden al mismo configuration.xml.
+# Cada uno suma más o menos esto a la descarga.
+$script:PESO_COMPLEMENTO_GB = 0.6
 $script:COMPLEMENTOS = @(
   @{ Clave='VisioPro';   Nombre='Visio Professional';   Sigla='V';  Color='#3955A3'
      Ids=@{ '2024'='VisioPro2024Volume'; '2021'='VisioPro2021Volume'; '2019'='VisioPro2019Volume'
@@ -210,10 +212,17 @@ $script:C2R_URL  = 'https://c2rsetup.officeapps.live.com/c2r/download.aspx'
 $script:MAS_URL  = 'https://get.activated.win'
 if (-not $env:TEMP) { $env:TEMP = [IO.Path]::GetTempPath() }   # falta al correr como SYSTEM
 $script:TRABAJO  = Join-Path $env:TEMP 'OfficeGo'
+$script:DISCO_MINIMO_GB = 5
 
 # Windows 10 sin actualizar negocia TLS 1.0 y los CDN de Microsoft lo
-# rechazan: sin esto la descarga muere con "conexión cerrada".
-try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch {}
+# rechazan: sin esto la descarga muere con "conexión cerrada". Si .NET ya
+# deja elegir al sistema (SystemDefault, 0) no se toca, para no perder TLS 1.3.
+try {
+  $tls = [Net.ServicePointManager]::SecurityProtocol
+  if ([int]$tls -ne 0) {
+    [Net.ServicePointManager]::SecurityProtocol = $tls -bor [Net.SecurityProtocolType]::Tls12
+  }
+} catch {}
 
 function Test-Administrador {
   try {
@@ -235,7 +244,11 @@ function Test-Internet {
 function Get-EquipoInfo {
   $so   = Get-CimInstance Win32_OperatingSystem
   $cpu  = Get-CimInstance Win32_Processor | Select-Object -First 1
-  $gpu  = Get-CimInstance Win32_VideoController | Select-Object -First 1
+  # Con dos gráficas, o en escritorio remoto, la primera puede ser el
+  # adaptador genérico de Microsoft: se prefiere una con controlador propio.
+  $gpu  = Get-CimInstance Win32_VideoController |
+            Sort-Object { $_.Name -match 'Microsoft Basic|Standard VGA|Remote Display' } |
+            Select-Object -First 1
   $rams = @(Get-CimInstance Win32_PhysicalMemory)
   $build = [Environment]::OSVersion.Version.Build
 
@@ -293,10 +306,12 @@ function Get-OfficeInstalado {
 
 # Office 2016 en adelante instala en Office16 y 2013 en Office15. Buscando
 # solo en Office16, con Office 2013 puesto se decia que no habia ninguno.
+# Y lo instalado por Click-to-Run (2019, 2021, 2024, 365) lo deja dentro de
+# root: sin mirar ahí, con Office puesto se decía que no había ninguno.
 function Get-RutaOspp {
   $bases = @($env:ProgramFiles, ${env:ProgramFiles(x86)}) | Where-Object { $_ }
   foreach ($b in $bases) {
-    foreach ($v in 'Office16', 'Office15') {
+    foreach ($v in 'root\Office16', 'Office16', 'root\Office15', 'Office15') {
       $r = Join-Path $b "Microsoft Office\$v\ospp.vbs"
       if (Test-Path $r) { return $r }
     }
@@ -314,6 +329,25 @@ function Get-EstadoLicencia {
     Dias     = ([regex]::Match(($salida -join "`n"), 'REMAINING GRACE:\s*(\d+)').Groups[1].Value)
     Cruda    = $salida
   }
+}
+
+# La clave se aplica con guiones (XXXXX-XXXXX-...), que es el único formato
+# que el servicio de licencias acepta siempre. Motivo vale invalidKey,
+# noOffice o keyRejected cuando no se aplica.
+function Set-ClaveProducto {
+  param([string]$Clave)
+  $limpia = ($Clave -replace '[^A-Za-z0-9]', '').ToUpper()
+  if ($limpia.Length -ne 25) { return [pscustomobject]@{ Ok = $false; Motivo = 'invalidKey'; Salida = '' } }
+  $ospp = Get-RutaOspp
+  if (-not $ospp) { return [pscustomobject]@{ Ok = $false; Motivo = 'noOffice'; Salida = '' } }
+
+  $conGuiones = ($limpia -split '(.{5})' | Where-Object { $_ }) -join '-'
+  $r = & cscript //nologo $ospp "/inpkey:$conGuiones" 2>&1
+  if (-not ($r -match 'successful')) {
+    return [pscustomobject]@{ Ok = $false; Motivo = 'keyRejected'; Salida = ($r -join "`n") }
+  }
+  & cscript //nologo $ospp /act | Out-Null
+  [pscustomobject]@{ Ok = $true; Motivo = ''; Salida = '' }
 }
 
 # ─────────────────────────────────────────────── descarga con progreso real
@@ -424,6 +458,31 @@ function Start-InstalacionC2R {
   Start-Process $exe -PassThru
 }
 
+# ─────────────────────────────────────────── instalador sin conexión
+#
+# La carpeta queda lista para llevarla a otro equipo: setup.exe, un
+# configuration.xml SIN SourcePath (así setup.exe busca Office a su lado)
+# e instalar.cmd para no tener que escribir nada. El XML que se usa para
+# descargar sí lleva SourcePath, escapado: una carpeta con & lo rompía.
+function Start-DescargaSinConexion {
+  param($Producto, [string]$Edicion, [string]$Idioma, [string]$Bits,
+        [string[]]$AppsQueSi, [string[]]$Complementos, [string]$Destino, [scriptblock]$AlAvanzar)
+
+  New-Item -ItemType Directory -Force -Path $Destino | Out-Null
+  $setup = Get-SetupODT $AlAvanzar
+  $xml = New-ConfiguracionXml $Producto $Edicion $Idioma $Bits $AppsQueSi $Complementos
+
+  Copy-Item $setup (Join-Path $Destino 'setup.exe') -Force
+  Copy-Item $xml (Join-Path $Destino 'configuration.xml') -Force
+  [IO.File]::WriteAllText((Join-Path $Destino 'instalar.cmd'),
+    "@echo off`r`ncd /d `"%~dp0`"`r`nsetup.exe /configure configuration.xml`r`n", [Text.Encoding]::ASCII)
+
+  $ruta = [Security.SecurityElement]::Escape($Destino)
+  $conRuta = (Get-Content $xml -Raw).Replace('<Add ', "<Add SourcePath=`"$ruta`" ")
+  [IO.File]::WriteAllText($xml, $conRuta, [Text.UTF8Encoding]::new($false))
+  Start-Process $setup -ArgumentList "/download `"$xml`"" -PassThru
+}
+
 # ────────────────────────────────────────────────────────────── reparación
 #
 # Office no se repara con el Office Deployment Tool: /configure no tiene
@@ -522,35 +581,42 @@ function Get-Recomendacion($eq) {
     '2019' { 'Su Windows 10 es de las primeras versiones: 2021 y 2024 piden una más reciente.' }
     '2016' { 'Su Windows es anterior al 10, así que solo cabe una versión clásica.' }
   }
+  # El código es lo que traduce la versión de escritorio; el texto, la 1.x
+  $codigo = @{ '2024' = 'latest'; '2021' = 'win10Before22H2'; '2019' = 'win10Early'; '2016' = 'beforeWin10' }[$clave]
 
   # ── la memoria puede cambiar la respuesta
   if ($eq.RamGB -lt 4) {
     $clave = '2016'
     $motivo = "Con $($eq.RamGB) GB de RAM conviene la versión más ligera; las nuevas piden 4 GB."
-    $avisos += @{ Tipo='warn'; Texto="Solo hay $($eq.RamGB) GB de RAM. Office funcionará, pero irá justo con varios documentos abiertos." }
+    $codigo = 'lowMemory'
+    $avisos += @{ Tipo='warn'; Codigo='lowMemory'; Datos=@{ ramGb = $eq.RamGB }
+                  Texto="Solo hay $($eq.RamGB) GB de RAM. Office funcionará, pero irá justo con varios documentos abiertos." }
   }
 
   if ($eq.Bits -eq '32') {
-    $avisos += @{ Tipo='warn'; Texto='Windows de 32 bits: se instalará Office de 32 bits, que no puede usar más de 2 GB por documento.' }
+    $avisos += @{ Tipo='warn'; Codigo='windows32'; Datos=@{}; Texto='Windows de 32 bits: se instalará Office de 32 bits, que no puede usar más de 2 GB por documento.' }
   }
 
   $sistema = $eq.Discos | Where-Object { $_.Sistema } | Select-Object -First 1
-  if ($sistema -and $sistema.LibreGB -lt 5) {
-    $avisos += @{ Tipo='error'; Texto="Quedan $($sistema.LibreGB) GB libres en $($sistema.Letra) y hacen falta al menos 5 GB." }
+  if ($sistema -and $sistema.LibreGB -lt $script:DISCO_MINIMO_GB) {
+    $avisos += @{ Tipo='error'; Codigo='lowDisk'
+                  Datos=@{ freeGb = $sistema.LibreGB; drive = $sistema.Letra; minimumGb = $script:DISCO_MINIMO_GB }
+                  Texto="Quedan $($sistema.LibreGB) GB libres en $($sistema.Letra) y hacen falta al menos $($script:DISCO_MINIMO_GB) GB." }
   }
 
   if (Test-GraficaAntigua $eq) {
-    $avisos += @{ Tipo='warn'; Texto='La tarjeta gráfica es antigua o no tiene controlador propio. Si Word o Excel parpadean, desactive la aceleración por hardware en Archivo > Opciones > Avanzadas.' }
+    $avisos += @{ Tipo='warn'; Codigo='oldGraphics'; Datos=@{}; Texto='La tarjeta gráfica es antigua o no tiene controlador propio. Si Word o Excel parpadean, desactive la aceleración por hardware en Archivo > Opciones > Avanzadas.' }
   }
 
   if ($eq.Defender -eq $true) {
-    $avisos += @{ Tipo='info'; Texto='Defender está encendido. No molesta al instalar, pero sí marcará las herramientas de activación.' }
+    $avisos += @{ Tipo='info'; Codigo='defenderOn'; Datos=@{}; Texto='Defender está encendido. No molesta al instalar, pero sí marcará las herramientas de activación.' }
   }
 
   [pscustomobject]@{
     Clave   = $clave
     Nombre  = (Get-Producto $clave).Nombre
     Motivo  = $motivo
+    Codigo  = $codigo
     Avisos  = $avisos
     Apto    = ($b -ge 10240)
   }
@@ -938,7 +1004,7 @@ function Pantalla-Instalar {
   # resumen a la derecha
   $r = New-Caja 520 36 300 250
   $peso = $prod.Peso
-  foreach ($c in $script:sel.Complementos) { $peso += 0.6 }
+  foreach ($c in $script:sel.Complementos) { $peso += $script:PESO_COMPLEMENTO_GB }
   $lp = New-Lbl ("{0:N1} GB" -f $peso) 0 14 20 $C.Azul $true
   $lp.AutoSize = $false; $lp.Size = New-Object Drawing.Size(300, 32); $lp.TextAlign = 'MiddleCenter'
   $r.Controls.Add($lp)
@@ -982,9 +1048,12 @@ function Ajustar-Seleccion {
   $ok = Get-AppsDeEdicion $prod $script:sel.Edicion
   $script:sel.Apps = @($script:sel.Apps | Where-Object { $_ -in $ok })
   if (-not $script:sel.Apps) { $script:sel.Apps = @($ok | Select-Object -First 3) }
-  # complementos que no existan para esa versión
+  # complementos que no existan para esa versión. El nombre propio no es
+  # adorno: con $_ dentro de otro Where-Object se comparaba el complemento
+  # consigo mismo y se borraban todos al cambiar de versión o de edición.
   $script:sel.Complementos = @($script:sel.Complementos | Where-Object {
-    ($script:COMPLEMENTOS | Where-Object { $_.Clave -eq $_ }).Ids[$prod.Clave] })
+    $elegido = $_
+    ($script:COMPLEMENTOS | Where-Object { $_.Clave -eq $elegido } | Select-Object -First 1).Ids[$prod.Clave] })
 }
 
 # ──────────────────────────────────────────────────────────── 2 · ACTIVAR
@@ -1323,8 +1392,8 @@ function Test-ListoParaInstalar {
     return $false
   }
   $sis = $script:equipo.Discos | Where-Object { $_.Sistema } | Select-Object -First 1
-  if ($sis -and $sis.LibreGB -lt 5) {
-    Avisar 'Espacio insuficiente' "Quedan $($sis.LibreGB) GB libres en $($sis.Letra) y hacen falta al menos 5 GB." 'Warning'
+  if ($sis -and $sis.LibreGB -lt $script:DISCO_MINIMO_GB) {
+    Avisar 'Espacio insuficiente' "Quedan $($sis.LibreGB) GB libres en $($sis.Letra) y hacen falta al menos $($script:DISCO_MINIMO_GB) GB." 'Warning'
     return $false
   }
   if (-not (Test-Internet)) {
@@ -1406,30 +1475,30 @@ Tarda entre 10 y 30 minutos. Cierre Word, Excel y PowerPoint antes de seguir.
 }
 
 function Accion-Descargar {
-  if (-not (Test-Internet)) { Avisar 'Sin conexión' 'No se llega a los servidores de Microsoft.' 'Warning'; return }
-  $dlg = New-Object Windows.Forms.FolderBrowserDialog
-  $dlg.Description = 'Elija dónde guardar los archivos de instalación'
-  if ($dlg.ShowDialog() -ne 'OK') { return }
-
+  # antes de pedir la carpeta: elegirla para luego oír que no se puede es trabajar para nada
   $prod = Get-Producto $script:sel.Producto
   if ($prod.Via -eq 'C2R') {
     Avisar 'No disponible' "Office $($prod.Clave) solo se puede instalar en línea: esa vía de Microsoft no permite descargar los archivos aparte." 'Information'
     return
   }
+  if (-not (Test-Internet)) { Avisar 'Sin conexión' 'No se llega a los servidores de Microsoft.' 'Warning'; return }
+  $dlg = New-Object Windows.Forms.FolderBrowserDialog
+  $dlg.Description = 'Elija dónde guardar los archivos de instalación'
+  if ($dlg.ShowDialog() -ne 'OK') { return }
+
   try {
     Set-Progreso 0 'Descargando el instalador…'
-    $setup = Get-SetupODT { param($pc, $h, $t) Set-Progreso $pc "Instalador: $pc %" }
-    $xml = New-ConfiguracionXml $prod $script:sel.Edicion $script:sel.Idioma `
-                                $script:sel.Bits $script:sel.Apps $script:sel.Complementos
-    # SourcePath manda los archivos a la carpeta elegida
-    # sin BOM: Set-Content -Encoding UTF8 sí lo añade en PowerShell 5.1,
-    # y el XML que lee setup.exe conviene dejarlo como lo generó el motor
-    $conRuta = (Get-Content $xml -Raw) -replace '<Add ', "<Add SourcePath=`"$($dlg.SelectedPath)`" "
-    [IO.File]::WriteAllText($xml, $conRuta, [Text.UTF8Encoding]::new($false))
-    $p = Start-Process $setup -ArgumentList "/download `"$xml`"" -PassThru
-    Seguir-Proceso $p 'Descargando Office' | Out-Null
+    $p = Start-DescargaSinConexion $prod $script:sel.Edicion $script:sel.Idioma $script:sel.Bits `
+           $script:sel.Apps $script:sel.Complementos $dlg.SelectedPath `
+           { param($pc, $h, $t) Set-Progreso $pc "Instalador: $pc %" }
+    $rc = Seguir-Proceso $p 'Descargando Office'
+    if ($rc -ne 0) {
+      Set-Progreso 0 ''
+      Avisar 'Falló la descarga' "El descargador de Microsoft terminó con el código $rc." 'Warning'
+      return
+    }
     Set-Progreso 100 'Descarga terminada'
-    Avisar 'Listo' "Los archivos quedaron en:`n$($dlg.SelectedPath)`n`nPara instalar en otro equipo, copie esa carpeta junto con setup.exe."
+    Avisar 'Listo' "Los archivos quedaron en:`n$($dlg.SelectedPath)`n`nPara instalar en otro equipo, copie esa carpeta entera y abra instalar.cmd."
   } catch {
     Set-Progreso 0 ''
     Avisar 'Falló la descarga' $_.Exception.Message 'Error'
@@ -1441,20 +1510,14 @@ function Accion-Clave {
   $clave = [Microsoft.VisualBasic.Interaction]::InputBox(
     "Escriba la clave de producto de 25 caracteres:", 'Clave de producto', '')
   if (-not $clave) { return }
-  $clave = ($clave -replace '[^A-Za-z0-9]', '').ToUpper()
-  if ($clave.Length -ne 25) { Avisar 'Clave no válida' 'La clave debe tener 25 caracteres.' 'Warning'; return }
-
-  $ospp = Get-RutaOspp
-  if (-not $ospp) { Avisar 'No hay Office' 'No se encontró una instalación de Office.' 'Warning'; return }
-
   Set-Progreso -1 'Aplicando la clave…'
-  $r = & cscript //nologo $ospp /inpkey:$clave 2>&1
+  $r = Set-ClaveProducto $clave
   Set-Progreso 0 ''
-  if ($r -match 'successful') {
-    & cscript //nologo $ospp /act | Out-Null
-    Avisar 'Listo' 'La clave se aplicó correctamente.'
-  } else {
-    Avisar 'No se pudo aplicar' ($r -join "`n") 'Warning'
+  switch ($r.Motivo) {
+    ''            { Avisar 'Listo' 'La clave se aplicó correctamente.' }
+    'invalidKey'  { Avisar 'Clave no válida' 'La clave debe tener 25 caracteres.' 'Warning' }
+    'noOffice'    { Avisar 'No hay Office' 'No se encontró una instalación de Office.' 'Warning' }
+    default       { Avisar 'No se pudo aplicar' $r.Salida 'Warning' }
   }
   Mostrar-Pantalla 'Activar'
 }
@@ -1778,8 +1841,9 @@ function Invoke-Consola {
     $p = Invoke-MAS 'Ohook'
     $p.WaitForExit()
     $lic = Get-EstadoLicencia
-    if ($lic.Activado) { Write-Bien 'Office activado.' }
-    else { Write-Mal "No se pudo confirmar la activación: $($lic.Estado)" }
+    if ($lic -and $lic.Activado) { Write-Bien 'Office activado.' }
+    elseif ($lic) { Write-Mal "No se pudo confirmar la activación: $($lic.Nombre)" }
+    else { Write-Mal 'No se encontró Office para activar.' }
   }
 
   Write-Host ""
@@ -1792,12 +1856,14 @@ function Actualizar-BarraEstado {
   if (-not $script:equipo) { $script:equipo = Get-EquipoInfo }
   $eq = $script:equipo
   $sis = $eq.Discos | Where-Object { $_.Sistema } | Select-Object -First 1
+  # una sola vez: sin conexión, cada intento espera 8 s a que caduque
+  $red = Test-Internet
 
   $items = @(
     @("$($eq.SO) · $(($eq.Build -split '\.')[0])", $(if ($eq.Compatible) { $C.Verde } else { $C.Rojo })),
     @($(if ($eq.Admin) { 'Administrador' } else { 'Sin permisos' }), $(if ($eq.Admin) { $C.Verde } else { $C.Rojo })),
-    @("$($sis.LibreGB) GB libres", $(if ($sis.LibreGB -ge 5) { $C.Verde } else { $C.Rojo })),
-    @($(if (Test-Internet) { 'Conectado' } else { 'Sin internet' }), $(if (Test-Internet) { $C.Verde } else { $C.Rojo })),
+    @("$($sis.LibreGB) GB libres", $(if ($sis.LibreGB -ge $script:DISCO_MINIMO_GB) { $C.Verde } else { $C.Rojo })),
+    @($(if ($red) { 'Conectado' } else { 'Sin internet' }), $(if ($red) { $C.Verde } else { $C.Rojo })),
     @($(if ($eq.Defender) { 'Defender activo' } else { 'Defender apagado' }), '#E8A33D')
   )
   # El ancho lo dice el propio control: al ser AutoSize, en cuanto está

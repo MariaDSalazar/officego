@@ -208,8 +208,9 @@ function Invoke-Consola {
     $p = Invoke-MAS 'Ohook'
     $p.WaitForExit()
     $lic = Get-EstadoLicencia
-    if ($lic.Activado) { Write-Bien 'Office activado.' }
-    else { Write-Mal "No se pudo confirmar la activación: $($lic.Estado)" }
+    if ($lic -and $lic.Activado) { Write-Bien 'Office activado.' }
+    elseif ($lic) { Write-Mal "No se pudo confirmar la activación: $($lic.Nombre)" }
+    else { Write-Mal 'No se encontró Office para activar.' }
   }
 
   Write-Host ""
@@ -222,12 +223,14 @@ function Actualizar-BarraEstado {
   if (-not $script:equipo) { $script:equipo = Get-EquipoInfo }
   $eq = $script:equipo
   $sis = $eq.Discos | Where-Object { $_.Sistema } | Select-Object -First 1
+  # una sola vez: sin conexión, cada intento espera 8 s a que caduque
+  $red = Test-Internet
 
   $items = @(
     @("$($eq.SO) · $(($eq.Build -split '\.')[0])", $(if ($eq.Compatible) { $C.Verde } else { $C.Rojo })),
     @($(if ($eq.Admin) { 'Administrador' } else { 'Sin permisos' }), $(if ($eq.Admin) { $C.Verde } else { $C.Rojo })),
-    @("$($sis.LibreGB) GB libres", $(if ($sis.LibreGB -ge 5) { $C.Verde } else { $C.Rojo })),
-    @($(if (Test-Internet) { 'Conectado' } else { 'Sin internet' }), $(if (Test-Internet) { $C.Verde } else { $C.Rojo })),
+    @("$($sis.LibreGB) GB libres", $(if ($sis.LibreGB -ge $script:DISCO_MINIMO_GB) { $C.Verde } else { $C.Rojo })),
+    @($(if ($red) { 'Conectado' } else { 'Sin internet' }), $(if ($red) { $C.Verde } else { $C.Rojo })),
     @($(if ($eq.Defender) { 'Defender activo' } else { 'Defender apagado' }), '#E8A33D')
   )
   # El ancho lo dice el propio control: al ser AutoSize, en cuanto está

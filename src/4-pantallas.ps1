@@ -137,7 +137,7 @@ function Pantalla-Instalar {
   # resumen a la derecha
   $r = New-Caja 520 36 300 250
   $peso = $prod.Peso
-  foreach ($c in $script:sel.Complementos) { $peso += 0.6 }
+  foreach ($c in $script:sel.Complementos) { $peso += $script:PESO_COMPLEMENTO_GB }
   $lp = New-Lbl ("{0:N1} GB" -f $peso) 0 14 20 $C.Azul $true
   $lp.AutoSize = $false; $lp.Size = New-Object Drawing.Size(300, 32); $lp.TextAlign = 'MiddleCenter'
   $r.Controls.Add($lp)
@@ -181,9 +181,12 @@ function Ajustar-Seleccion {
   $ok = Get-AppsDeEdicion $prod $script:sel.Edicion
   $script:sel.Apps = @($script:sel.Apps | Where-Object { $_ -in $ok })
   if (-not $script:sel.Apps) { $script:sel.Apps = @($ok | Select-Object -First 3) }
-  # complementos que no existan para esa versión
+  # complementos que no existan para esa versión. El nombre propio no es
+  # adorno: con $_ dentro de otro Where-Object se comparaba el complemento
+  # consigo mismo y se borraban todos al cambiar de versión o de edición.
   $script:sel.Complementos = @($script:sel.Complementos | Where-Object {
-    ($script:COMPLEMENTOS | Where-Object { $_.Clave -eq $_ }).Ids[$prod.Clave] })
+    $elegido = $_
+    ($script:COMPLEMENTOS | Where-Object { $_.Clave -eq $elegido } | Select-Object -First 1).Ids[$prod.Clave] })
 }
 
 # ──────────────────────────────────────────────────────────── 2 · ACTIVAR

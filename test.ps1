@@ -80,6 +80,12 @@ Comprobar 'poco disco genera aviso' (
   (Get-Recomendacion (EquipoFalso 22631 16 2)).Avisos.Tipo -contains 'error')
 Comprobar 'equipo holgado no genera avisos' (
   (Get-Recomendacion (EquipoFalso 22631 16 200)).Avisos.Count -eq 0)
+$codigos = @(22631, 18363, 10240, 7601 | ForEach-Object { (Get-Recomendacion (EquipoFalso $_ 16 200)).Codigo })
+Comprobar 'cada motivo lleva su código' (($codigos -join ',') -eq 'latest,win10Before22H2,win10Early,beforeWin10') ($codigos -join ',')
+Comprobar 'poca RAM tiene su código' ((Get-Recomendacion (EquipoFalso 22631 3 200)).Codigo -eq 'lowMemory')
+$todos = (Get-Recomendacion (EquipoFalso 22631 3 2 'Microsoft Basic Display Adapter' '32')).Avisos
+Comprobar 'todo aviso lleva código' (@($todos | Where-Object { -not $_.Codigo }).Count -eq 0) "$($todos.Count) avisos"
+Comprobar 'el de disco dice cuánto queda' (($todos | Where-Object Codigo -eq 'lowDisk').Datos.freeGb -eq 2)
 
 Write-Host "`nTARJETA GRÁFICA" -ForegroundColor Cyan
 Comprobar 'detecta NVIDIA' ((Get-MarcaGrafica 'NVIDIA GeForce RTX 4060').Marca -eq 'NVIDIA')
@@ -121,6 +127,37 @@ if (Test-Path "$PSScriptRoot/OfficeGo.ps1") {
   Comprobar 'admite -Instalar' (
     $ast.ParamBlock.Parameters.Name.VariablePath.UserPath -contains 'Instalar')
 }
+
+Write-Host "`nCLAVE DE PRODUCTO" -ForegroundColor Cyan
+Comprobar 'una clave corta ni se intenta' ((Set-ClaveProducto 'ABC').Motivo -eq 'invalidKey')
+function Get-RutaOspp { 'ospp.vbs' }
+$script:ordenes = @()
+function cscript { $script:ordenes += , ($args -join ' '); '<Product key installation successful>' }
+$r = Set-ClaveProducto 'abcde fghij-klmno.pqrst uvwxy'
+Comprobar 'la clave se aplica' $r.Ok
+Comprobar 'va con guiones y en mayúsculas' ($script:ordenes[0] -match '/inpkey:ABCDE-FGHIJ-KLMNO-PQRST-UVWXY$') $script:ordenes[0]
+Comprobar 'después se activa' ($script:ordenes[1] -match '/act$') $script:ordenes[1]
+function cscript { 'ERROR CODE: 0xC004F050' }
+Comprobar 'una clave rechazada lo dice' ((Set-ClaveProducto ('A' * 25)).Motivo -eq 'keyRejected')
+Remove-Item function:cscript
+
+Write-Host "`nINSTALADOR SIN CONEXIÓN" -ForegroundColor Cyan
+function Get-SetupODT {
+  New-Item -ItemType Directory -Force -Path $script:TRABAJO | Out-Null
+  $f = Join-Path $script:TRABAJO 'setup.exe'; Set-Content $f 'setup'; $f
+}
+function Start-Process { $script:lanzado = $args -join ' ' }
+$destino = Join-Path $script:TRABAJO 'Copia & otra'
+Start-DescargaSinConexion $p2021 'ProPlus' 'es-es' '64' @('Word') @() $destino $null | Out-Null
+Comprobar 'deja setup.exe en la carpeta' (Test-Path -LiteralPath (Join-Path $destino 'setup.exe'))
+Comprobar 'deja instalar.cmd' (Test-Path -LiteralPath (Join-Path $destino 'instalar.cmd'))
+$viaja = [xml](Get-Content -LiteralPath (Join-Path $destino 'configuration.xml') -Raw)
+Comprobar 'el XML que viaja no lleva SourcePath' (-not $viaja.Configuration.Add.SourcePath)
+$baja = [xml](Get-Content (Join-Path $script:TRABAJO 'configuration.xml') -Raw)
+Comprobar 'el de la descarga apunta a la carpeta aunque lleve &' ($baja.Configuration.Add.SourcePath -eq $destino) $baja.Configuration.Add.SourcePath
+Comprobar 'descarga con /download' ($script:lanzado -match '/download')
+Remove-Item function:Start-Process
+Remove-Item -LiteralPath $destino -Recurse -Force
 
 Write-Host ""
 if ($fallos) { Write-Host "$fallos prueba(s) fallando" -ForegroundColor Red; exit 1 }

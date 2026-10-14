@@ -421,6 +421,25 @@ foreach ($prod in $script:PRODUCTOS) {
   }
 }
 
+# ── Cambiar de edición no puede llevarse los complementos que sí salen
+#    para esa versión: un $_ tapado por otro los borraba siempre.
+Write-Host "`nLA SELECCIÓN AL CAMBIAR DE EDICIÓN" -ForegroundColor Cyan
+$script:sel.Producto = '2021'; $script:sel.Edicion = 'Standard'
+$script:sel.Complementos = @('VisioPro', 'ProjectStd')
+Ajustar-Seleccion
+if (($script:sel.Complementos -join ',') -eq 'VisioPro,ProjectStd') {
+  Write-Host '  ok   los complementos de 2021 siguen marcados' -ForegroundColor Green
+} else {
+  Write-Host "  FALLA quedaron: $($script:sel.Complementos -join ',')" -ForegroundColor Red; $script:problemas++
+}
+$script:sel.Producto = '2016'
+Ajustar-Seleccion
+if (-not $script:sel.Complementos) {
+  Write-Host '  ok   en 2016, que no los tiene, se quitan' -ForegroundColor Green
+} else {
+  Write-Host "  FALLA en 2016 quedaron: $($script:sel.Complementos -join ',')" -ForegroundColor Red; $script:problemas++
+}
+
 Write-Host ""
 if ($script:problemas) { Write-Host "$script:problemas problema(s) de reparto" -ForegroundColor Red; exit 1 }
 Write-Host "El reparto de las seis pantallas está limpio" -ForegroundColor Green

@@ -48,35 +48,42 @@ function Get-Recomendacion($eq) {
     '2019' { 'Su Windows 10 es de las primeras versiones: 2021 y 2024 piden una más reciente.' }
     '2016' { 'Su Windows es anterior al 10, así que solo cabe una versión clásica.' }
   }
+  # El código es lo que traduce la versión de escritorio; el texto, la 1.x
+  $codigo = @{ '2024' = 'latest'; '2021' = 'win10Before22H2'; '2019' = 'win10Early'; '2016' = 'beforeWin10' }[$clave]
 
   # ── la memoria puede cambiar la respuesta
   if ($eq.RamGB -lt 4) {
     $clave = '2016'
     $motivo = "Con $($eq.RamGB) GB de RAM conviene la versión más ligera; las nuevas piden 4 GB."
-    $avisos += @{ Tipo='warn'; Texto="Solo hay $($eq.RamGB) GB de RAM. Office funcionará, pero irá justo con varios documentos abiertos." }
+    $codigo = 'lowMemory'
+    $avisos += @{ Tipo='warn'; Codigo='lowMemory'; Datos=@{ ramGb = $eq.RamGB }
+                  Texto="Solo hay $($eq.RamGB) GB de RAM. Office funcionará, pero irá justo con varios documentos abiertos." }
   }
 
   if ($eq.Bits -eq '32') {
-    $avisos += @{ Tipo='warn'; Texto='Windows de 32 bits: se instalará Office de 32 bits, que no puede usar más de 2 GB por documento.' }
+    $avisos += @{ Tipo='warn'; Codigo='windows32'; Datos=@{}; Texto='Windows de 32 bits: se instalará Office de 32 bits, que no puede usar más de 2 GB por documento.' }
   }
 
   $sistema = $eq.Discos | Where-Object { $_.Sistema } | Select-Object -First 1
-  if ($sistema -and $sistema.LibreGB -lt 5) {
-    $avisos += @{ Tipo='error'; Texto="Quedan $($sistema.LibreGB) GB libres en $($sistema.Letra) y hacen falta al menos 5 GB." }
+  if ($sistema -and $sistema.LibreGB -lt $script:DISCO_MINIMO_GB) {
+    $avisos += @{ Tipo='error'; Codigo='lowDisk'
+                  Datos=@{ freeGb = $sistema.LibreGB; drive = $sistema.Letra; minimumGb = $script:DISCO_MINIMO_GB }
+                  Texto="Quedan $($sistema.LibreGB) GB libres en $($sistema.Letra) y hacen falta al menos $($script:DISCO_MINIMO_GB) GB." }
   }
 
   if (Test-GraficaAntigua $eq) {
-    $avisos += @{ Tipo='warn'; Texto='La tarjeta gráfica es antigua o no tiene controlador propio. Si Word o Excel parpadean, desactive la aceleración por hardware en Archivo > Opciones > Avanzadas.' }
+    $avisos += @{ Tipo='warn'; Codigo='oldGraphics'; Datos=@{}; Texto='La tarjeta gráfica es antigua o no tiene controlador propio. Si Word o Excel parpadean, desactive la aceleración por hardware en Archivo > Opciones > Avanzadas.' }
   }
 
   if ($eq.Defender -eq $true) {
-    $avisos += @{ Tipo='info'; Texto='Defender está encendido. No molesta al instalar, pero sí marcará las herramientas de activación.' }
+    $avisos += @{ Tipo='info'; Codigo='defenderOn'; Datos=@{}; Texto='Defender está encendido. No molesta al instalar, pero sí marcará las herramientas de activación.' }
   }
 
   [pscustomobject]@{
     Clave   = $clave
     Nombre  = (Get-Producto $clave).Nombre
     Motivo  = $motivo
+    Codigo  = $codigo
     Avisos  = $avisos
     Apto    = ($b -ge 10240)
   }

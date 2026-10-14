@@ -9,10 +9,17 @@ $script:C2R_URL  = 'https://c2rsetup.officeapps.live.com/c2r/download.aspx'
 $script:MAS_URL  = 'https://get.activated.win'
 if (-not $env:TEMP) { $env:TEMP = [IO.Path]::GetTempPath() }   # falta al correr como SYSTEM
 $script:TRABAJO  = Join-Path $env:TEMP 'OfficeGo'
+$script:DISCO_MINIMO_GB = 5
 
 # Windows 10 sin actualizar negocia TLS 1.0 y los CDN de Microsoft lo
-# rechazan: sin esto la descarga muere con "conexión cerrada".
-try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch {}
+# rechazan: sin esto la descarga muere con "conexión cerrada". Si .NET ya
+# deja elegir al sistema (SystemDefault, 0) no se toca, para no perder TLS 1.3.
+try {
+  $tls = [Net.ServicePointManager]::SecurityProtocol
+  if ([int]$tls -ne 0) {
+    [Net.ServicePointManager]::SecurityProtocol = $tls -bor [Net.SecurityProtocolType]::Tls12
+  }
+} catch {}
 
 function Test-Administrador {
   try {
@@ -34,7 +41,11 @@ function Test-Internet {
 function Get-EquipoInfo {
   $so   = Get-CimInstance Win32_OperatingSystem
   $cpu  = Get-CimInstance Win32_Processor | Select-Object -First 1
-  $gpu  = Get-CimInstance Win32_VideoController | Select-Object -First 1
+  # Con dos gráficas, o en escritorio remoto, la primera puede ser el
+  # adaptador genérico de Microsoft: se prefiere una con controlador propio.
+  $gpu  = Get-CimInstance Win32_VideoController |
+            Sort-Object { $_.Name -match 'Microsoft Basic|Standard VGA|Remote Display' } |
+            Select-Object -First 1
   $rams = @(Get-CimInstance Win32_PhysicalMemory)
   $build = [Environment]::OSVersion.Version.Build
 
@@ -92,10 +103,12 @@ function Get-OfficeInstalado {
 
 # Office 2016 en adelante instala en Office16 y 2013 en Office15. Buscando
 # solo en Office16, con Office 2013 puesto se decia que no habia ninguno.
+# Y lo instalado por Click-to-Run (2019, 2021, 2024, 365) lo deja dentro de
+# root: sin mirar ahí, con Office puesto se decía que no había ninguno.
 function Get-RutaOspp {
   $bases = @($env:ProgramFiles, ${env:ProgramFiles(x86)}) | Where-Object { $_ }
   foreach ($b in $bases) {
-    foreach ($v in 'Office16', 'Office15') {
+    foreach ($v in 'root\Office16', 'Office16', 'root\Office15', 'Office15') {
       $r = Join-Path $b "Microsoft Office\$v\ospp.vbs"
       if (Test-Path $r) { return $r }
     }
@@ -113,6 +126,25 @@ function Get-EstadoLicencia {
     Dias     = ([regex]::Match(($salida -join "`n"), 'REMAINING GRACE:\s*(\d+)').Groups[1].Value)
     Cruda    = $salida
   }
+}
+
+# La clave se aplica con guiones (XXXXX-XXXXX-...), que es el único formato
+# que el servicio de licencias acepta siempre. Motivo vale invalidKey,
+# noOffice o keyRejected cuando no se aplica.
+function Set-ClaveProducto {
+  param([string]$Clave)
+  $limpia = ($Clave -replace '[^A-Za-z0-9]', '').ToUpper()
+  if ($limpia.Length -ne 25) { return [pscustomobject]@{ Ok = $false; Motivo = 'invalidKey'; Salida = '' } }
+  $ospp = Get-RutaOspp
+  if (-not $ospp) { return [pscustomobject]@{ Ok = $false; Motivo = 'noOffice'; Salida = '' } }
+
+  $conGuiones = ($limpia -split '(.{5})' | Where-Object { $_ }) -join '-'
+  $r = & cscript //nologo $ospp "/inpkey:$conGuiones" 2>&1
+  if (-not ($r -match 'successful')) {
+    return [pscustomobject]@{ Ok = $false; Motivo = 'keyRejected'; Salida = ($r -join "`n") }
+  }
+  & cscript //nologo $ospp /act | Out-Null
+  [pscustomobject]@{ Ok = $true; Motivo = ''; Salida = '' }
 }
 
 # ─────────────────────────────────────────────── descarga con progreso real
@@ -221,6 +253,31 @@ function Start-InstalacionC2R {
   $url = "$($script:C2R_URL)?ProductreleaseID=$id&platform=x$Bits&language=$Idioma&version=$($Producto.Version)"
   Invoke-Descarga $url $exe $AlAvanzar | Out-Null
   Start-Process $exe -PassThru
+}
+
+# ─────────────────────────────────────────── instalador sin conexión
+#
+# La carpeta queda lista para llevarla a otro equipo: setup.exe, un
+# configuration.xml SIN SourcePath (así setup.exe busca Office a su lado)
+# e instalar.cmd para no tener que escribir nada. El XML que se usa para
+# descargar sí lleva SourcePath, escapado: una carpeta con & lo rompía.
+function Start-DescargaSinConexion {
+  param($Producto, [string]$Edicion, [string]$Idioma, [string]$Bits,
+        [string[]]$AppsQueSi, [string[]]$Complementos, [string]$Destino, [scriptblock]$AlAvanzar)
+
+  New-Item -ItemType Directory -Force -Path $Destino | Out-Null
+  $setup = Get-SetupODT $AlAvanzar
+  $xml = New-ConfiguracionXml $Producto $Edicion $Idioma $Bits $AppsQueSi $Complementos
+
+  Copy-Item $setup (Join-Path $Destino 'setup.exe') -Force
+  Copy-Item $xml (Join-Path $Destino 'configuration.xml') -Force
+  [IO.File]::WriteAllText((Join-Path $Destino 'instalar.cmd'),
+    "@echo off`r`ncd /d `"%~dp0`"`r`nsetup.exe /configure configuration.xml`r`n", [Text.Encoding]::ASCII)
+
+  $ruta = [Security.SecurityElement]::Escape($Destino)
+  $conRuta = (Get-Content $xml -Raw).Replace('<Add ', "<Add SourcePath=`"$ruta`" ")
+  [IO.File]::WriteAllText($xml, $conRuta, [Text.UTF8Encoding]::new($false))
+  Start-Process $setup -ArgumentList "/download `"$xml`"" -PassThru
 }
 
 # ────────────────────────────────────────────────────────────── reparación
