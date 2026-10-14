@@ -137,10 +137,10 @@
     gap: var(--space-2);
   }
   .summary {
-    padding: var(--space-3);
-    border: var(--border-regular) solid var(--color-line);
-    border-radius: var(--radius-lg);
-    background: var(--color-panel);
+    padding: var(--space-4);
+    border: var(--border-hairline) solid var(--color-line);
+    border-radius: var(--radius-xl);
+    background: var(--color-raised);
   }
   .size {
     display: grid;
@@ -151,7 +151,7 @@
   }
   .size b {
     color: var(--color-accent);
-    font-size: var(--text-3xl);
+    font: 600 var(--text-3xl) var(--font-display);
   }
   table {
     width: 100%;

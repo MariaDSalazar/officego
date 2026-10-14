@@ -9,7 +9,7 @@
   "links": "Links",
   "linkNames": {
     "repository": "OfficeGo's code",
-    "mas": "MAS · Microsoft Activation Scripts",
+    "mas": "MAS (Microsoft Activation Scripts)",
     "masTroubleshoot": "MAS troubleshooting guide",
     "reportIssue": "Report a problem"
   },
@@ -38,7 +38,7 @@
   },
   "license": "License",
   "pledges": {
-    "openSource": "Open source · MIT license",
+    "openSource": "Open source under the MIT license",
     "noTelemetry": "No telemetry",
     "noAds": "No ads"
   }

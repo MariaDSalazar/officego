@@ -8,6 +8,7 @@ if (-not $env:TEMP) { $env:TEMP = '/tmp' }
 . "$PSScriptRoot/src/1-catalogo.ps1"
 . "$PSScriptRoot/src/2-motor.ps1"
 . "$PSScriptRoot/src/2b-recomendacion.ps1"
+$script:TRABAJO = Join-Path $env:TEMP 'OfficeGo-pruebas'
 
 $fallos = 0
 function Comprobar($nombre, $condicion, $detalle = '') {
@@ -168,6 +169,7 @@ Start-InstalacionC2R $p2016 'ProPlus' 'es-es' '64' $null | Out-Null
 Comprobar 'a 64 bits se pide platform=x64' ($script:pedida -match 'platform=x64&') $script:pedida
 Remove-Item function:Start-Process, function:Invoke-Descarga
 
+Remove-Item -LiteralPath $script:TRABAJO -Recurse -Force -ErrorAction SilentlyContinue
 Write-Host ""
 if ($fallos) { Write-Host "$fallos prueba(s) fallando" -ForegroundColor Red; exit 1 }
 Write-Host "Todas las pruebas pasan" -ForegroundColor Green

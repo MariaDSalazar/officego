@@ -23,7 +23,7 @@
     gap: var(--space-1);
     padding: var(--space-3) var(--space-2);
     border: var(--border-regular) solid var(--color-line);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
     background: var(--color-panel);
     transition: border-color var(--motion-fast);
   }

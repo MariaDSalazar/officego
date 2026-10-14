@@ -1,10 +1,7 @@
 {
-  "admin": "Administrator",
-  "noAdmin": "No permissions",
+  "admin": "Administrator permissions",
+  "noAdmin": "No administrator permissions",
   "free": "{{free}} free",
-  "defenderOn": "Defender on",
-  "defenderOff": "Defender off",
-  "officeInstalled": "Office installed",
-  "officeMissing": "Office not installed",
-  "defenderUnknown": "Defender: no answer"
+  "ram": "{{ram}} of RAM",
+  "seeMachine": "See your computer"
 }

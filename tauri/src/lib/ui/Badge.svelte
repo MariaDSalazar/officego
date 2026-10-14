@@ -9,6 +9,7 @@
     color,
     size = 'md',
     round = false,
+    soft = false,
     unavailable = false,
   }: {
     label?: string;
@@ -16,11 +17,12 @@
     color: string;
     size?: 'sm' | 'md' | 'lg' | 'xl';
     round?: boolean;
+    soft?: boolean;
     unavailable?: boolean;
   } = $props();
 </script>
 
-<span class="badge {size}" class:round style:background={unavailable ? 'var(--color-unavailable)' : color}>
+<span class="badge {size}" class:round class:soft style:--tint={unavailable ? 'var(--color-unavailable)' : color}>
   {#if Icon}<Icon size={ICON_SIZES[size]} />{:else}{label}{/if}
 </span>
 
@@ -30,8 +32,13 @@
     flex: none;
     align-items: center;
     justify-content: center;
-    color: var(--color-textOnAccent);
+    background: var(--tint);
+    color: var(--color-onBrand);
     font-weight: 700;
+  }
+  .soft {
+    background: color-mix(in srgb, var(--tint) 14%, transparent);
+    color: var(--tint);
   }
   .sm {
     width: var(--size-badgeSm);

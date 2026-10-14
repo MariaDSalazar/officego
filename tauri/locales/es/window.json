@@ -1,0 +1,12 @@
+{
+  "themes": {
+    "system": "Sistema",
+    "light": "Claro",
+    "dark": "Oscuro"
+  },
+  "themeHint": "Cambiar entre el tema del sistema, claro y oscuro",
+  "minimize": "Minimizar",
+  "maximize": "Maximizar",
+  "restore": "Restaurar",
+  "close": "Cerrar"
+}

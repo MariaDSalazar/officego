@@ -19,5 +19,5 @@
     }
   },
   "noAdmin": "Faltan permisos de administrador: puede mirar las pantallas, pero no instalar ni activar.",
-  "ready": "Equipo listo. {{os}} · {{ram}} de RAM · {{free}} libres · permisos de administrador."
+  "ready": "Equipo listo: {{os}} con {{ram}} de RAM, {{free}} libres y permisos de administrador."
 }

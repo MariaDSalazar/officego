@@ -28,11 +28,11 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
-    padding: var(--space-3) var(--space-6);
-    border: var(--border-regular) solid transparent;
-    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-5);
+    border: var(--border-hairline) solid transparent;
+    border-radius: var(--radius-lg);
     font-size: var(--text-md);
-    font-weight: 700;
+    font-weight: 600;
     white-space: nowrap;
     transition:
       filter var(--motion-fast),
@@ -47,9 +47,12 @@
     color: var(--color-textOnAccent);
   }
   .ghost {
-    border-color: var(--color-accentLine);
+    border-color: var(--color-line);
     background: var(--color-panel);
-    color: var(--color-accent);
+    color: var(--color-text);
+  }
+  .ghost:hover:not(:disabled) {
+    border-color: var(--color-accentHover);
   }
   .danger {
     border-color: var(--color-dangerLine);

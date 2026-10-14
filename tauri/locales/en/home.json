@@ -19,5 +19,5 @@
     }
   },
   "noAdmin": "Administrator permissions are missing: you can look around, but not install or activate.",
-  "ready": "Ready. {{os}} · {{ram}} of RAM · {{free}} free · administrator permissions."
+  "ready": "Ready: {{os}} with {{ram}} of RAM, {{free}} free and administrator permissions."
 }

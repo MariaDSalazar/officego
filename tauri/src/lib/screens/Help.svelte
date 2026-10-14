@@ -61,9 +61,9 @@
     gap: var(--space-1);
     margin-bottom: var(--space-2);
     padding: var(--space-3) var(--space-4);
-    border: var(--border-regular) solid var(--color-line);
-    border-radius: var(--radius-lg);
-    background: var(--color-panel);
+    border: var(--border-hairline) solid var(--color-line);
+    border-radius: var(--radius-xl);
+    background: var(--color-raised);
     font-size: var(--text-sm);
     text-align: left;
   }
@@ -106,8 +106,8 @@
     width: var(--size-badgeSm);
     height: var(--size-badgeSm);
     border-radius: var(--radius-round);
-    background: var(--color-dangerSoft);
-    color: var(--color-danger);
+    background: var(--color-accentSoft);
+    color: var(--color-accent);
     font-size: var(--text-sm);
   }
   .pledges {

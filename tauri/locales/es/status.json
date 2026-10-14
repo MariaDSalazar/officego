@@ -1,10 +1,7 @@
 {
-  "admin": "Administrador",
-  "noAdmin": "Sin permisos",
+  "admin": "Con permisos de administrador",
+  "noAdmin": "Sin permisos de administrador",
   "free": "{{free}} libres",
-  "defenderOn": "Defender activo",
-  "defenderOff": "Defender apagado",
-  "officeInstalled": "Office instalado",
-  "officeMissing": "Office no instalado",
-  "defenderUnknown": "Defender: no responde"
+  "ram": "{{ram}} de RAM",
+  "seeMachine": "Ver tu equipo"
 }

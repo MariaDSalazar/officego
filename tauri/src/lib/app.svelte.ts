@@ -1,3 +1,4 @@
+import { MediaQuery } from 'svelte/reactivity';
 import { getCatalog, getConfiguration, getLicense, getMachine, runTask } from './services/engine';
 import { toAppError } from './services/errors';
 import { appVersion, chooseFolder, copyText, openFolder, openLink, relaunchAsAdmin } from './services/system';
@@ -8,6 +9,9 @@ import type { Catalog, License, MachineReport, Release, Selection, Task, TaskEve
 
 export const SCREENS = ['home', 'install', 'activate', 'machine', 'tools', 'help'] as const;
 export type Screen = (typeof SCREENS)[number];
+
+export const THEMES = ['system', 'light', 'dark'] as const;
+export type Theme = (typeof THEMES)[number];
 
 export type DialogTone = 'info' | 'warn' | 'danger';
 
@@ -31,6 +35,9 @@ type OpenDialog = DialogRequest & { resolve: (answer: string | null) => void };
 /** Answer of a dialog closed with its confirm button and no text to give. */
 const CONFIRMED = '';
 const OPEN_FOLDER = 'openFolder';
+const THEME_KEY = 'officego.theme';
+const systemDark = new MediaQuery('(prefers-color-scheme: dark)');
+const storedTheme = (): Theme => THEMES.find((theme) => theme === localStorage.getItem(THEME_KEY)) ?? 'system';
 const SELECTION_FALLBACK: Selection = { product: '', edition: '', language: '', bits: '64', apps: DEFAULT_APPS, addOns: [] };
 
 class App {
@@ -38,6 +45,8 @@ class App {
   t = $derived(translator(this.language));
   format = $derived(formatter(this.language));
   version = $state('');
+  theme = $state<Theme>(storedTheme());
+  dark = $derived(this.theme === 'dark' || (this.theme === 'system' && systemDark.current));
 
   catalog = $state<Catalog | null>(null);
   report = $state<MachineReport | null>(null);
@@ -96,6 +105,11 @@ class App {
   };
 
   go = (screen: Screen) => (this.screen = screen);
+
+  cycleTheme = () => {
+    this.theme = THEMES[(THEMES.indexOf(this.theme) + 1) % THEMES.length];
+    localStorage.setItem(THEME_KEY, this.theme);
+  };
 
   ask = (request: DialogRequest) => new Promise<string | null>((resolve) => (this.dialog = { ...request, resolve }));
 
@@ -231,7 +245,7 @@ class App {
     const answer = await this.ask({
       title: this.t('install:confirmTitle'),
       lines: [
-        `${product.name} · ${edition}`,
+        `${product.name} ${edition}`,
         this.t('install:summaryApps', { apps }),
         this.t('install:summaryLanguage', { language: this.format.officeLanguage(this.selection.language) }),
         this.t('install:summaryBits', { bits: this.selection.bits }),

@@ -27,7 +27,7 @@
 </script>
 
 <div class="row" class:danger>
-  <Badge {label} {icon} {color} size="lg" />
+  <Badge {label} {icon} {color} size="lg" soft />
   <div class="text">
     <h4>{title}</h4>
     <p>{description}</p>
@@ -42,9 +42,9 @@
     gap: var(--space-4);
     margin-bottom: var(--space-3);
     padding: var(--space-4);
-    border: var(--border-regular) solid var(--color-line);
-    border-radius: var(--radius-lg);
-    background: var(--color-panel);
+    border: var(--border-hairline) solid var(--color-line);
+    border-radius: var(--radius-xl);
+    background: var(--color-raised);
   }
   .danger {
     border-color: var(--color-dangerLine);
@@ -56,6 +56,7 @@
   h4 {
     margin-bottom: var(--space-1);
     font-size: var(--text-lg);
+    font-weight: 600;
   }
   p {
     color: var(--color-textMuted);

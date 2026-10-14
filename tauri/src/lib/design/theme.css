@@ -4,6 +4,11 @@
   box-sizing: border-box;
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+
 html,
 body {
   margin: 0;
@@ -13,6 +18,11 @@ body {
   color: var(--color-text);
   font: var(--text-base) / 1.45 var(--font-family);
   user-select: none;
+}
+
+html[data-backdrop='mica'],
+html[data-backdrop='mica'] body {
+  background: transparent;
 }
 
 #app {
@@ -28,6 +38,12 @@ input {
 
 button {
   cursor: pointer;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
 }
 
 h1,

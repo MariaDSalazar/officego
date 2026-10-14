@@ -21,7 +21,7 @@
 
 <article class="card">
   <header>
-    <Badge {label} {color} />
+    <Badge {label} {color} soft />
     <div>
       <h4>{title}</h4>
       <p class="subtitle">{subtitle}</p>
@@ -38,10 +38,10 @@
 
 <style>
   .card {
-    padding: var(--space-3);
-    border: var(--border-regular) solid var(--color-line);
-    border-radius: var(--radius-lg);
-    background: var(--color-panel);
+    padding: var(--space-4);
+    border: var(--border-hairline) solid var(--color-line);
+    border-radius: var(--radius-xl);
+    background: var(--color-raised);
   }
   header {
     display: flex;
@@ -51,6 +51,7 @@
   }
   h4 {
     font-size: var(--text-md);
+    font-weight: 600;
   }
   .subtitle,
   .caption {

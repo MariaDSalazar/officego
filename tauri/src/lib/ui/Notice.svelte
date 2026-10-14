@@ -9,9 +9,9 @@
 <style>
   .notice {
     margin-top: var(--space-2);
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-md);
-    font-size: var(--text-sm);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-base);
   }
   .info {
     background: var(--color-accentSoft);

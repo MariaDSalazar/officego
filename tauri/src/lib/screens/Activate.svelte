@@ -17,7 +17,7 @@
 
 <SectionTitle>{t('activate:status')}</SectionTitle>
 <div class="status">
-  <Badge icon={activated ? Check : CircleAlert} color={activated ? 'var(--color-success)' : 'var(--color-danger)'} size="lg" />
+  <Badge icon={activated ? Check : CircleAlert} color={activated ? 'var(--color-success)' : 'var(--color-danger)'} size="lg" soft />
   <div class="text">
     <h4>{t(`activate:states.${state}`)}</h4>
     <p>{license?.name || t(`activate:stateHints.${state}`)}</p>
@@ -58,9 +58,9 @@
     align-items: center;
     gap: var(--space-4);
     padding: var(--space-4);
-    border: var(--border-regular) solid var(--color-line);
-    border-radius: var(--radius-lg);
-    background: var(--color-panel);
+    border: var(--border-hairline) solid var(--color-line);
+    border-radius: var(--radius-xl);
+    background: var(--color-raised);
   }
   .text {
     flex: 1;

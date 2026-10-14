@@ -10,8 +10,8 @@
     "repair": "Repairing Office",
     "uninstall": "Uninstalling Office"
   },
-  "downloading": "Downloading: {{percent}} · {{done}} of {{total}}",
-  "elapsed": "{{doing}} · {{time}}",
+  "downloading": "Downloading: {{percent}}, {{done}} of {{total}}",
+  "elapsed": "{{doing}} ({{time}})",
   "done": "Done",
   "failed": "The task ended without finishing",
   "failedTitle": "It did not finish",

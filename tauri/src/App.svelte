@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { CircleHelp, Download, House, KeyRound, Monitor, RefreshCw, Sparkles, Wrench } from '@lucide/svelte';
+  import { RefreshCw } from '@lucide/svelte';
   import type { Component } from 'svelte';
-  import { SCREENS, app, type Screen } from './lib/app.svelte';
+  import { app, type Screen } from './lib/app.svelte';
+  import { applyTokens } from './lib/design/theme';
   import { LINKS } from './lib/project';
   import Activate from './lib/screens/Activate.svelte';
   import Help from './lib/screens/Help.svelte';
@@ -9,35 +10,29 @@
   import Install from './lib/screens/Install.svelte';
   import Machine from './lib/screens/Machine.svelte';
   import Tools from './lib/screens/Tools.svelte';
+  import { applyMica, setWindowTheme, supportsMica } from './lib/services/system';
   import Button from './lib/ui/Button.svelte';
   import Dialog from './lib/ui/Dialog.svelte';
-  import Logo from './lib/ui/Logo.svelte';
   import Notice from './lib/ui/Notice.svelte';
+  import Sidebar from './lib/ui/Sidebar.svelte';
+  import TitleBar from './lib/ui/TitleBar.svelte';
 
   type Action = { key: string; primary?: boolean; run: () => void };
 
-  const ICONS: Record<Screen, Component<{ size?: number }>> = {
-    home: House,
-    install: Download,
-    activate: KeyRound,
-    machine: Monitor,
-    tools: Wrench,
-    help: CircleHelp,
-  };
   const VIEWS: Record<Screen, Component> = { home: Home, install: Install, activate: Activate, machine: Machine, tools: Tools, help: Help };
   const ACTIONS: Record<Screen, Action[]> = {
     home: [
-      { key: 'start', primary: true, run: () => app.go('install') },
       { key: 'seeMachine', run: () => app.go('machine') },
+      { key: 'start', primary: true, run: () => app.go('install') },
     ],
     install: [
-      { key: 'installOffice', primary: true, run: app.install },
       { key: 'downloadOnly', run: app.downloadOffline },
+      { key: 'installOffice', primary: true, run: app.install },
     ],
     activate: [{ key: 'checkLicense', run: app.refreshLicense }],
     machine: [
-      { key: 'copyReport', run: app.copyReport },
       { key: 'refresh', run: app.refreshMachine },
+      { key: 'copyReport', run: app.copyReport },
     ],
     tools: [],
     help: [{ key: 'viewCode', run: () => app.openLink(LINKS.repository) }],
@@ -45,66 +40,48 @@
 
   const t = $derived(app.t);
   const View = $derived(VIEWS[app.screen]);
-  const machine = $derived(app.machine);
-  const disk = $derived(app.systemDisk);
+
+  $effect.pre(() => applyTokens(app.dark));
+  $effect(() => void setWindowTheme(app.theme === 'system' ? null : app.theme));
+
+  void supportsMica().then(async (supported) => {
+    if (!supported) return;
+    await applyMica();
+    document.documentElement.dataset.backdrop = 'mica';
+  });
 
   void app.load();
 </script>
 
 <div class="window">
+  <TitleBar />
   <div class="body">
-    <nav>
-      <div class="brand"><Logo /><b>OfficeGo</b></div>
-      {#each SCREENS as screen (screen)}
-        {@const Icon = ICONS[screen]}
-        <button class="nav" class:active={app.screen === screen} aria-current={app.screen === screen ? 'page' : undefined} onclick={() => app.go(screen)}>
-          <Icon size={18} />{t(`nav:${screen}`)}
-        </button>
-      {/each}
-      {#if app.update}
-        <button class="update" disabled={app.updateProgress !== null} onclick={app.offerUpdate}>
-          <Sparkles size={16} />
-          {app.updateProgress === null
-            ? t('update:available', { version: app.update.version })
-            : t('update:downloading', { percent: app.format.percent(app.updateProgress * 100) })}
-        </button>
-      {/if}
-    </nav>
+    <Sidebar />
+    <section class="card">
+      <main>
+        {#if app.loadError}
+          <Notice tone="error"><b>{t('errors:loadTitle')}</b> {app.loadError}</Notice>
+        {:else if app.ready}
+          <View />
+        {:else}
+          <div class="loading"><RefreshCw size={28} class="spin" />{t('common:checking')}</div>
+        {/if}
+      </main>
 
-    <main>
-      {#if app.loadError}
-        <Notice tone="error"><b>{t('errors:loadTitle')}</b> {app.loadError}</Notice>
-      {:else if app.ready}
-        <View />
-      {:else}
-        <div class="loading"><RefreshCw size={28} class="spin" />{t('common:checking')}</div>
-      {/if}
-    </main>
-  </div>
-
-  <footer>
-    {#if app.ready}
-      {#each ACTIONS[app.screen] as action (action.key)}
-        <Button variant={action.primary ? 'primary' : 'ghost'} disabled={app.busy} onclick={action.run}>{t(`actions:${action.key}`)}</Button>
-      {/each}
-    {/if}
-    <div class="progress">
-      <div class="bar" class:unknown={app.progress === null}><i style:width="{app.progress ?? 100}%"></i></div>
-      <p aria-live="polite">{app.status}</p>
-    </div>
-  </footer>
-
-  <div class="status">
-    {#if machine && disk}
-      <span><i class:good={machine.supported}></i>{machine.os} · {machine.build.split('.')[0]}</span>
-      <span><i class:good={machine.admin}></i>{t(machine.admin ? 'status:admin' : 'status:noAdmin')}</span>
-      <span><i class:good={disk.freeGb >= (app.catalog?.minimumFreeGb ?? 0)}></i>{t('status:free', { free: app.format.gigabytes(disk.freeGb) })}</span>
-      <span
-        ><i class="neutral"></i>{t(machine.defender === null ? 'status:defenderUnknown' : machine.defender ? 'status:defenderOn' : 'status:defenderOff')}</span
-      >
-      <span><i class="neutral"></i>{t(app.report?.office ? 'status:officeInstalled' : 'status:officeMissing')}</span>
-    {/if}
-    <span class="version">OfficeGo {app.version}</span>
+      <footer>
+        <div class="progress">
+          {#if app.busy}
+            <div class="bar" class:unknown={app.progress === null}><i style:width="{app.progress ?? 100}%"></i></div>
+          {/if}
+          <p aria-live="polite">{app.status}</p>
+        </div>
+        {#if app.ready}
+          {#each ACTIONS[app.screen] as action (action.key)}
+            <Button variant={action.primary ? 'primary' : 'ghost'} disabled={app.busy} onclick={action.run}>{t(`actions:${action.key}`)}</Button>
+          {/each}
+        {/if}
+      </footer>
+    </section>
   </div>
 </div>
 
@@ -121,56 +98,22 @@
     flex: 1;
     min-height: 0;
   }
-  nav {
+  .card {
     display: flex;
+    flex: 1;
     flex-direction: column;
-    flex: none;
-    width: var(--size-sidebar);
-    overflow-y: auto;
-    padding: var(--space-3) var(--space-2);
-    border-right: var(--border-hairline) solid var(--color-lineSoft);
+    min-width: 0;
+    margin: 0 var(--space-3) var(--space-3) 0;
+    overflow: hidden;
+    border: var(--border-hairline) solid var(--color-line);
+    border-radius: var(--radius-xl);
     background: var(--color-panel);
-  }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-3) var(--space-4);
-    font-size: var(--text-lg);
-  }
-  .nav,
-  .update {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-bottom: var(--space-1);
-    padding: var(--space-2) var(--space-3);
-    border: none;
-    border-radius: var(--radius-md);
-    background: none;
-    color: var(--color-textBody);
-    font-size: var(--text-md);
-    text-align: left;
-  }
-  .nav:hover {
-    background: var(--color-lineFaint);
-  }
-  .active,
-  .active:hover {
-    background: var(--color-accentSoft);
-    color: var(--color-accent);
-    font-weight: 700;
-  }
-  .update {
-    margin-top: auto;
-    background: var(--color-successSoft);
-    color: var(--color-success);
-    font-weight: 700;
+    box-shadow: var(--shadow-card);
   }
   main {
     flex: 1;
     overflow-y: auto;
-    padding: var(--space-4) var(--space-5);
+    padding: var(--space-6) var(--space-8);
   }
   .loading {
     display: grid;
@@ -194,12 +137,13 @@
     align-items: center;
     gap: var(--space-3);
     min-height: var(--size-footer);
-    padding: var(--space-3) var(--space-5);
+    padding: var(--space-3) var(--space-8);
     border-top: var(--border-hairline) solid var(--color-lineSoft);
-    background: var(--color-panel);
   }
   .progress {
+    display: grid;
     flex: 1;
+    gap: var(--space-2);
     min-width: 0;
   }
   .bar {
@@ -219,42 +163,10 @@
     opacity: 0.5;
   }
   .progress p {
-    margin-top: var(--space-1);
     overflow: hidden;
-    color: var(--color-textMuted);
+    color: var(--color-textFaint);
     font-size: var(--text-sm);
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-  .status {
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-2) var(--space-5);
-    border-top: var(--border-hairline) solid var(--color-statusLine);
-    background: var(--color-statusBar);
-    color: var(--color-textBody);
-    font-size: var(--text-sm);
-  }
-  .status span {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
-  .status i {
-    width: var(--size-dot);
-    height: var(--size-dot);
-    border-radius: var(--radius-round);
-    background: var(--color-danger);
-  }
-  .status i.good {
-    background: var(--color-success);
-  }
-  .status i.neutral {
-    background: var(--color-warningStrong);
-  }
-  .version {
-    margin-left: auto;
-    color: var(--color-textFaint);
   }
 </style>
