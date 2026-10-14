@@ -147,16 +147,26 @@ Y las equivocaciones:
 
 ---
 
-## 2 · La versión Tauri (2.0)
+## 2 · La versión de escritorio (2.x)
 
-Baja `OfficeGo_2.0.0_x64-setup.exe` del release.
+Baja `OfficeGo-setup.exe` del release.
 
 - [ ] SmartScreen avisa: «Más información» → «Ejecutar de todas formas» (es lo esperado
       en un ejecutable sin firmar)
-- [ ] Instala y abre
-- [ ] **La ventana se ve igual que los diseños**, que es el motivo de esta versión
+- [ ] Instala y abre en unos segundos, con los acentos bien escritos
+- [ ] Sin permisos de administrador lo dice al abrir, y **Reiniciar con permisos** saca
+      el aviso de Windows y vuelve a abrir OfficeGo con ellos
 - [ ] Los datos del equipo son reales, no los de ejemplo
-- [ ] La barra de progreso se mueve durante una descarga
+- [ ] La barra de progreso se mueve durante una descarga y el tiempo avanza al instalar
+- [ ] **Office 2016 de 32 bits** se descarga e instala (antes Microsoft respondía con
+      su página de error)
+- [ ] **Clave de producto** con una clave válida: Office queda activado sin salir de la app
+- [ ] **Crear instalador sin conexión** deja `setup.exe`, `configuration.xml` e
+      `instalar.cmd`; copiada a otra VM sin red, `instalar.cmd` instala Office
+- [ ] **Reparar** termina y Office sigue abriendo
+- [ ] **Desinstalar** no se activa hasta escribir la palabra, y quita Office
+- [ ] Con una versión publicada más nueva, la barra lateral la ofrece y **Actualizar
+      ahora** la instala encima y vuelve a abrir OfficeGo
 
 ### En un Windows 10 sin actualizar
 

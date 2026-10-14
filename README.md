@@ -4,28 +4,26 @@
   <p>
     <strong>Instalador y activador de Microsoft Office, directo desde Microsoft.</strong><br>
     Sin páginas de terceros, sin archivos de dudosa procedencia, sin instalar nada previo.
-    Un solo archivo que se abre y funciona.
   </p>
   <p>
-    <img src="https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?logo=powershell&logoColor=white" alt="PowerShell">
-    <img src="https://img.shields.io/badge/Windows_Forms-interfaz_nativa-0078D6?logo=windows&logoColor=white" alt="WinForms">
     <img src="https://img.shields.io/badge/Windows-10_%7C_11-0078D6?logo=windows11&logoColor=white" alt="Windows 10/11">
-    <img src="https://img.shields.io/badge/Office-365_·_2024_·_2021_·_2019_·_2016_·_2013-D83B01?logo=microsoftoffice&logoColor=white" alt="Versiones">
-    <img src="https://img.shields.io/badge/Portable-un_solo_archivo-0B57D0" alt="portable">
-    <img src="https://img.shields.io/badge/Sin_dependencias-0_instalaciones-16A34A" alt="sin dependencias">
+    <img src="https://img.shields.io/badge/Office-365_·_2024_·_2021_·_2019_·_2016_·_2013-D83B01?logo=microsoftoffice&logoColor=white" alt="Versiones de Office">
+    <img src="https://img.shields.io/badge/versión-2.4.0_·_1.6-0B57D0" alt="Versiones de OfficeGo">
+    <img src="https://img.shields.io/badge/Svelte-5-FF3E00?logo=svelte&logoColor=white" alt="Svelte 5">
+    <img src="https://img.shields.io/badge/Tauri-2_·_Rust-24C8DB?logo=tauri&logoColor=white" alt="Tauri 2 y Rust">
+    <img src="https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?logo=powershell&logoColor=white" alt="PowerShell">
+    <img src="https://img.shields.io/badge/Sin_telemetría-0_datos-16A34A" alt="Sin telemetría">
     <img src="https://img.shields.io/badge/Licencia-MIT-6366F1" alt="MIT">
-    <img src="https://img.shields.io/badge/versión-1.6_·_2.4-0B57D0" alt="versiones">
-    <img src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" alt="Tauri">
   </p>
   <p>
+    <a href="https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe">
+      <img src="https://img.shields.io/badge/Descargar-OfficeGo-0B57D0?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar OfficeGo"></a>
     <a href="https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.exe">
-      <img src="https://img.shields.io/badge/Descargar-OfficeGo.exe-16A34A?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar OfficeGo.exe"></a>
-    <a href="https://github.com/MariaDSalazar/officego/releases/latest">
-      <img src="https://img.shields.io/badge/Instalador-versión_de_escritorio-0B57D0?style=for-the-badge&logo=tauri&logoColor=white" alt="Instalador de la versión de escritorio"></a>
+      <img src="https://img.shields.io/badge/Versión_PowerShell-OfficeGo.exe-16A34A?style=for-the-badge&logo=powershell&logoColor=white" alt="Descargar la versión PowerShell"></a>
     <a href="#-puesta-en-marcha">
       <img src="https://img.shields.io/badge/o_con_un_comando-PowerShell-5391FE?style=for-the-badge&logo=powershell&logoColor=white" alt="Ejecutar con un comando"></a>
   </p>
-  <p><sub><strong>Descargar</strong> es un solo archivo, no se instala, se abre y ya · <strong>Instalador</strong> es la versión de escritorio, con la interfaz nueva</sub></p>
+  <p><sub><strong>OfficeGo</strong> es la app de escritorio: se instala y se actualiza sola · <strong>OfficeGo.exe</strong> es la versión PowerShell: un solo archivo que funciona hasta en el equipo más viejo</sub></p>
   <p><em>Lo primero que ves no es un menú: es qué versión le conviene a tu equipo.</em></p>
 </div>
 
@@ -36,19 +34,39 @@ Pide los archivos a los **servidores oficiales de Microsoft** (`officecdn.micros
 y `c2rsetup.officeapps.live.com`) con las opciones que elijas en pantalla, y te deja
 activarlo con tu clave o con [MAS](https://github.com/massgravel/Microsoft-Activation-Scripts).
 
-Está escrito en **PowerShell con Windows Forms**: eso significa que es un archivo de
-texto legible, que no hay que instalar ningún runtime, y que el antivirus no se pone
-nervioso como con un `.exe` descargado.
+Viene en **dos versiones con el mismo motor**, así que elegir una u otra no cambia lo
+que se instala:
 
-**¿Primera vez?** El **[tutorial](docs/TUTORIAL.md)** lleva de la mano desde abrir
-PowerShell hasta tener Office puesto, diciendo en cada paso qué debería verse en
-pantalla.
+| | Para quién | Qué es |
+|---|---|---|
+| **Escritorio** · [`OfficeGo-setup.exe`](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe) | Windows 10 y 11 al día | Una app con la interfaz cuidada, hecha en Svelte y Rust. Se instala, habla español o inglés según el sistema y se actualiza sola |
+| **PowerShell** · [`OfficeGo.exe`](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.exe) o el comando | Cualquier equipo, incluido el portátil viejo | Un archivo de 90 KB en texto legible, sin instalar nada. También sirve desatendido para dejar un aula entera igual |
+
+**¿Primera vez?** El **[tutorial](docs/TUTORIAL.md)** lleva de la mano desde la descarga
+hasta tener Office puesto, diciendo en cada paso qué debería verse en pantalla.
 
 > **Nada se instala hasta que lo confirmas.** El programa arranca revisando tu equipo
 > (Windows, memoria, disco, gráfica) y recomienda la versión que de verdad te cabe.
 > Con 3 GB de RAM te propone Office 2016, no la última.
 
-![Pantalla de inicio](capturas/inicio.png)
+![Pantalla de inicio de la versión de escritorio](capturas/escritorio/inicio.png)
+
+## Novedades de la 2.4
+
+- **La versión de escritorio, rehecha en Svelte 5 y Rust.** Abre en unos 3 segundos
+  (antes tardaba más de 10), habla español o inglés según el sistema y se actualiza
+  sola, comprobando cada descarga con el SHA-256 que publica GitHub.
+- **Todo lo de la versión PowerShell, ahora también en la app:** reiniciar con permisos
+  de administrador, clave de producto, reparar Office y crear un instalador sin conexión
+  listo para llevar a otro equipo.
+- **Office 2016 y 2013 de 32 bits por fin se instalan.** Microsoft llama `x86` a los 32
+  bits y se le pedía `x32`, así que respondía con su página de error.
+- **Office de Click-to-Run se detecta.** Con 2019, 2021, 2024 o 365 instalados se decía
+  que no había Office y no se podía leer ni comprobar la licencia.
+- **Visio y Project ya no desaparecen** al cambiar de versión o de edición.
+
+La lista completa está en el [CHANGELOG](CHANGELOG.md), que es también la nota de cada
+[release](https://github.com/MariaDSalazar/officego/releases/latest).
 
 ## Features
 
@@ -58,12 +76,14 @@ pantalla.
 | 📦 | **Seis versiones** | Microsoft 365, Office **2024**, **2021**, **2019**, **2016** y **2013**, cada una con sus ediciones: Professional Plus, Standard, Home & Business, Personal. |
 | ✅ | **Eliges qué instalar** | Solo Word y Excel, o la suite entera. Al cambiar de edición las aplicaciones se ajustan solas: con *Standard* se apaga Access, porque esa edición no lo trae. |
 | 📐 | **Visio y Project** | Como complementos, en el mismo `configuration.xml` que Office. |
-| 🔑 | **Activación integrada** | Con tu clave de 25 caracteres, o con MAS ejecutado con `/Ohook` **sin abrir su menú**: todo ocurre dentro de la ventana. |
+| 🔑 | **Activación integrada** | Con tu clave de 25 caracteres, con guiones o sin ellos, o con MAS ejecutado con `/Ohook` **sin abrir su menú**: todo ocurre dentro de la ventana. |
 | 🖥️ | **Conoce tu equipo** | Procesador con uso en vivo, memoria, cada disco con su ocupación y la tarjeta gráfica con su marca: NVIDIA, AMD o Intel. |
-| 🧰 | **Herramientas** | Reparar la instalación, crear un instalador sin conexión para otros equipos, y desinstalar (pidiendo escribir `BORRAR`). |
+| 🧰 | **Herramientas** | Reparar la instalación, crear un instalador sin conexión que se lleva a otro equipo y se abre con `instalar.cmd`, y desinstalar (pidiendo escribir `BORRAR`). |
+| 🔄 | **Se actualiza sola** | La app de escritorio avisa de cada versión nueva, la baja, comprueba que llegó entera y se instala encima sin perder nada. |
+| 🌐 | **Español e inglés** | La app de escritorio usa el idioma del sistema. Añadir otro es añadir una carpeta de textos, sin tocar código. |
 | 🚑 | **Ayuda de verdad** | Los errores frecuentes con el **mensaje literal** que sale en pantalla y el comando exacto que los arregla. |
 | 🪶 | **Portable** | Un `.ps1` de 90 KB. Cabe en un USB, no deja rastro en el registro, no necesita instalarse. |
-| 🧪 | **Se prueba sola** | 65 pruebas del motor, el arranque por las dos vías, y un analizador que monta las seis pantallas con controles simulados y busca controles solapados. Todo corre en cada compilación, y también en el PowerShell 5.1 que trae Windows. |
+| 🧪 | **Se prueba sola** | 65 pruebas del motor, el arranque por las dos vías y un analizador que busca controles solapados en las seis pantallas, también en el PowerShell 5.1 que trae Windows. La app de escritorio suma 38 pruebas de Rust, una de ellas contra el motor de verdad. |
 | ⚡ | **Desatendido** | `-Instalar 2021 -Apps Word,Excel -Silencioso -Activar` deja un aula entera igual, sin que nadie toque nada. Y si faltan permisos, se los pide y se relanza con las mismas opciones. |
 | 🔒 | **Sin telemetría** | No manda nada a ninguna parte. El código está aquí para leerlo. |
 
@@ -73,12 +93,15 @@ pantalla.
 <br>
 
 ```
+ Escritorio:  Svelte 5 ─► Rust (Tauri 2, tipos con ts-rs) ─► motor-api.ps1 ─┐
+ PowerShell:  Windows Forms ────────────────────────────────────────────────┤
+                                                                            ▼
+                         src/*.ps1 · el mismo motor para las dos versiones
+
  Equipo ─► WMI (Windows, CPU, RAM, discos, GPU) ─► recomendación de versión
         ─► catálogo (Product ID + vía + canal) ─► configuration.xml
         ─► setup.exe /configure  ó  c2rsetup ─► Office instalado
-        └─► [opcional] MAS /Ohook en segundo plano ─► activado
-
-              todo en PowerShell + Windows Forms, sin dependencias externas
+        └─► clave de producto, o [opcional] MAS /Ohook en segundo plano ─► activado
 ```
 
 **Dos vías, y no son intercambiables:**
@@ -112,7 +135,11 @@ officego/
 ├── prueba-interfaz.ps1 → monta las pantallas y busca solapes, sin Windows
 ├── prueba-exe.ps1      → que el .exe lleve dentro lo que dice (solo Windows)
 ├── build.sh            → ensambla src/*.ps1 y valida la sintaxis
-├── tauri/              → versión de escritorio: Svelte 5 + Rust (Tauri 2) · ver tauri/LEEME.md
+├── tauri/              → versión de escritorio · ver tauri/LEEME.md
+│   ├── src/                Svelte 5: pantallas, componentes y servicios
+│   ├── locales/            Los textos, en español e inglés
+│   ├── design/tokens.json  Colores, espacios y letra en un solo sitio
+│   └── src-tauri/          Rust: puente con el motor, tipos y actualizaciones
 ├── .github/workflows/  → comprueba y compila todo en un runner de Windows al etiquetar
 ├── CHANGELOG.md        → lo nuevo de la última versión: son las notas del release
 ├── assets/             → icono en .ico (7 tamaños) y .png
@@ -125,6 +152,28 @@ officego/
 <summary><strong>Las pantallas</strong></summary>
 
 <br>
+
+### Versión de escritorio
+
+**Instalar.** Office 2021 Standard con Visio: al elegir Standard, Access se apaga solo
+porque esa edición no lo trae, y el tamaño suma lo que pesa Visio.
+
+![Instalar en la versión de escritorio](capturas/escritorio/instalar.png)
+
+**Equipo.** La recomendación arriba y, debajo, cada pieza del equipo con su uso.
+
+![Equipo en la versión de escritorio](capturas/escritorio/equipo.png)
+
+**Herramientas**, y el `configuration.xml` exacto que recibirá Microsoft.
+
+![Herramientas en la versión de escritorio](capturas/escritorio/herramientas.png)
+![configuration.xml en la versión de escritorio](capturas/escritorio/xml.png)
+
+**Ayuda**, con quién lo hace y los problemas frecuentes.
+
+![Ayuda en la versión de escritorio](capturas/escritorio/ayuda.png)
+
+### Versión PowerShell
 
 **Instalar.** Versión, edición, idioma y aplicaciones. El resumen de la derecha se
 recalcula con cada cambio.
@@ -180,9 +229,9 @@ Si no sabes cuál, el primero.
 
 | Archivo | Qué es | Cuándo te sirve |
 |---|---|---|
-| [**OfficeGo.exe**](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.exe) | El programa entero en un archivo. Doble clic y ya | **Lo normal.** No se instala, no toca el registro, cabe en un USB |
-| [**OfficeGo-setup.exe**](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe) | La versión de escritorio, con su acceso en el menú Inicio y que se actualiza sola | Si lo vas a usar a menudo en el mismo equipo |
-| [OfficeGo-portable.exe](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-portable.exe) | La versión de escritorio sin instalar nada | La interfaz nueva, pero desde un USB |
+| [**OfficeGo-setup.exe**](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe) | La app de escritorio, con su acceso en el menú Inicio y que se actualiza sola | **Lo normal** en Windows 10 y 11 al día |
+| [**OfficeGo.exe**](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.exe) | La versión PowerShell entera en un archivo. Doble clic y ya | En equipos viejos o sin WebView2. No se instala, no toca el registro, cabe en un USB |
+| [OfficeGo-portable.exe](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-portable.exe) | La app de escritorio sin instalar nada | La interfaz nueva, pero desde un USB |
 | [OfficeGo.ps1](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.ps1) + [OfficeGo.cmd](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.cmd) | El script suelto, en texto legible | Para leer qué hace antes de ejecutarlo, o para un aula |
 
 > **Windows dirá «Windows protegió su PC» la primera vez.** Sale con cualquier `.exe`
@@ -282,8 +331,9 @@ en tu propio equipo, SmartScreen no lo marca igual que a un ejecutable bajado de
 | Permisos | Administrador |
 | Disco | 5 GB libres en la unidad del sistema |
 | Red | Conexión a internet |
+| WebView2 | Solo la versión de escritorio. Viene en Windows 11 y en Windows 10 al día, y el instalador lo pone si falta |
 
-Se comprueban los cuatro al arrancar y quedan a la vista en la barra inferior.
+Se comprueban al arrancar y quedan a la vista en la barra inferior.
 
 ## Qué versión te toca
 
@@ -309,15 +359,17 @@ la protección un momento y **volver a encenderla al terminar**.
 
 ## Estado del proyecto
 
-Cada compilación pasa las 65 pruebas del motor, comprueba que el script arranque por
-las dos vías y monta las seis pantallas buscando controles solapados. Todo eso se
-repite además en el **PowerShell 5.1 que trae Windows**, que no lee los archivos igual
-que el 7 y es donde se escondía uno de los fallos de la 1.3.
+Cada versión publicada pasa antes, en un Windows de verdad: las 65 pruebas del motor,
+el arranque por las dos vías y el análisis de solapes de las seis pantallas, todo
+también en el **PowerShell 5.1 que trae Windows**, que no lee los archivos igual que el
+7. La app de escritorio pasa además lint, tipos, clippy y 38 pruebas de Rust, una de
+ellas contra el motor real.
 
-Lo que **no** se puede comprobar sin un Windows delante es cómo se ve de verdad: las
-medidas de la letra son una estimación y los clics no se pueden pulsar solos. Si al
-abrirlo ves algo descolocado o un botón que no responde,
-[abre un issue](../../issues/new) con una captura y se corrige.
+La 2.4 se abrió y se recorrió entera en un Windows 11, y las descargas de cada vía se
+comprobaron contra los servidores de Microsoft. Lo que no se prueba solo es instalar,
+activar o desinstalar Office de verdad, porque cambia el equipo: para eso está la
+[checklist en máquina virtual](docs/PRUEBAS-VM.md). Si ves algo descolocado o un botón
+que no responde, [abre un issue](../../issues/new) con una captura y se corrige.
 
 <details>
 <summary>Lo que se rompió en la 1.3 y cómo se evita ahora</summary>
@@ -361,10 +413,6 @@ simulados que solo guardan dónde y cuánto ocupan, y busca controles encima de 
 salidos de su caja. Recorre además las 17 combinaciones de versión y edición, porque
 el reparto de la pantalla Instalar cambia con cada una. Con `-Factor` se simula una
 letra más ancha, que es lo que pasa cuando la fuente del equipo no es la esperada.
-
-Lo que antes cruzaba `prueba-tauri.ps1` (que cada acción de la interfaz exista en el
-puente, que cada `invoke` exista en Rust y que el puente cargue lo que Rust escribe)
-ahora lo comprueban los tipos que Rust genera para la interfaz y las pruebas de Rust.
 
 ## Créditos
 
