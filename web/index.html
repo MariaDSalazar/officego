@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OfficeGo: Office, directo de Microsoft</title>
+  <meta name="description" content="Instalador gratis y de código abierto para Windows 10 y 11. Mira tu equipo, te dice qué versión de Office le cabe y la baja de los servidores de Microsoft con solo lo que marques.">
+  <meta property="og:title" content="OfficeGo: Office, directo de Microsoft">
+  <meta property="og:description" content="Mira tu equipo, te dice qué Office le cabe y lo baja de Microsoft con solo lo que marques.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://officego.pages.dev/">
+  <meta property="og:image" content="https://officego.pages.dev/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script>document.documentElement.classList.add('js');document.documentElement.dataset.theme=localStorage.getItem('officego-tema')||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark')</script>
+</head>
+<body>
+
+<div class="stripe" aria-hidden="true"></div>
+
+<section class="hero" id="inicio" aria-labelledby="hero-titulo">
+  <header class="nav">
+    <a class="brand" href="#inicio"><img src="img/logo.svg" alt="" width="32" height="32">OfficeGo</a>
+    <nav class="nav-links" aria-label="Secciones">
+      <a class="link" href="#como">Cómo funciona</a>
+      <a class="link" href="#version">Tu versión</a>
+      <a class="link" href="#xml">Arma tu XML</a>
+      <a class="link" href="#descargas">Descargas</a>
+    </nav>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Cambiar a tema claro"></button>
+    <div class="nav-end">
+      <a class="button button-nav" data-download href="https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe">Descargar</a>
+    </div>
+  </header>
+
+  <div class="hero-copy">
+    <h1 class="display lines" id="hero-titulo"><span class="line"><span>Office, directo</span></span> <span class="line"><span style="--i:1">de Microsoft</span></span></h1>
+    <p class="lead" data-rise style="--i:2">Mira tu equipo, te dice qué versión le cabe y la baja de los servidores de Microsoft con solo lo que marques.</p>
+    <div class="hero-action" data-rise style="--i:3">
+      <a class="button" data-download data-download-label href="https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe">Descargar para Windows</a>
+      <p class="small">Gratis y de código abierto. Versión <span data-release>2.5.0</span>, <span data-size="OfficeGo-setup.exe">1,6 MB</span>.</p>
+    </div>
+  </div>
+
+  <div class="disc" aria-hidden="true">
+    <svg viewBox="0 0 64 64"><circle class="disc-track" cx="32" cy="32" r="17" pathLength="100"/><circle class="disc-fill" cx="32" cy="32" r="17" pathLength="100"/><path d="M32 23v14m0 0l-6.5-6.5M32 37l6.5-6.5"/></svg>
+    <p class="disc-figure"><b id="ring-value">78 %</b>de Office 2024, medido en el disco</p>
+  </div>
+</section>
+
+<section class="chapter how" id="como" style="--chapter: var(--word)" aria-labelledby="como-titulo">
+  <h2 class="display" id="como-titulo" data-reveal>Así instala Office</h2>
+  <div class="how-grid">
+    <div class="how-steps">
+      <div class="statement" data-shot="version">
+        <p class="statement-main">Primero eliges la versión.</p>
+        <p>Seis, de 2013 a Microsoft 365. Te marca la que le va a tu Windows y apaga las que no corren en él.</p>
+        <img class="only-phone" data-tilt-in src="img/version.png" alt="Paso de versiones de OfficeGo con 2024 marcada para este equipo" width="1272" height="877" loading="lazy">
+      </div>
+      <div class="statement" data-shot="aplicaciones">
+        <p class="statement-main">Luego marcas tus aplicaciones.</p>
+        <p>Solo Word y Excel, la suite entera o con Visio y Project. Lo que tu edición no trae sale apagado.</p>
+        <img class="only-phone" data-tilt-in src="img/aplicaciones.png" alt="Paso de aplicaciones de OfficeGo en tema oscuro" width="1272" height="877" loading="lazy">
+      </div>
+      <div class="statement" data-shot="revisar">
+        <p class="statement-main">Revisas lo que vas a pedir.</p>
+        <p>Antes de instalar ves tu elección en una frase y el configuration.xml exacto que recibirá Microsoft.</p>
+        <img class="only-phone" data-tilt-in src="img/revisar.png" alt="Paso de revisar de OfficeGo con el configuration.xml" width="1272" height="877" loading="lazy">
+      </div>
+      <div class="statement" data-shot="descargando">
+        <p class="statement-main">Y lo ves bajar de verdad.</p>
+        <p>Porcentaje medido en el disco, velocidad y lo que falta. Si lo detienes, sigue donde quedó.</p>
+        <img class="only-phone" data-tilt-in src="img/descargando.png" alt="Descarga de Office 2024 al 78 por ciento en OfficeGo" width="1272" height="877" loading="lazy">
+      </div>
+    </div>
+    <div class="stage" aria-label="La ventana de OfficeGo">
+      <div class="stage-frame">
+        <img class="shot is-on" data-shot="version" src="img/version.png" alt="OfficeGo en el paso de versiones, con Office 2024 marcada para este equipo" width="1272" height="877">
+        <img class="shot" data-shot="aplicaciones" src="img/aplicaciones.png" alt="" width="1272" height="877" loading="lazy">
+        <img class="shot" data-shot="revisar" src="img/revisar.png" alt="" width="1272" height="877" loading="lazy">
+        <img class="shot" data-shot="descargando" src="img/descargando.png" alt="" width="1272" height="877" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="fit" id="version" aria-labelledby="version-titulo">
+  <div class="fit-copy">
+    <h2 class="head" id="version-titulo" data-reveal>Te cabe <span class="sr-only" id="fit-word-text">Office 2024</span><span class="flip-word" id="fit-word" aria-hidden="true">Office 2024</span></h2>
+    <p id="fit-note" data-reveal style="--i:1">Con Windows 11 le caben todas. Te marcamos la más nueva de compra única.</p>
+    <div class="choices" id="windows" role="radiogroup" aria-label="Tu Windows" data-reveal style="--i:2">
+      <button type="button" role="radio" aria-checked="true" data-build="22631">Windows 11</button>
+      <button type="button" role="radio" aria-checked="false" data-build="19045">Windows 10 22H2</button>
+      <button type="button" role="radio" aria-checked="false" data-build="17763">Windows 10 1809 a 21H2</button>
+      <button type="button" role="radio" aria-checked="false" data-build="10240">Windows 10 anterior</button>
+    </div>
+    <p class="small fit-detected" id="fit-detected" data-reveal style="--i:3">La app lo lee sola al abrir. Aquí lo eliges tú para ver qué le cabe a cada uno.</p>
+  </div>
+  <div class="board" data-ui id="versions" role="radiogroup" aria-label="Versión de Office">
+    <button type="button" role="radio" class="year" data-version="365" aria-checked="false" style="--year: var(--v365)"><b>365</b><span class="year-name">Microsoft 365</span><span class="year-note">Suscripción, siempre al día</span></button>
+    <button type="button" role="radio" class="year" data-version="2024" aria-checked="true" style="--year: var(--v2024)"><b>2024</b><span class="year-name">Office 2024</span><span class="year-note">La que te marcamos</span></button>
+    <button type="button" role="radio" class="year" data-version="2021" aria-checked="false" style="--year: var(--v2021)"><b>2021</b><span class="year-name">Office 2021</span><span class="year-note">Estable y probada</span></button>
+    <button type="button" role="radio" class="year" data-version="2019" aria-checked="false" style="--year: var(--v2019)"><b>2019</b><span class="year-name">Office 2019</span><span class="year-note">Para Windows 10 antiguos</span></button>
+    <button type="button" role="radio" class="year" data-version="2016" aria-checked="false" style="--year: var(--v2016)"><b>2016</b><span class="year-name">Office 2016</span><span class="year-note">Clásica, se instala completa</span></button>
+    <button type="button" role="radio" class="year" data-version="2013" aria-checked="false" style="--year: var(--v2013)"><b>2013</b><span class="year-name">Office 2013</span><span class="year-note">La más ligera</span></button>
+  </div>
+</section>
+
+<section class="chapter builder" id="xml" style="--chapter: var(--excel)" aria-labelledby="xml-titulo">
+  <div class="builder-read">
+    <h2 class="head" id="xml-titulo" data-reveal>Arma tu configuration.xml</h2>
+    <p class="builder-intro" data-reveal style="--i:1">Es el archivo que OfficeGo le da a la herramienta oficial de Microsoft. Arriba elegiste <a class="link-plain" href="#version" id="builder-version">Office 2024</a>; aquí marcas lo demás y lo ves escribirse con las reglas de la app.</p>
+
+    <div class="block" role="group" aria-labelledby="block-apps" data-reveal style="--i:2">
+      <h3 class="block-main" id="block-apps">Marca las aplicaciones.</h3>
+      <p id="apps-note">Lo que no marques se excluye. Con Standard, Access no viene.</p>
+      <div class="choices" id="editions" role="radiogroup" aria-label="Edición"></div>
+      <div class="toggles" id="apps" aria-label="Aplicaciones"></div>
+    </div>
+
+    <div class="block" role="group" aria-labelledby="block-lang" data-reveal style="--i:3">
+      <h3 class="block-main" id="block-lang">Idioma y arquitectura.</h3>
+      <div class="pair">
+        <label class="select-wrap"><span class="sr-only">Idioma de Office</span>
+          <select id="language">
+            <option value="es-es">Español (España)</option>
+            <option value="es-mx">Español (México)</option>
+            <option value="en-us">English (US)</option>
+            <option value="pt-br">Português (Brasil)</option>
+            <option value="fr-fr">Français</option>
+            <option value="de-de">Deutsch</option>
+            <option value="it-it">Italiano</option>
+          </select>
+        </label>
+        <div class="choices" id="bits" role="radiogroup" aria-label="Arquitectura">
+          <button type="button" role="radio" aria-checked="true" data-bits="64">64 bits</button>
+          <button type="button" role="radio" aria-checked="false" data-bits="32">32 bits</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="block" role="group" aria-labelledby="block-addons" data-reveal style="--i:4">
+      <h3 class="block-main" id="block-addons">Suma Visio o Project.</h3>
+      <p id="addons-note">Van en el mismo archivo y suman unos 0,6 GB cada uno.</p>
+      <div class="toggles" id="addons" aria-label="Complementos"></div>
+    </div>
+  </div>
+
+  <div class="builder-field">
+    <div class="sheet" data-ui>
+      <div class="sheet-head">
+        <b id="sheet-name">configuration.xml</b>
+        <span id="sheet-hint">lo que recibirá Microsoft</span>
+        <button type="button" class="sheet-copy" id="copy">Copiar</button>
+      </div>
+      <pre id="xml-code"><code>&lt;Configuration&gt;
+  &lt;Add OfficeClientEdition="64" Channel="PerpetualVL2024"&gt;
+    &lt;Product ID="ProPlus2024Volume"&gt;
+      &lt;Language ID="es-es" /&gt;
+      &lt;ExcludeApp ID="Outlook" /&gt;
+      &lt;ExcludeApp ID="Access" /&gt;
+      &lt;ExcludeApp ID="Publisher" /&gt;
+      &lt;ExcludeApp ID="OneNote" /&gt;
+      &lt;ExcludeApp ID="Groove" /&gt;
+      &lt;ExcludeApp ID="Lync" /&gt;
+      &lt;ExcludeApp ID="OneDrive" /&gt;
+      &lt;ExcludeApp ID="OutlookForWindows" /&gt;
+      &lt;ExcludeApp ID="Teams" /&gt;
+    &lt;/Product&gt;
+  &lt;/Add&gt;
+  &lt;Property Name="AUTOACTIVATE" Value="0" /&gt;
+  &lt;Property Name="FORCEAPPSHUTDOWN" Value="TRUE" /&gt;
+  &lt;Display Level="Full" AcceptEULA="TRUE" /&gt;
+&lt;/Configuration&gt;</code></pre>
+      <p class="sheet-foot" id="sheet-foot">Office 2024 Professional Plus con Word, Excel y PowerPoint. Unos 2,1 GB desde Microsoft.</p>
+    </div>
+  </div>
+
+  <div class="demo-cursor" id="demo-cursor" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 2.8 19.4 13.3l-6.3.8 3.5 7-2.7 1.3-3.4-7.1L5 19.7z"/></svg></div>
+</section>
+
+<section class="chapter outputs" id="deja" style="--chapter: var(--outlook)" aria-label="Lo que deja en tu equipo">
+  <div class="outputs-index">
+    <div class="tabs" role="tablist" aria-label="Archivos que deja OfficeGo">
+      <button type="button" role="tab" class="head" aria-selected="true" data-out="carpeta">La carpeta</button>
+      <button type="button" role="tab" class="head" aria-selected="false" data-out="cmd">instalar.cmd</button>
+      <button type="button" role="tab" class="head" aria-selected="false" data-out="informe">El informe</button>
+      <button type="button" role="tab" class="head" aria-selected="false" data-out="quitar">quitar.xml</button>
+    </div>
+    <p class="outputs-lead" id="out-lead">Crear instalador sin conexión deja Office entero en la carpeta que elijas. La llevas a otro equipo, sin internet, y abres instalar.cmd.</p>
+  </div>
+  <div class="outputs-stage">
+    <div class="paper is-on" data-ui data-out="carpeta">
+      <p class="paper-title">D:\Office 2024 para el aula</p>
+      <table>
+        <tbody>
+          <tr><td>Office\Data\16.0.17932.21056\stream.x64.x-none.dat</td><td>2,7 GB</td></tr>
+          <tr><td>Office\Data\16.0.17932.21056\stream.x64.x-none.arm64x.dat</td><td>434 MB</td></tr>
+          <tr><td>Office\Data\16.0.17932.21056\stream.x64.es-es.dat</td><td>256 MB</td></tr>
+          <tr><td>Office\Data\16.0.17932.21056\i640.cab</td><td>32 MB</td></tr>
+          <tr><td>Office\Data\16.0.17932.21056\a640_exp.cab</td><td>3,9 MB</td></tr>
+          <tr><td>Office\Data\16.0.17932.21056\s640.cab</td><td>3,6 MB</td></tr>
+          <tr><td>setup.exe</td><td>6,9 MB</td></tr>
+          <tr><td>configuration.xml</td><td>1 KB</td></tr>
+          <tr><td>instalar.cmd</td><td>1 KB</td></tr>
+          <tr><td>y otros archivos de Office\Data de menos de 1 MB</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="paper" data-ui data-out="cmd">
+      <p class="paper-title">instalar.cmd</p>
+<pre><code>@echo off
+cd /d "%~dp0"
+setup.exe /configure configuration.xml</code></pre>
+    </div>
+    <div class="paper" data-ui data-out="informe">
+      <p class="paper-title">Equipo, Copiar informe</p>
+<pre><code>== OfficeGo · informe del equipo ==========================
+Sistema        Windows 11 Home (build 26300.9711) · 64 bits
+PowerShell     5.1.26100.9711
+Procesador     AMD Ryzen 7 260 w/ Radeon 780M Graphics
+               8 núcleos / 16 hilos · 3,8 GHz
+Memoria        31,3 GB (2 módulos) · 11,2 GB libres
+Gráficos       AMD Radeon 780M Graphics · 1920 × 1200
+Disco C:       951,8 GB · 280,7 GB libres
+Administrador  sí
+Defender       sí
+
+Office         no instalado
+Recomendado    Office 2024: El equipo cumple los
+               requisitos de la versión más nueva.
+===========================================================</code></pre>
+    </div>
+    <div class="paper" data-ui data-out="quitar">
+      <p class="paper-title">quitar.xml</p>
+<pre><code>&lt;Configuration&gt;
+  &lt;Remove All="TRUE" /&gt;
+  &lt;Property Name="FORCEAPPSHUTDOWN" Value="TRUE" /&gt;
+  &lt;Display Level="Full" AcceptEULA="TRUE" /&gt;
+&lt;/Configuration&gt;</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="chapter get" id="descargas" style="--chapter: var(--powerpoint)" aria-labelledby="get-title">
+  <h2 class="display" id="get-title" data-reveal>Descárgalo para Windows</h2>
+  <div class="get-grid">
+    <div class="get-mine" data-reveal style="--i:1">
+      <p class="lead" id="get-os">OfficeGo es para Windows 10 y 11.</p>
+      <p id="get-hint">El instalador se pone en tu equipo y se actualiza solo. El portátil es la misma app en un archivo, sin instalar: para llevarla en un USB. Versión <span data-release>2.5.0</span>, publicada el <span data-release-date>14 de octubre de 2026</span>. <a class="link-plain" href="https://github.com/MariaDSalazar/officego/releases/latest">Qué trae</a></p>
+      <div class="get-buttons">
+        <a class="button" href="https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe">Instalador, <span data-size="OfficeGo-setup.exe">1,6 MB</span></a>
+        <a class="button button-quiet" href="https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-portable.exe">Portátil, <span data-size="OfficeGo-portable.exe">4,4 MB</span></a>
+        <button type="button" class="button button-quiet" id="send-link" hidden>Mándate el enlace</button>
+      </div>
+    </div>
+    <ul class="poster">
+      <li data-reveal style="--i:2">
+        <a class="poster-name" href="https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.exe">Versión PowerShell</a>
+        <span class="poster-file">OfficeGo.exe, <span data-size="OfficeGo.exe">131 KB</span></span>
+        <p>La misma recomendación en una ventana de Windows. Para equipos viejos o sin WebView2: doble clic y listo.</p>
+      </li>
+      <li data-reveal style="--i:3">
+        <button type="button" class="poster-name" data-copy-text="irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1 | iex">Con un comando</button>
+        <span class="poster-file" data-copy-state>Copiar</span>
+        <pre><code>irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1 | iex</code></pre>
+        <p>Pégalo en PowerShell como administrador y se abre la versión PowerShell.</p>
+      </li>
+      <li data-reveal style="--i:4">
+        <button type="button" class="poster-name" data-copy-text="&amp; ([scriptblock]::Create((irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1))) -Instalar 2021 -Apps Word,Excel,PowerPoint -Silencioso">Sin ventanas, para el aula</button>
+        <span class="poster-file" data-copy-state>Copiar</span>
+        <pre><code>&amp; ([scriptblock]::Create((irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1))) -Instalar 2021 -Apps Word,Excel,PowerPoint -Silencioso</code></pre>
+        <p>Versión, aplicaciones, idioma y bits por la línea de órdenes, sin preguntas. Para preparar varios equipos iguales.</p>
+      </li>
+      <li data-reveal style="--i:5">
+        <a class="poster-name" href="https://github.com/MariaDSalazar/officego">Código fuente</a>
+        <span class="poster-file">Licencia MIT</span>
+        <p>El motor en PowerShell, la app en Svelte y Rust con Tauri 2, y las pruebas de las dos. Cada versión se compila en GitHub a la vista de todos.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="chapter story" id="historia" style="--chapter: var(--publisher)" aria-labelledby="historia-titulo">
+  <div class="story-copy">
+    <h2 class="display" id="historia-titulo" data-reveal>Del script a la app</h2>
+    <p class="lead" data-reveal style="--i:1">OfficeGo empezó como un script de desarrollo en PowerShell. Resultó útil para más gente que necesitaba algo más simple, así que lo convertimos en una app de escritorio. Por eso de la 1.2 pasó directo a la 2.0, el mismo 27 de julio de 2026.</p>
+    <ol class="timeline">
+      <li data-reveal style="--i:2"><b>1.0</b><span>Un script de PowerShell con una ventana sencilla de Windows.</span></li>
+      <li data-reveal style="--i:3"><b>2.0</b><span>La primera app de escritorio, ese mismo día.</span></li>
+      <li data-reveal style="--i:4"><b>2.1</b><span>Opciones en la línea de órdenes y el modo sin ventanas para aulas.</span></li>
+      <li data-reveal style="--i:5"><b>2.3</b><span>Reparar funciona por fin y el inicio avisa si faltan permisos.</span></li>
+      <li data-reveal style="--i:6"><b>2.4</b><span>La app, rehecha en Svelte y Rust, con el instalador sin conexión.</span></li>
+      <li data-reveal style="--i:7"><b>2.5</b><span>La descarga con su avance real, y tema claro y oscuro.</span></li>
+    </ol>
+  </div>
+  <div class="story-panel" data-reveal style="--i:2">
+    <figure>
+      <img src="img/powershell.png" alt="La versión PowerShell de OfficeGo con la recomendación para el equipo" width="1040" height="734" loading="lazy">
+      <figcaption>Aquel script sigue vivo: es el motor de la app y la versión PowerShell. Un arreglo vale para las dos.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="faq" id="preguntas" aria-labelledby="faq-titulo">
+  <h2 class="display faq-title" id="faq-titulo" data-reveal>Preguntas</h2>
+  <div class="faq-band" data-reveal><p class="faq-q">¿Cuánto cuesta?</p><p>OfficeGo es gratis y de código abierto. Office necesita su propia licencia: lo activas con tu clave de producto en la pantalla Activar.</p></div>
+  <div class="faq-band" data-reveal><p class="faq-q">¿De dónde baja Office?</p><p>De officecdn.microsoft.com, con la herramienta oficial de Microsoft. Office 2016 y 2013, de c2rsetup.officeapps.live.com, el instalador de Microsoft para esas versiones.</p></div>
+  <div class="faq-band" data-reveal><p class="faq-q">¿Qué versión de OfficeGo bajo?</p><p>La app si tu Windows está al día: es la más cómoda y se actualiza sola. La versión PowerShell si el equipo es viejo, si no puedes instalar programas o si vas a preparar varios equipos sin ventanas. Las dos instalan exactamente lo mismo.</p></div>
+  <div class="faq-band" data-reveal><p class="faq-q">¿Por qué Windows dice «Windows protegió su PC»?</p><p>Sale con cualquier programa descargado que no esté firmado, y firmarlo cuesta cientos de dólares al año. Pulsa Más información y luego Ejecutar de todas formas, o usa el comando de PowerShell.</p></div>
+  <div class="faq-band" data-reveal><p class="faq-q">¿Puedo instalar en un equipo sin internet?</p><p>Sí. En un equipo con conexión, Herramientas, Crear instalador sin conexión baja la versión elegida a una carpeta. La copias entera al otro equipo y abres instalar.cmd. Office 2016 y 2013 solo se instalan en línea.</p></div>
+  <div class="faq-band" data-reveal><p class="faq-q">¿Y si ya tengo Office?</p><p>Lo más limpio es quitarlo con Desinstalar antes de poner otra versión: mezclar versiones de Office suele dar problemas. Si solo quieres arreglarlo, usa Reparar.</p></div>
+  <div class="faq-band" data-reveal><p class="faq-q">¿Puedo detener la descarga?</p><p>Sí. Lo descargado queda guardado y al reanudar sigue donde quedó. El servicio de Office de Windows puede terminar por su cuenta el archivo que tenía a medias.</p></div>
+  <div class="faq-band" data-reveal><p class="faq-q">¿Cómo se actualiza?</p><p>La app instalada avisa en la barra lateral y se actualiza con un botón, sin desinstalar nada. La versión PowerShell baja siempre la última cuando usas el comando.</p></div>
+  <div class="faq-band" data-reveal><p class="faq-q">¿Funciona en Windows 7 u 8?</p><p>No. OfficeGo necesita Windows 10 u 11, aunque Office 2016 y 2013 admitan sistemas más viejos.</p></div>
+  <div class="faq-band" data-reveal><p class="faq-q">¿Manda datos a alguna parte?</p><p>No. No hay cuentas ni estadísticas de uso. Lo único que sale de tu equipo, aparte de las descargas de Microsoft, es la consulta a GitHub para saber si hay versión nueva. Trabaja en %TEMP%\OfficeGo, donde quedan el instalador de Microsoft y sus registros.</p></div>
+  <div class="faq-band" data-reveal><p class="faq-q">¿Es de Microsoft?</p><p>No. OfficeGo no está afiliado a Microsoft ni lo respalda: usa sus servidores y su herramienta oficial, y Office sigue siendo de Microsoft.</p></div>
+</section>
+
+<section class="final" aria-labelledby="final-titulo">
+  <div class="final-copy">
+    <h2 class="display" id="final-titulo" data-reveal>Tu Office, en tres pasos</h2>
+    <p class="lead" data-reveal style="--i:1">OfficeGo es gratis y de código abierto. Office se activa con tu propia licencia: la pantalla Activar acepta tu clave de producto.</p>
+    <div class="final-action" data-reveal style="--i:2">
+      <a class="button" data-download data-download-label href="https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe">Descargar para Windows</a>
+      <p class="small">Versión <span data-release>2.5.0</span>, <span data-size="OfficeGo-setup.exe">1,6 MB</span>, para Windows 10 y 11.</p>
+    </div>
+  </div>
+  <div class="final-ring" data-reveal style="--i:1" aria-hidden="true">
+    <svg viewBox="0 0 64 64"><circle class="final-track" cx="32" cy="32" r="17"/><circle class="final-fill" cx="32" cy="32" r="17" pathLength="100"/><path class="final-check" d="M24.5 32.5l5.2 5.2 10-11" pathLength="100"/></svg>
+    <p><b>100 %</b>listo para instalar</p>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="#inicio"><img src="img/logo.svg" alt="" width="32" height="32">OfficeGo</a>
+      <p>Office, directo de Microsoft, para Windows 10 y 11.</p>
+    </div>
+    <nav class="foot-col" aria-label="OfficeGo">
+      <p class="foot-head">OfficeGo</p>
+      <a class="link" href="#descargas">Descargas</a>
+      <a class="link" href="https://github.com/MariaDSalazar/officego/releases/latest">Notas de la versión</a>
+      <a class="link" href="https://github.com/MariaDSalazar/officego">Código fuente</a>
+    </nav>
+    <nav class="foot-col" aria-label="Ayuda">
+      <p class="foot-head">Ayuda</p>
+      <a class="link" href="#preguntas">Preguntas</a>
+      <a class="link" href="https://github.com/MariaDSalazar/officego/issues/new">Avisar de un fallo</a>
+      <a class="link" href="https://github.com/MariaDSalazar/officego#english">English</a>
+    </nav>
+    <div class="foot-col">
+      <p class="foot-head">Hecho por</p>
+      <div class="faces">
+        <a href="https://github.com/DiegoFernandoLojanTenesaca" aria-label="Autor en GitHub"><img src="img/diego.png" alt="" width="40" height="40" loading="lazy"></a>
+        <a href="https://github.com/MariaDSalazar" aria-label="Coautora en GitHub"><img src="img/maria.png" alt="" width="40" height="40" loading="lazy"></a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-base">
+    <p>2026 · Licencia MIT · Sin telemetría · No está afiliado a Microsoft</p>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Cambiar a tema claro"></button>
+  </div>
+  <div class="stripe" aria-hidden="true"></div>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>

@@ -18,7 +18,8 @@ script de PowerShell que funciona hasta en el portátil más viejo.</p>
   <a href="https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe"><b>Descargar la app</b></a> ·
   <a href="https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo.exe"><b>Versión PowerShell</b></a> ·
   <a href="#con-un-comando"><b>Con un comando</b></a> ·
-  <a href="docs/TUTORIAL.md"><b>Tutorial paso a paso</b></a>
+  <a href="docs/TUTORIAL.md"><b>Tutorial paso a paso</b></a> ·
+  <a href="https://officego.pages.dev"><b>Página web</b></a>
 </p>
 
 <p align="center"><img src="capturas/escritorio/version.png" alt="Paso 1 de Instalar: las seis versiones de Office, con la que le conviene al equipo marcada" width="92%"></p>
@@ -273,7 +274,8 @@ PowerShell script that runs even on old laptops, with an unattended mode for cla
   computer without internet.
 - **Private:** no telemetry; only Microsoft downloads and the app's update check on GitHub.
 
-Download [`OfficeGo-setup.exe`](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe)
-from [Releases](../../releases/latest), or run the PowerShell version with
+Website: [officego.pages.dev](https://officego.pages.dev). Download
+[`OfficeGo-setup.exe`](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe) from
+[Releases](../../releases/latest), or run the PowerShell version with
 `irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1 | iex` in an elevated PowerShell. Not
 affiliated with or endorsed by Microsoft. MIT License.

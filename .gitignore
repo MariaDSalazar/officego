@@ -11,3 +11,6 @@ tauri/src-tauri/target/
 tauri/src-tauri/gen/
 tauri/node_modules/
 tauri/dist/
+
+# Página web: restos del inspector de diseño
+web/.taste-skill/
