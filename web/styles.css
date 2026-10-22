@@ -167,6 +167,8 @@ html:not(.js) .theme-toggle { display: none; }
   .nav-end .button { background: var(--bg); color: var(--ink); }
 }
 
+.watch { padding: clamp(2rem, 5vw, 4.5rem) var(--pad) var(--section); }
+.watch-video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: var(--word); }
 .how { padding: var(--section) var(--pad) 0; }
 .how-grid { display: grid; grid-template-columns: 5fr 7fr; gap: var(--gap); }
 .how-steps { padding-bottom: 20vh; }

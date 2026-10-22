@@ -24,6 +24,8 @@ script de PowerShell que funciona hasta en el portátil más viejo.</p>
 
 <p align="center"><img src="capturas/escritorio/version.png" alt="Paso 1 de Instalar: las seis versiones de Office, con la que le conviene al equipo marcada" width="92%"></p>
 
+<p align="center"><a href="https://officego.pages.dev/#video"><img src="web/img/video-portada.jpg" alt="Video: OfficeGo en 48 segundos" width="60%"></a></p>
+
 *English version below.*
 
 ## Novedades
@@ -274,7 +276,7 @@ PowerShell script that runs even on old laptops, with an unattended mode for cla
   computer without internet.
 - **Private:** no telemetry; only Microsoft downloads and the app's update check on GitHub.
 
-Website: [officego.pages.dev](https://officego.pages.dev). Download
+Website: [officego.pages.dev](https://officego.pages.dev), with a 48-second video in Spanish. Download
 [`OfficeGo-setup.exe`](https://github.com/MariaDSalazar/officego/releases/latest/download/OfficeGo-setup.exe) from
 [Releases](../../releases/latest), or run the PowerShell version with
 `irm https://raw.githubusercontent.com/MariaDSalazar/officego/main/OfficeGo.ps1 | iex` in an elevated PowerShell. Not
