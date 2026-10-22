@@ -66,8 +66,13 @@
   <h2 class="display" id="como-titulo" data-reveal>Así instala Office</h2>
   <div class="how-grid">
     <div class="how-steps">
+      <div class="statement" data-shot="inicio">
+        <p class="statement-main">Al abrir, ves tu Office.</p>
+        <p>Qué tienes instalado, si está activado y qué versión le cabe a tu equipo, con el botón para instalarla.</p>
+        <img class="only-phone" data-tilt-in src="img/inicio.png" alt="Inicio de OfficeGo con Word, Excel y PowerPoint activados y Office 2024 como lo que le cabe al equipo" width="1272" height="877" loading="lazy">
+      </div>
       <div class="statement" data-shot="version">
-        <p class="statement-main">Primero eliges la versión.</p>
+        <p class="statement-main">Eliges la versión.</p>
         <p>Seis, de 2013 a Microsoft 365. Te marca la que le va a tu Windows y apaga las que no corren en él.</p>
         <img class="only-phone" data-tilt-in src="img/version.png" alt="Paso de versiones de OfficeGo con 2024 marcada para este equipo" width="1272" height="877" loading="lazy">
       </div>
@@ -82,17 +87,24 @@
         <img class="only-phone" data-tilt-in src="img/revisar.png" alt="Paso de revisar de OfficeGo con el configuration.xml" width="1272" height="877" loading="lazy">
       </div>
       <div class="statement" data-shot="descargando">
-        <p class="statement-main">Y lo ves bajar de verdad.</p>
+        <p class="statement-main">Lo ves bajar de verdad.</p>
         <p>Porcentaje medido en el disco, velocidad y lo que falta. Si lo detienes, sigue donde quedó.</p>
         <img class="only-phone" data-tilt-in src="img/descargando.png" alt="Descarga de Office 2024 al 78 por ciento en OfficeGo" width="1272" height="877" loading="lazy">
+      </div>
+      <div class="statement" data-shot="actualizacion">
+        <p class="statement-main">Y se pone al día solo.</p>
+        <p>Cuando sale una versión nueva, una ventana te cuenta qué trae. Con un botón se instala encima y OfficeGo vuelve a abrirse.</p>
+        <img class="only-phone" data-tilt-in src="img/actualizacion.png" alt="Ejemplo de la ventana de actualización de OfficeGo con lo que trae la versión nueva" width="1272" height="877" loading="lazy">
       </div>
     </div>
     <div class="stage" aria-label="La ventana de OfficeGo">
       <div class="stage-frame">
-        <img class="shot is-on" data-shot="version" src="img/version.png" alt="OfficeGo en el paso de versiones, con Office 2024 marcada para este equipo" width="1272" height="877">
+        <img class="shot is-on" data-shot="inicio" src="img/inicio.png" alt="Inicio de OfficeGo con el Office del equipo y lo que le cabe" width="1272" height="877">
+        <img class="shot" data-shot="version" src="img/version.png" alt="" width="1272" height="877" loading="lazy">
         <img class="shot" data-shot="aplicaciones" src="img/aplicaciones.png" alt="" width="1272" height="877" loading="lazy">
         <img class="shot" data-shot="revisar" src="img/revisar.png" alt="" width="1272" height="877" loading="lazy">
         <img class="shot" data-shot="descargando" src="img/descargando.png" alt="" width="1272" height="877" loading="lazy">
+        <img class="shot" data-shot="actualizacion" src="img/actualizacion.png" alt="" width="1272" height="877" loading="lazy">
       </div>
     </div>
   </div>
@@ -306,6 +318,7 @@ Recomendado    Office 2024: El equipo cumple los
       <li data-reveal style="--i:5"><b>2.3</b><span>Reparar funciona por fin y el inicio avisa si faltan permisos.</span></li>
       <li data-reveal style="--i:6"><b>2.4</b><span>La app, rehecha en Svelte y Rust, con el instalador sin conexión.</span></li>
       <li data-reveal style="--i:7"><b>2.5</b><span>La descarga con su avance real, y tema claro y oscuro.</span></li>
+      <li data-reveal style="--i:8"><b>2.6</b><span>Inicio nuevo, Ajustes, atajos de teclado y la actualización desde la misma app.</span></li>
     </ol>
   </div>
   <div class="story-panel" data-reveal style="--i:2">
@@ -325,9 +338,10 @@ Recomendado    Office 2024: El equipo cumple los
   <div class="faq-band" data-reveal><p class="faq-q">¿Puedo instalar en un equipo sin internet?</p><p>Sí. En un equipo con conexión, Herramientas, Crear instalador sin conexión baja la versión elegida a una carpeta. La copias entera al otro equipo y abres instalar.cmd. Office 2016 y 2013 solo se instalan en línea.</p></div>
   <div class="faq-band" data-reveal><p class="faq-q">¿Y si ya tengo Office?</p><p>Lo más limpio es quitarlo con Desinstalar antes de poner otra versión: mezclar versiones de Office suele dar problemas. Si solo quieres arreglarlo, usa Reparar.</p></div>
   <div class="faq-band" data-reveal><p class="faq-q">¿Puedo detener la descarga?</p><p>Sí. Lo descargado queda guardado y al reanudar sigue donde quedó. El servicio de Office de Windows puede terminar por su cuenta el archivo que tenía a medias.</p></div>
-  <div class="faq-band" data-reveal><p class="faq-q">¿Cómo se actualiza?</p><p>La app instalada avisa en la barra lateral y se actualiza con un botón, sin desinstalar nada. La versión PowerShell baja siempre la última cuando usas el comando.</p></div>
+  <div class="faq-band" data-reveal><p class="faq-q">¿Cómo se actualiza?</p><p>Cuando sale una versión nueva, la app instalada abre una ventana con lo que trae. Con «Actualizar ahora» la baja, se cierra, se instala encima sin desinstalar nada y se vuelve a abrir. Si prefieres, en Ajustes eliges buscar solo a mano. La versión PowerShell baja siempre la última cuando usas el comando.</p></div>
   <div class="faq-band" data-reveal><p class="faq-q">¿Funciona en Windows 7 u 8?</p><p>No. OfficeGo necesita Windows 10 u 11, aunque Office 2016 y 2013 admitan sistemas más viejos.</p></div>
   <div class="faq-band" data-reveal><p class="faq-q">¿Manda datos a alguna parte?</p><p>No. No hay cuentas ni estadísticas de uso. Lo único que sale de tu equipo, aparte de las descargas de Microsoft, es la consulta a GitHub para saber si hay versión nueva. Trabaja en %TEMP%\OfficeGo, donde quedan el instalador de Microsoft y sus registros.</p></div>
+  <div class="faq-band" data-reveal><p class="faq-q">¿Está en inglés?</p><p>Sí. La app habla español e inglés y se cambia en Ajustes, Idioma. Office se instala en el idioma que elijas al instalar, entre siete.</p></div>
   <div class="faq-band" data-reveal><p class="faq-q">¿Es de Microsoft?</p><p>No. OfficeGo no está afiliado a Microsoft ni lo respalda: usa sus servidores y su herramienta oficial, y Office sigue siendo de Microsoft.</p></div>
 </section>
 
