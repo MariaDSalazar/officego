@@ -31,7 +31,7 @@
   {#each SCREENS.filter((screen) => !BOTTOM.includes(screen)) as screen (screen)}{@render item(screen)}{/each}
 
   {#if app.update}
-    <button class="update" disabled={app.updateProgress !== null} onclick={app.offerUpdate}>
+    <button class="update" onclick={app.openUpdate}>
       <Sparkles size={16} />
       {app.updateProgress === null
         ? t('update:available', { version: app.update.version })

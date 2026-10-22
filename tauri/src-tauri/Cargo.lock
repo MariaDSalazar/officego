@@ -2411,7 +2411,7 @@ dependencies = [
 
 [[package]]
 name = "officego"
-version = "2.5.0"
+version = "2.6.0"
 dependencies = [
  "reqwest",
  "serde",

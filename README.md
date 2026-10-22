@@ -30,22 +30,23 @@ script de PowerShell que funciona hasta en el portátil más viejo.</p>
 
 ## Novedades
 
-**2.5.0**
+**2.6.0**
 
-- **La app de escritorio vuelve a abrir en equipos sin Office.** La 2.4.0 se quedaba en el error de carga justo donde
-  más falta hace, y daba por fallida toda tarea que salía bien.
-- **Avance de verdad:** Office se descarga primero, con el porcentaje real, la velocidad y lo que falta, y después se
-  instala desde esa carpeta. La descarga se puede detener y sigue donde quedó.
-- **Instalar en tres pasos:** versión, aplicaciones y revisar. Las versiones que no corren en tu Windows salen apagadas
-  con lo que piden, y antes de instalar ves el `configuration.xml` que recibirá Microsoft.
-- **Tema claro y oscuro**, o el de tu Windows, con el fondo Mica de Windows 11. El botón de la barra de tareas muestra el
-  avance y Windows te avisa al terminar.
+- **Inicio nuevo:** tu Office con sus aplicaciones, su versión y si está activado, lo que le cabe a tu equipo con el
+  botón para instalarlo, y accesos a reparar, poner la clave y el instalador sin conexión.
+- **Ajustes:** tema, idioma de la app y cuándo buscar versiones nuevas.
+- **Se actualiza sola:** cuando hay versión nueva sale una ventana con lo que trae; con un botón la baja, se cierra, se
+  instala encima y se vuelve a abrir.
+- **Atajos de teclado** (Ctrl y un número para cada pantalla, F5 para revisar de nuevo el equipo) y avisos cortos en vez
+  de ventanas cuando algo sale bien.
 
-**2.4.0:** app de escritorio nueva en Svelte 5 y Rust, clave de producto, reparar e instalador sin conexión en la app,
-Office 2016 y 2013 de 32 bits y Office 2019 a 365 bien detectados. **2.3:** Reparar funciona por fin, se detecta Office
-2013 y el inicio avisa si faltan permisos. **2.2:** arregla el comando de una línea y los botones que dejaban la 2.1 sin
-responder. **2.1:** opciones en la línea de órdenes y modo desatendido para aulas. **2.0:** la primera app de
-escritorio. Todas las notas en [Releases](../../releases). Desde la 2.4.0 las versiones siguen el [versionado
+**2.5.0:** la app vuelve a abrir en equipos sin Office, descarga con avance real que se puede detener, Instalar en
+tres pasos con el `configuration.xml` a la vista, y tema claro y oscuro con Mica. **2.4.0:** app de escritorio nueva
+en Svelte 5 y Rust, clave de producto, reparar e instalador sin conexión en la app, Office 2016 y 2013 de 32 bits y
+Office 2019 a 365 bien detectados. **2.3:** Reparar funciona por fin, se detecta Office 2013 y el inicio avisa si
+faltan permisos. **2.2:** arregla el comando de una línea y los botones que dejaban la 2.1 sin responder. **2.1:**
+opciones en la línea de órdenes y modo desatendido para aulas. **2.0:** la primera app de escritorio. Todas las notas
+en [Releases](../../releases). Desde la 2.4.0 las versiones siguen el [versionado
 semántico](https://semver.org/lang/es/): el tercer número sube con arreglos y el segundo con funciones nuevas.
 
 ## Así se ve

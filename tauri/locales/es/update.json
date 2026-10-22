@@ -1,9 +1,19 @@
 {
   "available": "Nueva versión {{version}}",
   "downloading": "Descargando {{percent}}",
-  "title": "OfficeGo {{version}}",
-  "installable": "Hay una versión nueva. Tiene la {{current}} y se instalará la {{version}} encima, sin perder nada; OfficeGo se cerrará y volverá a abrirse.",
-  "portable": "Hay una versión nueva. Tiene la {{current}}; esta copia es portable, así que la nueva se descarga desde la página de la versión {{version}}.",
+  "title": "OfficeGo {{version}} ya está aquí",
+  "versions": "Tiene la {{current}}. La {{version}} se instala encima, sin perder sus ajustes.",
+  "portable": "Tiene la {{current}} en una copia portable: la {{version}} se descarga desde la página de la versión.",
+  "notes": "Qué trae",
+  "later": "Más tarde",
   "now": "Actualizar ahora",
-  "download": "Ir a la descarga"
+  "download": "Ir a la descarga",
+  "installHint": "Al terminar, OfficeGo se cierra, se actualiza y se vuelve a abrir solo.",
+  "changes": [
+    "Inicio nuevo: su Office con sus aplicaciones y su activación, y lo que le cabe al equipo.",
+    "Ajustes para el tema, el idioma de la app y cuándo buscar actualizaciones.",
+    "Avisos cortos en vez de ventanas cuando algo sale bien.",
+    "Atajos de teclado: Ctrl y un número para cada pantalla, y F5 para volver a revisar el equipo.",
+    "Las versiones nuevas se instalan desde esta misma ventana, con su avance."
+  ]
 }

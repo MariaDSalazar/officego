@@ -5,6 +5,10 @@
  */
 export type Release = { version: string, notesUrl: string, 
 /**
+ * What the version brings, in the app's language; empty when it could not be read.
+ */
+highlights: Array<string>, 
+/**
  * Whether this copy was installed and can update itself; a portable copy sends the user to the release page.
  */
 installable: boolean, };

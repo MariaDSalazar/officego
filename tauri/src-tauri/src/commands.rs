@@ -83,14 +83,14 @@ pub fn open_folder(app: AppHandle, path: String) -> Result<()> {
 }
 
 #[tauri::command]
-pub async fn check_update() -> Result<Option<Release>> {
-    updates::check().await
+pub async fn check_update(language: String) -> Result<Option<Release>> {
+    updates::check(&language).await
 }
 
 /// Downloads the newer installer, checks it and runs it over this copy, which closes to let it work.
 #[tauri::command]
 pub async fn install_update(app: AppHandle, progress: Channel<f64>) -> Result<()> {
-    let release = updates::check().await?.ok_or(AppError::UpToDate)?;
+    let release = updates::latest().await?.ok_or(AppError::UpToDate)?;
     let installer = updates::download(&release, &std::env::temp_dir().join(UPDATE_FOLDER), |done| {
         let _ = progress.send(done);
     })

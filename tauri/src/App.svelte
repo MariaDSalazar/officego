@@ -20,6 +20,7 @@
   import Sidebar from './lib/ui/Sidebar.svelte';
   import Skeleton from './lib/ui/Skeleton.svelte';
   import TitleBar from './lib/ui/TitleBar.svelte';
+  import UpdateDialog from './lib/ui/UpdateDialog.svelte';
 
   type Action = {
     key: string;
@@ -100,7 +101,7 @@
 
   const typing = (target: EventTarget | null) => target instanceof HTMLElement && !!target.closest('input, textarea, select');
   const onkeydown = (event: KeyboardEvent) => {
-    if (app.dialog || typing(event.target)) return;
+    if (app.dialog || app.updateVisible || typing(event.target)) return;
     const shortcut = shortcutFor(event, SCREENS, 'settings');
     if (!shortcut) return;
     event.preventDefault();
@@ -169,6 +170,7 @@
 </div>
 
 <Dialog />
+<UpdateDialog />
 
 <style>
   .window {

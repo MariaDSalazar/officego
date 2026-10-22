@@ -2,7 +2,7 @@ import { MediaQuery } from 'svelte/reactivity';
 import { getCatalog, getConfiguration, getLicense, getMachine, runTask, stopTask } from './services/engine';
 import { toAppError } from './services/errors';
 import { appVersion, chooseFolder, copyText, isWindowFocused, notify, openFolder, openLink, relaunchAsAdmin } from './services/system';
-import { checkUpdate, installUpdate } from './services/updates';
+import { checkUpdate, installUpdate as installRelease } from './services/updates';
 import { BASE_LANGUAGE, LANGUAGES, formatter, systemLanguage, translator } from './i18n';
 import { DEFAULT_APPS, adjust, downloadSizeGb, officeLanguageFor, pickableApps, productOf, toggle } from './selection';
 import type { Catalog, License, MachineReport, Release, Route, Selection, Task, TaskEvent, TaskOutcome, TaskStep } from './types';
@@ -77,6 +77,7 @@ const THEME_KEY = 'officego.theme';
 const LANGUAGE_KEY = 'officego.language';
 const UPDATES_KEY = 'officego.updates';
 const UPDATES_BY_HAND = 'manual';
+const SKIPPED_UPDATE_KEY = 'officego.skippedUpdate';
 const FLASH_MS = 3200;
 const systemDark = new MediaQuery('(prefers-color-scheme: dark)');
 const storedTheme = (): Theme => THEMES.find((theme) => theme === localStorage.getItem(THEME_KEY)) ?? 'system';
@@ -120,6 +121,10 @@ class App {
   updateProgress = $state<number | null>(null);
   checkUpdatesOnStart = $state(localStorage.getItem(UPDATES_KEY) !== UPDATES_BY_HAND);
   checkingUpdate = $state(false);
+  updateOpen = $state(false);
+  updateError = $state('');
+  skippedUpdate = $state(localStorage.getItem(SKIPPED_UPDATE_KEY));
+  updateVisible = $derived(!!this.update && this.updateOpen && !this.dialog && (this.updateProgress !== null || !this.busy));
 
   machine = $derived(this.report?.machine ?? null);
   systemDisk = $derived(this.machine?.disks.find((disk) => disk.system) ?? null);
@@ -553,12 +558,13 @@ class App {
 
   checkForUpdate = async () => {
     try {
-      this.update = await checkUpdate();
-      return true;
+      this.update = await checkUpdate(this.language);
     } catch {
       this.update = null;
       return false;
     }
+    if (this.update && this.update.version !== this.skippedUpdate) this.updateOpen = true;
+    return true;
   };
 
   checkUpdateNow = async () => {
@@ -567,26 +573,36 @@ class App {
     this.checkingUpdate = false;
     if (!reached) return this.say(this.t('settings:checkFailed'), 'warn');
     if (!this.update) return this.say(this.t('settings:upToDate', { version: this.version }));
-    await this.offerUpdate();
+    this.openUpdate();
   };
 
-  offerUpdate = async () => {
+  openUpdate = () => {
+    this.updateError = '';
+    this.updateOpen = true;
+  };
+
+  closeUpdate = () => {
+    if (this.updateProgress === null) this.updateOpen = false;
+  };
+
+  skipUpdate = () => {
+    if (!this.update) return;
+    this.skippedUpdate = this.update.version;
+    localStorage.setItem(SKIPPED_UPDATE_KEY, this.update.version);
+    this.updateOpen = false;
+  };
+
+  installUpdate = async () => {
     const release = this.update;
     if (!release) return;
-    const answer = await this.ask({
-      title: this.t('update:title', { version: release.version }),
-      message: this.t(release.installable ? 'update:installable' : 'update:portable', { current: this.version, version: release.version }),
-      confirm: this.t(release.installable ? 'update:now' : 'update:download'),
-      cancel: this.t('common:notNow'),
-    });
-    if (answer !== CONFIRMED) return;
     if (!release.installable) return this.openLink(release.notesUrl);
+    this.updateError = '';
     this.updateProgress = 0;
     try {
-      await installUpdate((done) => (this.updateProgress = done));
+      await installRelease((done) => (this.updateProgress = done));
     } catch (error) {
       this.updateProgress = null;
-      await this.inform(this.t('errors:title'), this.errorText(error), 'danger');
+      this.updateError = this.errorText(error);
     }
   };
 }

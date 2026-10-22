@@ -1,5 +1,6 @@
 use crate::errors::{AppError, Result};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::{
     io::Write,
@@ -9,6 +10,8 @@ use std::{
 use ts_rs::TS;
 
 const LATEST_RELEASE: &str = "https://api.github.com/repos/MariaDSalazar/officego/releases/latest";
+/// The repository's files at any tag, where each version keeps what it brings in `tauri/locales/<language>/update.json`.
+const REPOSITORY_FILES: &str = "https://raw.githubusercontent.com/MariaDSalazar/officego";
 const GITHUB_JSON: &str = "application/vnd.github+json";
 /// The NSIS installer; the portable executable and the PowerShell files ship beside it.
 const INSTALLER_SUFFIX: &str = "-setup.exe";
@@ -27,6 +30,8 @@ const USER_AGENT: &str = concat!("officego/", env!("CARGO_PKG_VERSION"));
 pub struct Release {
     pub version: String,
     pub notes_url: String,
+    /// What the version brings, in the app's language; empty when it could not be read.
+    pub highlights: Vec<String>,
     /// Whether this copy was installed and can update itself; a portable copy sends the user to the release page.
     pub installable: bool,
     #[serde(skip)]
@@ -69,6 +74,7 @@ fn newer_release(answer: ReleaseAnswer, current: &str, installable: bool) -> Opt
     is_newer(&answer.tag_name, current).then(|| Release {
         version: answer.tag_name.trim_start_matches('v').to_string(),
         notes_url: answer.html_url,
+        highlights: Vec::new(),
         installable,
         installer_url: installer.browser_download_url,
         size: installer.size,
@@ -81,10 +87,28 @@ fn client(timeout: Duration) -> Result<reqwest::Client> {
 }
 
 /// The latest GitHub release when it is newer than this app and ships an installer.
-pub async fn check() -> Result<Option<Release>> {
+pub async fn latest() -> Result<Option<Release>> {
     let answer: ReleaseAnswer =
         client(CHECK_TIMEOUT)?.get(LATEST_RELEASE).header(reqwest::header::ACCEPT, GITHUB_JSON).send().await?.error_for_status()?.json().await?;
     Ok(newer_release(answer, CURRENT_VERSION, installed()))
+}
+
+/// Like `latest`, with what the new version brings in `language`.
+pub async fn check(language: &str) -> Result<Option<Release>> {
+    let Some(release) = latest().await? else { return Ok(None) };
+    let highlights = read_highlights(&release.version, language).await.unwrap_or_default();
+    Ok(Some(Release { highlights, ..release }))
+}
+
+async fn read_highlights(version: &str, language: &str) -> Result<Vec<String>> {
+    let url = format!("{REPOSITORY_FILES}/v{version}/tauri/locales/{language}/update.json");
+    let texts: Value = client(CHECK_TIMEOUT)?.get(url).send().await?.error_for_status()?.json().await?;
+    Ok(highlights(&texts))
+}
+
+/// The texts listed under `changes`, in their order.
+fn highlights(texts: &Value) -> Vec<String> {
+    texts["changes"].as_array().map_or_else(Vec::new, |changes| changes.iter().filter_map(Value::as_str).map(String::from).collect())
 }
 
 fn hex(bytes: &[u8]) -> String {
@@ -145,5 +169,12 @@ mod tests {
         );
         assert!(newer_release(answer("v2.5.0", "OfficeGo.ps1"), "2.4.0", true).is_none());
         assert!(newer_release(answer("v2.4.0", "OfficeGo-setup.exe"), "2.4.0", true).is_none());
+    }
+
+    #[test]
+    fn reads_the_highlights_in_their_order() {
+        let texts = json!({ "title": "OfficeGo", "changes": ["Inicio nuevo", "Ajustes", "Atajos"] });
+        assert_eq!(highlights(&texts), ["Inicio nuevo", "Ajustes", "Atajos"]);
+        assert!(highlights(&json!({ "title": "OfficeGo" })).is_empty());
     }
 }

@@ -1,9 +1,7 @@
-- Se arregló que la versión de escritorio no cargara en equipos sin Office: PowerShell 5.1 enviaba `office: {}` en vez de nada y la app no podía leerlo.
-- Se arregló que toda tarea que terminaba bien en la versión de escritorio (instalar, reparar, la clave de producto…) acabara en «El motor se detuvo».
-- Se cambió la instalación de Microsoft 365, 2024, 2021 y 2019 en la versión de escritorio a dos tiempos: primero se descarga Office con el avance real, la velocidad y lo que falta, y después se instala desde esa carpeta sin volver a internet.
-- Se añadió Detener y Reanudar a las descargas: lo descargado queda guardado y se sigue donde quedó.
-- Se cambió «Solo descargar» para que muestre el avance real de la descarga.
-- Se cambió Instalar a tres pasos (versión, aplicaciones y revisar): las versiones que no corren en ese Windows aparecen apagadas con lo que piden, y Revisar muestra el configuration.xml que recibirá Microsoft.
-- Se añadió una pantalla de progreso con los pasos y su tiempo, el avance en el botón de la barra de tareas y el aviso de Windows al terminar.
-- Se rehízo el aspecto de la versión de escritorio: tema claro y oscuro o el de Windows, barra de título propia con el fondo Mica de Windows 11, y la barra lateral con el resumen del equipo.
-- Se cambió la recomendación para que tome el Windows mínimo de cada versión del catálogo, el mismo dato con el que la app apaga las que no corren.
+- Se añadió un Inicio nuevo en la versión de escritorio: muestra el Office del equipo con sus aplicaciones, su versión y si está activado, lo que le cabe al equipo con el botón para instalarlo, y accesos a reparar, poner la clave y el instalador sin conexión.
+- Se añadió Ajustes: tema, idioma de la app (español o inglés, se recuerda) y si buscar versiones nuevas al abrir o solo a mano, con un botón para buscar ahora.
+- Se añadió la ventana de actualización: sale sola cuando hay versión nueva, cuenta lo que trae, permite dejarla para más tarde y baja la nueva con su avance; al terminar OfficeGo se cierra, se actualiza y se vuelve a abrir.
+- Se añadieron atajos de teclado: Ctrl y un número para cada pantalla, Ctrl y coma para Ajustes, y F5 para volver a revisar el equipo.
+- Se cambiaron las ventanas que solo confirmaban algo (informe copiado, clave aplicada, reparación terminada) por avisos cortos que se van solos.
+- Se cambió la espera del arranque por la silueta de Inicio mientras se revisa el equipo.
+- Se cambió la forma de reconocer el Office instalado: el motor lo describe con el catálogo, así que también se ven bien las aplicaciones sueltas y los Office sin año en el nombre.
