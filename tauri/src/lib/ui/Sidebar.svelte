@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { CircleHelp, Download, House, KeyRound, Monitor, Sparkles, Wrench } from '@lucide/svelte';
+  import { CircleHelp, Download, House, KeyRound, Monitor, SlidersHorizontal, Sparkles, Wrench } from '@lucide/svelte';
   import type { Component } from 'svelte';
   import { SCREENS, app, type Screen } from '../app.svelte';
 
@@ -10,8 +10,9 @@
     machine: Monitor,
     tools: Wrench,
     help: CircleHelp,
+    settings: SlidersHorizontal,
   };
-  const BOTTOM: Screen[] = ['help'];
+  const BOTTOM: Screen[] = ['help', 'settings'];
 
   const t = $derived(app.t);
   const machine = $derived(app.machine);

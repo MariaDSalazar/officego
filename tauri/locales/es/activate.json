@@ -26,7 +26,6 @@
   "keyMessage": "La clave viene en la tarjeta o el correo de la compra. Puede escribirla con guiones o sin ellos.",
   "keyLabel": "Clave de producto",
   "keyApply": "Aplicar la clave",
-  "keyDoneTitle": "Clave aplicada",
   "keyDone": "La clave se aplicó y Office quedó activado.",
   "keyDonePending": "La clave se aplicó. Office terminará de activarse al conectarse con Microsoft; puede comprobarlo en un momento.",
   "masConfirmTitle": "Antes de activar",

@@ -1,0 +1,31 @@
+{
+  "look": "Aspecto e idioma",
+  "theme": "Tema",
+  "themeHint": "El del sistema sigue a Windows; claro y oscuro se quedan fijos.",
+  "language": "Idioma",
+  "languageHint": "El de la app. Office se instala en el idioma que elija en Instalar.",
+  "languages": {
+    "es": "Español",
+    "en": "English"
+  },
+  "updates": "Actualizaciones",
+  "version": "OfficeGo {{version}}",
+  "updatesHint": "Las versiones nuevas salen en GitHub y se instalan con un botón.",
+  "checkNow": "Buscar ahora",
+  "checking": "Buscando…",
+  "upToDate": "OfficeGo {{version}} es la versión más nueva.",
+  "checkFailed": "No se pudo consultar GitHub. Revise la conexión e inténtelo de nuevo.",
+  "checkWhen": "Cuándo buscar",
+  "checkWhenHint": "Al abrir, OfficeGo pregunta a GitHub si hay versión nueva; no manda nada más.",
+  "checks": {
+    "start": "Al abrir",
+    "hand": "Solo a mano"
+  },
+  "shortcuts": "Atajos de teclado",
+  "keys": {
+    "sections": "Ir a cada pantalla del menú",
+    "settings": "Abrir los ajustes",
+    "refresh": "Volver a revisar el equipo",
+    "close": "Cerrar una ventana de aviso"
+  }
+}

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { app } from '../app.svelte';
   import type { Product } from '../types';
+  import Year from './Year.svelte';
 
   let { product, selected, recommended, fits, onclick }: { product: Product; selected: boolean; recommended: boolean; fits: boolean; onclick: () => void } =
     $props();
@@ -9,7 +10,7 @@
 </script>
 
 <button class="tile" class:selected class:unfit={!fits} aria-pressed={selected} disabled={!fits || app.busy} {onclick}>
-  <span class="year"><i style:background={product.color}></i>{product.key}</span>
+  <span class="mark"><Year {product} /></span>
   <b>{product.name}</b>
   <span class="what">{t(`catalog:descriptions.${product.key}`)}</span>
   {#if !fits}
@@ -48,18 +49,9 @@
   .unfit {
     opacity: 0.5;
   }
-  .year {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
+  .mark {
+    display: block;
     margin-bottom: var(--space-2);
-    font: 600 var(--text-display) / 0.9 var(--font-display);
-    letter-spacing: var(--tracking-tight);
-  }
-  .year i {
-    width: var(--size-yearBar);
-    height: 0.8em;
-    border-radius: var(--radius-pill);
   }
   b {
     font-size: var(--text-md);

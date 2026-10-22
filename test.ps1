@@ -65,6 +65,22 @@ Comprobar 'Project se añade como producto aparte' ('ProjectPro2021Volume' -in $
 Comprobar 'son tres productos en total' ($ids.Count -eq 3) "son $($ids.Count)"
 
 Write-Host "`nRECOMENDACIÓN" -ForegroundColor Cyan
+# ─── Office instalado, leído con el catálogo
+$d = Get-OfficeDescrito 'ProPlus2024Volume,VisioPro2024Volume' '16.0.17932.21056'
+Comprobar 'una suite de volumen da versión y edición' ($d.Producto -eq '2024' -and $d.Edicion -eq 'ProPlus') "$($d.Producto) $($d.Edicion)"
+Comprobar 'y su complemento aparte'                  (($d.Complementos -join ',') -eq 'VisioPro')
+$d = Get-OfficeDescrito 'O365BusinessRetail' '16.0.17932.21056'
+Comprobar '365 Business se reconoce'                 ($d.Producto -eq '365' -and $d.Edicion -eq 'Business')
+$d = Get-OfficeDescrito 'ProPlusRetail' '15.0.5589.1001'
+Comprobar 'un Retail 15.x es 2013'                   ($d.Producto -eq '2013') $d.Producto
+$d = Get-OfficeDescrito 'ProPlusRetail' '16.0.4266.1001'
+Comprobar 'un Retail 16.x es 2016'                   ($d.Producto -eq '2016') $d.Producto
+$d = Get-OfficeDescrito 'ExcelVolume,PowerPointVolume,WordVolume' '16.0.20430.20182'
+Comprobar 'las aplicaciones sueltas se nombran'      (($d.Apps -join ',') -eq 'Excel,PowerPoint,Word') ($d.Apps -join ',')
+Comprobar 'sin año ni suite no se inventa versión'   ($null -eq $d.Producto -and $null -eq $d.Edicion)
+$d = Get-OfficeDescrito 'Word2019Volume' '16.0.10417.20030'
+Comprobar 'una app suelta con año toma la versión'   ($d.Producto -eq '2019' -and ($d.Apps -join ',') -eq 'Word')
+
 function EquipoFalso($build, $ram, $libre, $gpu = 'NVIDIA GeForce GTX 1650', $bits = '64') {
   [pscustomobject]@{
     Build = "$build.1"; RamGB = $ram; Bits = $bits; GPU = $gpu; Defender = $false

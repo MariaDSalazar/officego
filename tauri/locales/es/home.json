@@ -1,23 +1,43 @@
 {
-  "title": "Instale Office en tres pasos",
-  "subtitle": "Descarga directa de los servidores de Microsoft, sin páginas de terceros",
-  "recommended": "Lo que le conviene a este equipo",
+  "titles": {
+    "ready": "Su Office está listo",
+    "checking": "Su Office está instalado",
+    "inactive": "Su Office está instalado, falta activarlo",
+    "empty": "Instale Office en tres pasos"
+  },
+  "subtitle": "Revisamos el equipo al abrir: esto es lo que tiene y lo que le conviene.",
+  "yourOffice": "Su Office",
+  "officeDetails": "Versión {{version}}, {{bits}}, {{language}}",
+  "bits": "{{bits}} bits",
+  "addOns": "Con {{list}}",
+  "license": {
+    "checking": "Revisando la activación…",
+    "activated": "Activado",
+    "notActivated": "Sin activar",
+    "unreadable": "No se pudo leer la activación"
+  },
+  "activateNow": "Activar",
+  "noOffice": "No hay Office en este equipo",
+  "noOfficeHint": "Elija la versión, marque las aplicaciones y OfficeGo la baja de los servidores de Microsoft.",
+  "fits": "Lo que le cabe a su equipo",
+  "installProduct": "Instalar {{product}}",
+  "seeAll": "Ver todas",
   "installThis": "Instalar esto",
-  "howItWorks": "Cómo funciona",
-  "steps": {
-    "choose": {
-      "title": "Elija su versión",
-      "text": "Seis versiones desde 2013 hasta Microsoft 365, con sus ediciones"
+  "quick": {
+    "repair": {
+      "title": "Reparar Office",
+      "text": "Si algo falla, sin perder documentos"
     },
-    "pick": {
-      "title": "Marque lo que quiere",
-      "text": "Solo Word y Excel, o la suite entera. Se descarga únicamente eso"
+    "key": {
+      "title": "Poner su clave",
+      "text": "La clave de producto de 25 caracteres"
     },
-    "activate": {
-      "title": "Active al terminar",
-      "text": "Con su clave de producto, o con MAS si no la tiene"
+    "offline": {
+      "title": "Instalador sin conexión",
+      "text": "Para llevar Office a otro equipo"
     }
   },
   "noAdmin": "Faltan permisos de administrador: puede mirar las pantallas, pero no instalar ni activar.",
-  "ready": "Equipo listo: {{os}} con {{ram}} de RAM, {{free}} libres y permisos de administrador."
+  "officeFallback": "Office",
+  "officeBadge": "O"
 }

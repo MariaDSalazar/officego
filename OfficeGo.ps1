@@ -307,6 +307,37 @@ function Get-OfficeInstalado {
   }
 }
 
+# Qué es lo instalado según el catálogo: versión, edición, aplicaciones sueltas
+# y complementos. Los Retail sin año (2016 y 2013) se separan por la versión:
+# la 15.x es 2013.
+function Get-OfficeDescrito([string]$Productos, [string]$Version) {
+  $ids = @($Productos -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+  $vieja = $Version -like '15.*'
+  $r = @{ Producto = $null; Edicion = $null; Apps = @(); Complementos = @() }
+  foreach ($id in $ids) {
+    $suites = @($script:PRODUCTOS | Where-Object { $_.Ediciones.Values -contains $id })
+    $suite = $suites | Where-Object { ($_.Clave -eq '2013') -eq $vieja } | Select-Object -First 1
+    if (-not $suite) { $suite = $suites | Select-Object -First 1 }
+    $extra = $script:COMPLEMENTOS | Where-Object { $_.Ids.Values -contains $id } | Select-Object -First 1
+    $app = @($script:APLICACIONES.Keys) | Where-Object { $id -like "$_*" } | Select-Object -First 1
+    if ($suite -and -not $r.Edicion) {
+      $r.Producto = $suite.Clave
+      $r.Edicion = @($suite.Ediciones.Keys) | Where-Object { $suite.Ediciones[$_] -eq $id } | Select-Object -First 1
+    } elseif ($extra) {
+      $r.Complementos += $extra.Clave
+      if (-not $r.Producto) { $r.Producto = @($extra.Ids.Keys) | Where-Object { $extra.Ids[$_] -eq $id } | Select-Object -First 1 }
+    } elseif ($app) {
+      $r.Apps += $app
+    }
+  }
+  if (-not $r.Producto) {
+    if ($ids | Where-Object { $_ -like 'O365*' }) { $r.Producto = '365' }
+    elseif ($Productos -match '20\d\d' -and ($script:PRODUCTOS.Clave -contains $Matches[0])) { $r.Producto = $Matches[0] }
+    elseif ($vieja) { $r.Producto = '2013' }
+  }
+  $r
+}
+
 # Office 2016 en adelante instala en Office16 y 2013 en Office15. Buscando
 # solo en Office16, con Office 2013 puesto se decia que no habia ninguno.
 # Y lo instalado por Click-to-Run (2019, 2021, 2024, 365) lo deja dentro de

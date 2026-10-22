@@ -4,5 +4,6 @@
   "activate": "Activate",
   "machine": "Computer",
   "tools": "Tools",
-  "help": "Help"
+  "help": "Help",
+  "settings": "Settings"
 }

@@ -3,11 +3,11 @@ import { getCatalog, getConfiguration, getLicense, getMachine, runTask, stopTask
 import { toAppError } from './services/errors';
 import { appVersion, chooseFolder, copyText, isWindowFocused, notify, openFolder, openLink, relaunchAsAdmin } from './services/system';
 import { checkUpdate, installUpdate } from './services/updates';
-import { BASE_LANGUAGE, formatter, systemLanguage, translator } from './i18n';
+import { BASE_LANGUAGE, LANGUAGES, formatter, systemLanguage, translator } from './i18n';
 import { DEFAULT_APPS, adjust, downloadSizeGb, officeLanguageFor, pickableApps, productOf, toggle } from './selection';
 import type { Catalog, License, MachineReport, Release, Route, Selection, Task, TaskEvent, TaskOutcome, TaskStep } from './types';
 
-export const SCREENS = ['home', 'install', 'activate', 'machine', 'tools', 'help'] as const;
+export const SCREENS = ['home', 'install', 'activate', 'machine', 'tools', 'help', 'settings'] as const;
 export type Screen = (typeof SCREENS)[number];
 
 export const INSTALL_STEPS = ['version', 'apps', 'review'] as const;
@@ -17,6 +17,14 @@ export const THEMES = ['system', 'light', 'dark'] as const;
 export type Theme = (typeof THEMES)[number];
 
 export type DialogTone = 'info' | 'warn' | 'danger';
+
+export type FlashTone = 'ok' | 'warn';
+
+export interface Flash {
+  id: number;
+  text: string;
+  tone: FlashTone;
+}
 
 export interface DialogRequest {
   title: string;
@@ -66,8 +74,13 @@ const stepsFor = (task: Task, route?: Route): TaskStep[] => {
 /** Answer of a dialog closed with its confirm button and no text to give. */
 const CONFIRMED = '';
 const THEME_KEY = 'officego.theme';
+const LANGUAGE_KEY = 'officego.language';
+const UPDATES_KEY = 'officego.updates';
+const UPDATES_BY_HAND = 'manual';
+const FLASH_MS = 3200;
 const systemDark = new MediaQuery('(prefers-color-scheme: dark)');
 const storedTheme = (): Theme => THEMES.find((theme) => theme === localStorage.getItem(THEME_KEY)) ?? 'system';
+const storedLanguage = () => LANGUAGES.find((language) => language === localStorage.getItem(LANGUAGE_KEY)) ?? systemLanguage();
 const SELECTION_FALLBACK: Selection = { product: '', edition: '', language: '', bits: '64', apps: DEFAULT_APPS, addOns: [] };
 
 class App {
@@ -95,6 +108,8 @@ class App {
   status = $state('');
 
   dialog = $state<OpenDialog | null>(null);
+  flash = $state<Flash | null>(null);
+  private flashes = 0;
 
   job = $state<Job | null>(null);
   /** The install or download followed on the Install screen. */
@@ -103,6 +118,8 @@ class App {
 
   update = $state<Release | null>(null);
   updateProgress = $state<number | null>(null);
+  checkUpdatesOnStart = $state(localStorage.getItem(UPDATES_KEY) !== UPDATES_BY_HAND);
+  checkingUpdate = $state(false);
 
   machine = $derived(this.report?.machine ?? null);
   systemDisk = $derived(this.machine?.disks.find((disk) => disk.system) ?? null);
@@ -117,10 +134,10 @@ class App {
   });
 
   load = async () => {
-    this.language = systemLanguage();
+    this.language = storedLanguage();
     this.status = this.t('task:idle');
     const license = this.refreshLicense();
-    void this.checkForUpdate();
+    if (this.checkUpdatesOnStart) void this.checkForUpdate();
     void appVersion().then((version) => (this.version = version));
     let report: MachineReport;
     try {
@@ -149,9 +166,31 @@ class App {
 
   go = (screen: Screen) => (this.screen = screen);
 
-  cycleTheme = () => {
-    this.theme = THEMES[(THEMES.indexOf(this.theme) + 1) % THEMES.length];
-    localStorage.setItem(THEME_KEY, this.theme);
+  setTheme = (theme: Theme) => {
+    this.theme = theme;
+    localStorage.setItem(THEME_KEY, theme);
+  };
+
+  cycleTheme = () => this.setTheme(THEMES[(THEMES.indexOf(this.theme) + 1) % THEMES.length]);
+
+  setLanguage = (language: string) => {
+    if (!LANGUAGES.includes(language)) return;
+    this.language = language;
+    localStorage.setItem(LANGUAGE_KEY, language);
+    if (!this.busy) this.status = this.t('task:idle');
+  };
+
+  setCheckUpdatesOnStart = (on: boolean) => {
+    this.checkUpdatesOnStart = on;
+    localStorage.setItem(UPDATES_KEY, on ? '' : UPDATES_BY_HAND);
+  };
+
+  say = (text: string, tone: FlashTone = 'ok') => {
+    const id = ++this.flashes;
+    this.flash = { id, text, tone };
+    setTimeout(() => {
+      if (this.flash?.id === id) this.flash = null;
+    }, FLASH_MS);
   };
 
   ask = (request: DialogRequest) => new Promise<string | null>((resolve) => (this.dialog = { ...request, resolve }));
@@ -196,6 +235,12 @@ class App {
     } catch (error) {
       await this.inform(this.t('errors:title'), this.errorText(error), 'danger');
     }
+  };
+
+  refreshAll = async () => {
+    if (this.busy) return;
+    await Promise.all([this.refreshMachine(), this.refreshLicense()]);
+    this.say(this.t('machine:refreshed'));
   };
 
   refreshLicense = async () => {
@@ -398,7 +443,7 @@ class App {
     if (!outcome) return;
     await this.refreshLicense();
     if (!outcome.ok) return this.explain(outcome);
-    await this.inform(this.t('activate:keyDoneTitle'), this.t(this.license?.activated ? 'activate:keyDone' : 'activate:keyDonePending'));
+    this.say(this.t(this.license?.activated ? 'activate:keyDone' : 'activate:keyDonePending'), this.license?.activated ? 'ok' : 'warn');
   };
 
   activateWithMas = async () => {
@@ -430,7 +475,7 @@ class App {
     const outcome = await this.perform({ action: 'repair' });
     if (!outcome) return;
     if (!outcome.ok) return this.explain(outcome);
-    await this.inform(this.t('tools:repairDoneTitle'), this.t('tools:repairDone'));
+    this.say(this.t('tools:repairDone'));
   };
 
   uninstall = async () => {
@@ -449,7 +494,7 @@ class App {
     if (!outcome) return;
     await Promise.all([this.refreshMachine(), this.refreshLicense()]);
     if (!outcome.ok) return this.explain(outcome);
-    await this.inform(this.t('tools:uninstallDoneTitle'), this.t('tools:uninstallDone'));
+    this.say(this.t('tools:uninstallDone'));
   };
 
   showConfiguration = async () => {
@@ -499,7 +544,7 @@ class App {
       reason: this.t(`recommendation:reasons.${recommendation.reason}`),
     });
     await copyText(text);
-    await this.inform(this.t('machine:copiedTitle'), this.t('machine:copied'));
+    this.say(this.t('machine:copied'));
   };
 
   openLink = (url: string) => void openLink(url);
@@ -509,9 +554,20 @@ class App {
   checkForUpdate = async () => {
     try {
       this.update = await checkUpdate();
+      return true;
     } catch {
       this.update = null;
+      return false;
     }
+  };
+
+  checkUpdateNow = async () => {
+    this.checkingUpdate = true;
+    const reached = await this.checkForUpdate();
+    this.checkingUpdate = false;
+    if (!reached) return this.say(this.t('settings:checkFailed'), 'warn');
+    if (!this.update) return this.say(this.t('settings:upToDate', { version: this.version }));
+    await this.offerUpdate();
   };
 
   offerUpdate = async () => {

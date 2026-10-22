@@ -37,6 +37,6 @@
   "report": "== OfficeGo · computer report ================================\nSystem         {{os}} (build {{build}}) · {{architecture}}\nPowerShell     {{powershell}}\nProcessor      {{cpu}} · {{cores}} cores / {{threads}} threads · {{ghz}}\nMemory         {{ram}} ({{modules}} modules) · {{ramFree}} free\nGraphics       {{gpu}} · {{resolution}}\n{{disks}}\nAdministrator  {{admin}}\nDefender       {{defender}}\n\nOffice         {{office}}\nRecommended    {{recommended}}: {{reason}}\n==============================================================",
   "reportDisk": "Drive {{letter}}      {{total}} · {{free}} free",
   "noOffice": "not installed",
-  "copiedTitle": "Copied",
-  "copied": "The report is on the clipboard. Paste it wherever you need it."
+  "copied": "The report is on the clipboard. Paste it wherever you need it.",
+  "refreshed": "Computer checked again."
 }

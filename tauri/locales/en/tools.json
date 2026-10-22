@@ -4,7 +4,6 @@
   "repairDescription": "Repairs Office without losing documents or the license",
   "repairConfirm": "This is the quick repair: it downloads nothing and is usually enough. Documents and the license are left alone, but Word, Excel and PowerPoint will close.",
   "repairStart": "Repair",
-  "repairDoneTitle": "Repair finished",
   "repairDone": "If the problem remains, try the online repair from Settings > Apps > Microsoft Office > Modify.",
   "run": "Run",
   "view": "View",
@@ -25,6 +24,5 @@
   "uninstallWord": "DELETE",
   "uninstallConfirm": "This will remove Office from this computer. Documents are NOT deleted.",
   "uninstallLabel": "Type {{word}} to confirm",
-  "uninstallDoneTitle": "Office uninstalled",
   "uninstallDone": "Office was removed from this computer."
 }

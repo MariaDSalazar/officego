@@ -18,7 +18,8 @@ los invoca a través de un puente. Un arreglo en `src/2-motor.ps1` vale para las
 | `src/lib/services/` | El único sitio que llama a `invoke`: una función tipada por comando. |
 | `src/lib/app.svelte.ts` | El estado de la interfaz y lo que hace cada botón; las pantallas lo importan. |
 | `src/lib/selection.ts` | Las reglas de la selección (qué apps trae cada edición, complementos por versión), las mismas que `Ajustar-Seleccion` en la 1.x. |
-| `src/lib/screens/`, `src/lib/ui/` | Las seis pantallas, montadas con los componentes del catálogo de `ui/`. |
+| `src/lib/screens/`, `src/lib/ui/` | Las siete pantallas, montadas con los componentes del catálogo de `ui/`. Los avisos cortos (`Flash`) confirman lo que salió bien; los errores y las preguntas siguen en `Dialog`. |
+| `src/lib/office.ts`, `src/lib/shortcuts.ts` | Los nombres del Office instalado según lo que describe el motor (`Get-OfficeDescrito`), y los atajos de teclado con la lista que enseña Ajustes. |
 | `locales/<idioma>/<espacio>.json` | Todo el texto que se ve. Español es la base; inglés va igual. |
 | `design/tokens.json` | Colores, espacios, letra, bordes y tamaños. `theme.ts` los publica como variables CSS; un valor entre llaves (`{color.accent}`) apunta a otro. |
 

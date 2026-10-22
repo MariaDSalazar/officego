@@ -4,6 +4,7 @@ export type { Catalog } from './generated/Catalog';
 export type { Disk } from './generated/Disk';
 export type { Edition } from './generated/Edition';
 export type { GraphicsBrand } from './generated/GraphicsBrand';
+export type { InstalledOffice } from './generated/InstalledOffice';
 export type { License } from './generated/License';
 export type { MachineReport } from './generated/MachineReport';
 export type { OfficeApp } from './generated/OfficeApp';

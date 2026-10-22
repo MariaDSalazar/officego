@@ -4,5 +4,6 @@
   "activate": "Activar",
   "machine": "Equipo",
   "tools": "Herramientas",
-  "help": "Ayuda"
+  "help": "Ayuda",
+  "settings": "Ajustes"
 }

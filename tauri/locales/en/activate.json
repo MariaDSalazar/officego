@@ -26,7 +26,6 @@
   "keyMessage": "The key comes on the card or in the purchase email. You can type it with or without dashes.",
   "keyLabel": "Product key",
   "keyApply": "Apply the key",
-  "keyDoneTitle": "Key applied",
   "keyDone": "The key was applied and Office is activated.",
   "keyDonePending": "The key was applied. Office will finish activating when it reaches Microsoft; check again in a moment.",
   "masConfirmTitle": "Before activating",

@@ -37,6 +37,6 @@
   "report": "== OfficeGo · informe del equipo =============================\nSistema        {{os}} (build {{build}}) · {{architecture}}\nPowerShell     {{powershell}}\nProcesador     {{cpu}} · {{cores}} núcleos / {{threads}} hilos · {{ghz}}\nMemoria        {{ram}} ({{modules}} módulos) · {{ramFree}} libres\nGráficos       {{gpu}} · {{resolution}}\n{{disks}}\nAdministrador  {{admin}}\nDefender       {{defender}}\n\nOffice         {{office}}\nRecomendado    {{recommended}}: {{reason}}\n==============================================================",
   "reportDisk": "Disco {{letter}}       {{total}} · {{free}} libres",
   "noOffice": "no instalado",
-  "copiedTitle": "Copiado",
-  "copied": "El informe está en el portapapeles. Puede pegarlo donde lo necesite."
+  "copied": "El informe está en el portapapeles. Puede pegarlo donde lo necesite.",
+  "refreshed": "Equipo revisado de nuevo."
 }

@@ -141,11 +141,20 @@ pub enum GraphicsBrand {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
+#[serde(rename_all = "camelCase")]
 pub struct InstalledOffice {
     pub products: String,
     pub version: String,
     pub language: String,
     pub architecture: String,
+    /// The catalog's version, when the installed products name one.
+    pub product: Option<String>,
+    pub edition: Option<String>,
+    /// Apps installed on their own, outside a suite.
+    #[serde(default)]
+    pub apps: Vec<String>,
+    #[serde(default)]
+    pub add_ons: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TS)]

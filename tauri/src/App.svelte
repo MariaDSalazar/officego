@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { ChevronLeft, Download, RefreshCw } from '@lucide/svelte';
+  import { ChevronLeft, Download } from '@lucide/svelte';
   import type { Component } from 'svelte';
-  import { DOWNLOAD_STEPS, app, type InstallStep, type Screen } from './lib/app.svelte';
+  import { DOWNLOAD_STEPS, SCREENS, app, type InstallStep, type Screen } from './lib/app.svelte';
   import { applyTokens } from './lib/design/theme';
   import { LINKS } from './lib/project';
   import Activate from './lib/screens/Activate.svelte';
@@ -9,12 +9,16 @@
   import Home from './lib/screens/Home.svelte';
   import Install from './lib/screens/Install.svelte';
   import Machine from './lib/screens/Machine.svelte';
+  import Settings from './lib/screens/Settings.svelte';
   import Tools from './lib/screens/Tools.svelte';
   import { applyMica, setTaskbarProgress, setWindowTheme, supportsMica } from './lib/services/system';
+  import { shortcutFor } from './lib/shortcuts';
   import Button from './lib/ui/Button.svelte';
   import Dialog from './lib/ui/Dialog.svelte';
+  import Flash from './lib/ui/Flash.svelte';
   import Notice from './lib/ui/Notice.svelte';
   import Sidebar from './lib/ui/Sidebar.svelte';
+  import Skeleton from './lib/ui/Skeleton.svelte';
   import TitleBar from './lib/ui/TitleBar.svelte';
 
   type Action = {
@@ -28,12 +32,9 @@
     run: () => void;
   };
 
-  const VIEWS: Record<Screen, Component> = { home: Home, install: Install, activate: Activate, machine: Machine, tools: Tools, help: Help };
+  const VIEWS: Record<Screen, Component> = { home: Home, install: Install, activate: Activate, machine: Machine, tools: Tools, help: Help, settings: Settings };
   const ACTIONS: Record<Screen, Action[]> = {
-    home: [
-      { key: 'seeMachine', run: () => app.go('machine') },
-      { key: 'start', variant: 'primary', run: app.startInstall },
-    ],
+    home: [{ key: 'seeMachine', run: () => app.go('machine') }],
     install: [],
     activate: [{ key: 'checkLicense', run: app.refreshLicense }],
     machine: [
@@ -42,6 +43,7 @@
     ],
     tools: [],
     help: [{ key: 'viewCode', run: () => app.openLink(LINKS.repository) }],
+    settings: [],
   };
   const INSTALL_ACTIONS: Record<InstallStep, Action[]> = {
     version: [{ key: 'chooseApps', variant: 'primary', run: () => (app.installStep = 'apps') }],
@@ -96,6 +98,16 @@
   });
   let main = $state<HTMLElement>();
 
+  const typing = (target: EventTarget | null) => target instanceof HTMLElement && !!target.closest('input, textarea, select');
+  const onkeydown = (event: KeyboardEvent) => {
+    if (app.dialog || typing(event.target)) return;
+    const shortcut = shortcutFor(event, SCREENS, 'settings');
+    if (!shortcut) return;
+    event.preventDefault();
+    if ('go' in shortcut) app.go(shortcut.go);
+    else if (app.ready) void app.refreshAll();
+  };
+
   $effect(() => {
     void [app.screen, app.installStep];
     main?.scrollTo({ top: 0 });
@@ -114,6 +126,8 @@
   void app.load();
 </script>
 
+<svelte:window {onkeydown} />
+
 <div class="window">
   <TitleBar />
   <div class="body">
@@ -125,7 +139,7 @@
         {:else if app.ready}
           <View />
         {:else}
-          <div class="loading"><RefreshCw size={28} class="spin" />{t('common:checking')}</div>
+          <Skeleton />
         {/if}
       </main>
 
@@ -149,6 +163,7 @@
           {/each}
         {/if}
       </footer>
+      <Flash />
     </section>
   </div>
 </div>
@@ -167,6 +182,7 @@
     min-height: 0;
   }
   .card {
+    position: relative;
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -182,23 +198,6 @@
     flex: 1;
     overflow-y: auto;
     padding: var(--space-6) var(--space-8);
-  }
-  .loading {
-    display: grid;
-    justify-items: center;
-    gap: var(--space-3);
-    padding: var(--space-10);
-    color: var(--color-textFaint);
-    font-size: var(--text-md);
-  }
-  .loading :global(.spin) {
-    color: var(--color-accent);
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
   }
   footer {
     display: flex;

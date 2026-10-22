@@ -138,8 +138,11 @@ try {
       # Un $(if ...) vacío saldría como {} y no como null (ver Fin)
       $office = $null
       if ($of) {
+        $desc = Get-OfficeDescrito ([string]$of.Productos) ([string]$of.Version)
         $office = @{ products = [string]$of.Productos; version = [string]$of.Version
-                     language = [string]$of.Idioma; architecture = [string]$of.Arquitectura }
+                     language = [string]$of.Idioma; architecture = [string]$of.Arquitectura
+                     product = $desc.Producto; edition = $desc.Edicion
+                     apps = @($desc.Apps); addOns = @($desc.Complementos) }
       }
       Responder @{
         machine = @{

@@ -1,23 +1,43 @@
 {
-  "title": "Install Office in three steps",
-  "subtitle": "Downloaded straight from Microsoft's servers, no third-party sites",
-  "recommended": "What suits this computer",
+  "titles": {
+    "ready": "Your Office is ready",
+    "checking": "Your Office is installed",
+    "inactive": "Your Office is installed but not activated",
+    "empty": "Install Office in three steps"
+  },
+  "subtitle": "We checked this computer on start: this is what you have and what suits it.",
+  "yourOffice": "Your Office",
+  "officeDetails": "Version {{version}}, {{bits}}, {{language}}",
+  "bits": "{{bits}}-bit",
+  "addOns": "With {{list}}",
+  "license": {
+    "checking": "Checking the activation…",
+    "activated": "Activated",
+    "notActivated": "Not activated",
+    "unreadable": "The activation could not be read"
+  },
+  "activateNow": "Activate",
+  "noOffice": "There is no Office on this computer",
+  "noOfficeHint": "Choose the version, tick the apps and OfficeGo downloads it from Microsoft's servers.",
+  "fits": "What fits this computer",
+  "installProduct": "Install {{product}}",
+  "seeAll": "See all",
   "installThis": "Install this",
-  "howItWorks": "How it works",
-  "steps": {
-    "choose": {
-      "title": "Choose your version",
-      "text": "Six versions from 2013 to Microsoft 365, with their editions"
+  "quick": {
+    "repair": {
+      "title": "Repair Office",
+      "text": "If something breaks, without losing documents"
     },
-    "pick": {
-      "title": "Tick what you want",
-      "text": "Just Word and Excel, or the whole suite. Only that is downloaded"
+    "key": {
+      "title": "Enter your key",
+      "text": "The 25-character product key"
     },
-    "activate": {
-      "title": "Activate when done",
-      "text": "With your product key, or with MAS if you have none"
+    "offline": {
+      "title": "Offline installer",
+      "text": "To take Office to another computer"
     }
   },
   "noAdmin": "Administrator permissions are missing: you can look around, but not install or activate.",
-  "ready": "Ready: {{os}} with {{ram}} of RAM, {{free}} free and administrator permissions."
+  "officeFallback": "Office",
+  "officeBadge": "O"
 }
